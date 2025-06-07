@@ -47,16 +47,28 @@ set (src
     api/yahoo.h
     api/reply.cpp
     api/reply.h
+    api/twelvedata.cpp
+    api/twelvedata.h
 
     chart/quote.cpp
     chart/quote.h
 
     data/market.cpp
     data/market.h
-    data/metric.cpp
-    data/metric.h
     data/ticker.cpp
     data/ticker.h
+    data/ticker/quotes.cpp
+    data/ticker/quotes.h
+    data/ticker/stability.cpp
+    data/ticker/stability.h
+    data/ticker/valuation.cpp
+    data/ticker/valuation.h
+    data/ticker/dividend.cpp
+    data/ticker/dividend.h
+    data/ticker/identity.cpp
+    data/ticker/identity.h
+    data/ticker/profitability.cpp
+    data/ticker/profitability.h
     data/currency.cpp
     data/currency.h
     data/currency/data.cpp
@@ -66,10 +78,10 @@ set (src
     data/currency/name.cpp
     data/currency/name.h
 
-
     settings/network.cpp
     settings/network.h
 
+    utilities/define.h
     utilities/res_dir.cpp
     utilities/res_dir.h
 )

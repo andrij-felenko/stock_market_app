@@ -5,6 +5,7 @@
 #include "api/openai.h"
 #include "api/eod.h"
 #include "api/finnhub.h"
+#include "api/twelvedata.h"
 
 int main(int argc, char** argv)
 {
@@ -31,7 +32,24 @@ int main(int argc, char** argv)
     api::FinnHub finnhub;
     // finnhub.company_profile("C");
     // finnhub.company_quote("C");
-    finnhub.request(api::Request::Info, "C.US");
+
+    api::StringMap params;
+    params["from"] = "2024-10-10";
+    params["to"] = "2024-10-12";
+    params["resolution"] = "30";
+    // finnhub.request(api::Request::Candle, "C.US", params);
+
+    QDate from = QDate(2022, 10, 10);
+    QDate to = QDate(2024, 10, 15);
+
+    api::StringMap params2 = {
+        { "interval", "1day" },
+        { "start_date", from.toString("yyyy-MM-dd") },
+        { "end_date", to.toString("yyyy-MM-dd") }
+    };
+
+    auto twelve = new api::TwelveData;
+    twelve->request(api::Request::Candle, "OLED.US", params2);
 
     return app.exec();
 }

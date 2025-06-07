@@ -47,10 +47,13 @@ bool api::FinnHub::request(Request type, QString name, StringMap keys)
     case api::Request::MetricMargin:    query.addQueryItem("metric", "margin");    break;
     case api::Request::MetricValuation: query.addQueryItem("metric", "valuation"); break;
 
+    // resolution REQUIRED
+    // Supported resolution includes 1, 5, 15, 30, 60, D, W, M .
+    // Some timeframes might not be available depending on the exchange.
     case api::Request::Candle: {
         if (!keys.contains("from") ||
             !keys.contains("to")   ||
-            !keys.contains("resolution"))
+            !keys.contains("resolution")) // can be
             return false;
 
         query.addQueryItem("resolution", keys["resolution"]);
@@ -98,20 +101,25 @@ void api::FinnHub::handler_answer(Request type, QByteArray data, QString name)
             return;
     }
 
-    data::Ticker* ticker = finded.value();
+    data::Ticker* t = finded.value();
     QJsonObject obj = doc.object();
     switch (type){
     case api::Request::Info: {
-        ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
-        ticker->_name = obj.value("name").toString();
-        ticker->_logo = obj.value("logo").toString();
-        ticker->_country = obj.value("country").toString();
-        ticker->_industry = obj.value("finnhubIndustry").toString();
-        ticker->_url = obj.value("weburl").toString();
-        ticker->_capitalization = obj.value("marketCapitalization").toDouble() * 1'000'000;
-        ticker->_ipo = QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD");
-        ticker->_exchange = obj.value("exchange").toString();
+        // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
+        t->identity()->set_title(obj.value("name").toString());
+        t->identity()->set_logo(obj.value("logo").toString());
+        t->identity()->set_country   (obj.value("country").toString());
+        t->identity()->set_industry  (obj.value("finnhubIndustry").toString());
+        t->identity()->set_exchange  (obj.value("exchange").toString());
+        t->valuation()->set_market_cap(obj.value("marketCapitalization").toDouble() * 1'000'000);
+
+        t->identity()->set_ipo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
+        t->identity()->set_url(obj.value("weburl").toString());
         // ticker->count_akcij = obj.value("sharedOutstanding").toDouble() * 1'000'000;
+        break;
+    }
+    case api::Request::Quote: {
+        //
         break;
     }
     default:;

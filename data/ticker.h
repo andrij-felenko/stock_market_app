@@ -1,34 +1,51 @@
-#ifndef TICKER_H
-#define TICKER_H
+#ifndef DATA_TICKER_H
+#define DATA_TICKER_H
 
 #include <QtCore/QObject>
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-#include "currency/name.h"
+#include "ticker/quotes.h"
+#include "ticker/dividend.h"
+#include "ticker/identity.h"
+#include "ticker/profitability.h"
+#include "ticker/stability.h"
+#include "ticker/valuation.h"
 
 namespace data { class Ticker; }
 
 class data::Ticker : public QObject
 {
+    Q_OBJECT
+    Q_PROPERTY(ticker::Quotes*        quotes        READ quotes        CONSTANT)
+    Q_PROPERTY(ticker::Dividend*      dividend      READ dividend      CONSTANT)
+    Q_PROPERTY(ticker::Identity*      identity      READ identity      CONSTANT)
+    Q_PROPERTY(ticker::Stability*     stability     READ stability     CONSTANT)
+    Q_PROPERTY(ticker::Valuation*     valuation     READ valuation     CONSTANT)
+    Q_PROPERTY(ticker::Profitability* profitability READ profitability CONSTANT)
 public:
     Ticker(QObject* parent = nullptr);
 
-    QString _name;
-    QString _ticker;
-    QString _description;
+    ticker::Quotes*   quotes() const;
+    ticker::Dividend* dividend() const;
+    ticker::Identity* identity() const;
+    ticker::Stability* stability() const;
+    ticker::Valuation* valuation() const;
+    ticker::Profitability* profitability() const;
 
-    QString _country;
-    QString _exchange;
-    QString _industry;
+    void save() const;
+    void load();
 
-    QDate _ipo;
+private:
+    ticker::Quotes*   _quotes = nullptr;
+    ticker::Dividend* _dividend = nullptr;
+    ticker::Identity* _identity = nullptr;
+    ticker::Stability* _stability = nullptr;
+    ticker::Valuation* _valuation = nullptr;
+    ticker::Profitability* _profitability = nullptr;
 
-    currency::Tag _currency;
-    double _capitalization;
-
-    QUrl _logo;
-    QUrl _url;
+    friend QDataStream& operator << (QDataStream& s, const Ticker& d);
+    friend QDataStream& operator >> (QDataStream& s,       Ticker& d);
 };
 
-#endif // TICKER_H
+#endif // DATA_TICKER_H

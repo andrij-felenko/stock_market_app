@@ -24,6 +24,8 @@ private:
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;
 
+    void load_from_local_data();
+
     std::vector <Ticker*> _tickers;
 };
 
