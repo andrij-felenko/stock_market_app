@@ -4,6 +4,7 @@
 #include <QUrlQuery>
 #include <QNetworkRequest>
 #include <QDebug>
+#include <QtGui/QGuiApplication>
 
 #include "data/market.h"
 
@@ -12,9 +13,24 @@ api::FinnHub::FinnHub(QObject* parent) : API(parent)
     set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
 }
 
+api::FinnHub* api::FinnHub::instance()
+{
+    static FinnHub* _instance = nullptr;
+    if (_instance == nullptr){
+        _instance = new FinnHub(qApp);
+    }
+    return _instance;
+}
+
 void api::FinnHub::set_api_key(const QString& key) { m_api_key = key; }
 
-bool api::FinnHub::request(Request type, QString name, StringMap keys)
+void api::FinnHub::update_info_by_tag(QString tag)
+{
+    FinnHub* data = FinnHub::instance();
+    data->_request(Request::Info, tag);
+}
+
+bool api::FinnHub::_request(Request type, QString name, StringMap keys)
 {
     QString base("https://finnhub.io/api/v1/");
     // as we work only with US marker, we nee to cut .US domen from tag
@@ -79,12 +95,12 @@ bool api::FinnHub::request(Request type, QString name, StringMap keys)
     url.setQuery(query);
 
     QNetworkRequest request(url);
-    API::add_reply(type, m_manager.get(request), name);
+    API::_add_reply(type, m_manager.get(request), name);
     qDebug() << "request:" << url;
     return true;
 }
 
-void api::FinnHub::handler_answer(Request type, QByteArray data, QString name)
+void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name)
 {
     qDebug() << "handler answer";
     qDebug() << data;
@@ -115,6 +131,7 @@ void api::FinnHub::handler_answer(Request type, QByteArray data, QString name)
 
         t->identity()->set_ipo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
         t->identity()->set_url(obj.value("weburl").toString());
+        t->save();
         // ticker->count_akcij = obj.value("sharedOutstanding").toDouble() * 1'000'000;
         break;
     }

@@ -7,15 +7,17 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 
-class OpenAiApiClient : public QObject {
+namespace api { class OpenAI; }
+
+class api::OpenAI : public QObject {
     Q_OBJECT
 
 public:
-    explicit OpenAiApiClient(QObject* parent = nullptr);
+    static OpenAI* instance();
 
     void set_api_key(const QString& key);
     void send_chat_request(const QString& prompt,
-                           const QString& model = "gpt-4o",
+                           const QString& model = "gpt-4.1-nano",
                            bool stream = false,
                            int max_chars = 50);
 
@@ -25,6 +27,8 @@ signals:
     void error_occurred(const QString& message);
 
 private:
+    explicit OpenAI(QObject* parent = nullptr);
+
     void readyRead();
     void finished();
 

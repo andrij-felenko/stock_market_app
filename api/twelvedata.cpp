@@ -5,6 +5,7 @@
 #include <QNetworkRequest>
 #include <QDebug>
 #include <QJsonArray>
+#include <QtGui/QGuiApplication>
 
 #include "data/market.h"
 
@@ -13,11 +14,20 @@ api::TwelveData::TwelveData(QObject* parent) : API(parent)
     set_api_key("f9b33ba1139a4b5e8c0572bcd1e11258");
 }
 
+api::TwelveData* api::TwelveData::instance()
+{
+    static TwelveData* _instance = nullptr;
+    if (_instance == nullptr){
+        _instance = new TwelveData(qApp);
+    }
+    return _instance;
+}
+
 void api::TwelveData::set_api_key(const QString& key) {
     m_api_key = key;
 }
 
-bool api::TwelveData::request(Request type, QString name, StringMap keys)
+bool api::TwelveData::_request(Request type, QString name, StringMap keys)
 {
     QString base = "https://api.twelvedata.com/";
 
@@ -49,12 +59,28 @@ bool api::TwelveData::request(Request type, QString name, StringMap keys)
     url.setQuery(query);
 
     QNetworkRequest request(url);
-    API::add_reply(type, m_manager.get(request), name);
+    API::_add_reply(type, m_manager.get(request), name);
     qDebug() << "request:" << url;
     return true;
 }
 
-void api::TwelveData::handler_answer(Request type, QByteArray data, QString name)
+void api::TwelveData::update_by_tag(QString tag)
+{
+    // TwelveData* data = TwelveData::instance();
+}
+
+void api::TwelveData::add_by_tag(QString tag)
+{
+    qDebug() << "ADD BY TAG" << tag;
+    api::StringMap params = {
+        { "interval", "1day" },
+        { "start_date", QDate(2004, 06, 6).toString("yyyy-MM-dd") },
+        { "end_date", QDate(2025, 06, 6).toString("yyyy-MM-dd") }
+    };
+    _request(Request::Candle, tag, params);
+}
+
+void api::TwelveData::_handler_answer(Request type, QByteArray data, QString name)
 {
     qDebug() << "handler answer";
     qDebug() << data;
@@ -102,6 +128,7 @@ void api::TwelveData::handler_answer(Request type, QByteArray data, QString name
         qDebug() << 6;
 
         t->quotes()->recalculate();
+        emit t->update_data();
         qDebug() << 7;
         t->save();
         qDebug() << 8;

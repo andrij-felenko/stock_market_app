@@ -27,4 +27,8 @@ ApplicationWindow {
     onWidthChanged:  app_settings.win_w = width
     onHeightChanged: app_settings.win_h = height
     // ===================================================================
+
+    MarketView {
+        anchors.fill: parent
+    }
 }

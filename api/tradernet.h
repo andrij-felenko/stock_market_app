@@ -1,5 +1,5 @@
-#ifndef API_FINNHUB_H
-#define API_FINNHUB_H
+#ifndef API_TRADERNET_H
+#define API_TRADERNET_H
 
 #include <QObject>
 #include <QNetworkAccessManager>
@@ -9,30 +9,28 @@
 #include "api/api.h"
 #include "reply.h"
 
-namespace api { class FinnHub; }
+namespace api { class TraderNet; }
 
-class api::FinnHub : public API {
+class api::TraderNet : public API {
     Q_OBJECT
 public:
-    static FinnHub* instance();
-
+    explicit TraderNet(QObject* parent = nullptr);
     void set_api_key(const QString& key);
+    void set_secret_key(const QString& key);
 
-    static void update_info_by_tag(QString tag);
+    virtual bool _request(Request type, QString name, StringMap keys = {}) override;
 
 signals:
     void error_occurred(const QString& message);
 
 private:
-    explicit FinnHub(QObject* parent = nullptr);
-
     QNetworkAccessManager m_manager;
-    QString m_api_key;
-    QNetworkReply* m_reply = nullptr;
-    // void _ready_read();
+    QString _api_key;
+    QString _secret_key;
 
-    virtual bool _request(Request type, QString name, StringMap keys = {}) override;
+    QString _sign(const QString& msg) const;
+
     virtual void _handler_answer(Request type, QByteArray data, QString name) override;
 };
 
-#endif
+#endif // API_TRADERNET_H

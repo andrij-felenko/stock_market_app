@@ -37,8 +37,8 @@ set (src
     api/eod.h
     api/finnhub.cpp
     api/finnhub.h
-    api/freedom24.cpp
-    api/freedom24.h
+    api/tradernet.cpp
+    api/tradernet.h
     api/ibkr.cpp
     api/ibkr.h
     api/openai.cpp
@@ -96,5 +96,6 @@ qt_add_qml_module (stock_manager
     SOURCES
     QML_FILES
         main.qml
+        ui/MarketView.qml
     RESOURCES
 )

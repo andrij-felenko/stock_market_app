@@ -4,12 +4,14 @@
 #include <QtCore/QObject>
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
+#include <QtCore/QAbstractListModel>
+#include <QtCore/QTimer>
 
 #include "ticker.h"
 
 namespace data { class Market; }
 
-class data::Market : public QObject
+class data::Market : public QAbstractListModel
 {
     Q_OBJECT
 public:
@@ -20,6 +22,10 @@ public:
 
     static void add(QString tag);
 
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QHash<int, QByteArray> roleNames() const override;
+
 private:
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;
@@ -27,6 +33,7 @@ private:
     void load_from_local_data();
 
     std::vector <Ticker*> _tickers;
+    QTimer* _timer;
 };
 
 #endif

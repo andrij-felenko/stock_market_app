@@ -30,13 +30,16 @@ public:
           QObject*parent = nullptr);
 
 signals:
-    void have_answer(QNetworkReply* reply);
     void finish(QNetworkReply* reply);
 
 private:
     QNetworkReply* _reply;
     api::Request _type;
     QString _symbol;
+
+    QByteArray _buffer;
+
+    void ready_read();
 
     friend class API;
 };

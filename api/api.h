@@ -22,18 +22,17 @@ public:
     explicit API(QObject* parent = nullptr);
 
 protected:
-    virtual void handler_answer(Request type, QByteArray data, QString name) = 0;
-    virtual bool request(Request type, QString name, StringMap keys = {}) = 0;
+    virtual void _handler_answer(Request type, QByteArray data, QString name) = 0;
+    virtual bool _request(Request type, QString name, StringMap keys = {}) = 0;
 
-    virtual void add_reply(api::Request type,
-                           QNetworkReply* reply,
-                           const QString& symbol) final;
+    virtual void _add_reply(api::Request type,
+                            QNetworkReply* reply,
+                            const QString& symbol) final;
 
 private:
     std::vector <Reply*> _replies;
 
-    void finish(QNetworkReply* reply);
-    void have_answer(QNetworkReply* reply);
+    void _finish(QNetworkReply* reply);
 };
 
 #endif

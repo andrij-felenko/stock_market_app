@@ -42,6 +42,8 @@ public:
     void recalculate();
     void set_data(QDate d, float open, float close, float high, float low, uint64_t v);
 
+    float current() const;
+
 signals:
     void pointsChanged();
 

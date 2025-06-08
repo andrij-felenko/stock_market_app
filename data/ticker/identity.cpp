@@ -21,7 +21,7 @@ void    Identity::set_ticker(const QString& new_ticker)
 {
     if (_ticker == new_ticker)
         return;
-    _ticker = new_ticker;
+    _ticker = new_ticker.toUpper();
     emit tickerChanged(_ticker);
 }
 

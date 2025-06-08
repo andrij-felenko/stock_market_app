@@ -60,6 +60,18 @@ void Quotes::set_data(QDate d, float open, float close, float high, float low, u
     _points.emplaceBack(p);
 }
 
+float Quotes::current() const
+{
+    float ret = 0.0;
+    QDate date = QDate::fromJulianDay(0);
+    for (auto& it : _points)
+        if (it.date > date){
+            ret = it.close;
+            date = it.date;
+        }
+    return ret;
+}
+
 namespace data::ticker {
     QDataStream& operator << (QDataStream& s, const Quotes& q) {
         s << quint32(q._points.size());

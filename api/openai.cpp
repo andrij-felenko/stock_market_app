@@ -1,21 +1,30 @@
 #include "openai.h"
 #include <QJsonArray>
 #include <QDebug>
+#include <QtGui/QGuiApplication>
 
-OpenAiApiClient::OpenAiApiClient(QObject* parent) : QObject(parent) {
+api::OpenAI* api::OpenAI::instance()
+{
+    static OpenAI* _instance = nullptr;
+    if (_instance == nullptr){
+        _instance = new OpenAI(qApp);
+    }
+    return _instance;
+}
+
+api::OpenAI::OpenAI(QObject* parent) : QObject(parent)
+{
     set_api_key("sk-proj-vccDzzJrmHvKungJmFIz_U5X_yZI3wvadiKedhBomYzXUNv"
                 "4XVU7nP4l84VqJZ9TlMeVhQLmLXT3BlbkFJ21RmjsV5oOpor1XvYbNa"
                 "c2aJjNBNoz-S7SF8C84Lx4fqZHxEODILJk6bo8PyzBPCfXjDuQcJQA");
 }
 
-void OpenAiApiClient::set_api_key(const QString& key) {
-    m_api_key = key;
-}
+void api::OpenAI::set_api_key(const QString& key) { m_api_key = key; }
 
-void OpenAiApiClient::send_chat_request(const QString& prompt,
-                                        const QString& model,
-                                        bool stream,
-                                        int max_chars) {
+void api::OpenAI::send_chat_request(const QString& prompt,
+                                    const QString& model,
+                                    bool stream,
+                                    int max_chars) {
     if (m_reply) {
         m_reply->abort();
         m_reply->deleteLater();
@@ -49,12 +58,12 @@ void OpenAiApiClient::send_chat_request(const QString& prompt,
     qDebug() << "SENT:" << QString::fromUtf8(data);
 
     if (stream)
-        connect(m_reply, &QIODevice::readyRead, this, &OpenAiApiClient::readyRead);
+        connect(m_reply, &QIODevice::readyRead, this, &OpenAI::readyRead);
     else
-        connect(m_reply, &QNetworkReply::finished, this, &OpenAiApiClient::finished);
+        connect(m_reply, &QNetworkReply::finished, this, &OpenAI::finished);
 }
 
-void OpenAiApiClient::readyRead()
+void api::OpenAI::readyRead()
 {
     while (m_reply->canReadLine()) {
         QByteArray line = m_reply->readLine();
@@ -77,7 +86,7 @@ void OpenAiApiClient::readyRead()
     }
 }
 
-void OpenAiApiClient::finished()
+void api::OpenAI::finished()
 {
     if (m_reply->error() != QNetworkReply::NoError) {
         emit error_occurred(m_reply->errorString());

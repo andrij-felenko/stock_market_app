@@ -36,6 +36,9 @@ public:
     void save() const;
     void load();
 
+signals:
+    void update_data();
+
 private:
     ticker::Quotes*   _quotes = nullptr;
     ticker::Dividend* _dividend = nullptr;
