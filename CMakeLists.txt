@@ -15,6 +15,11 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../cpp/bin/app)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../cpp/bin/lib)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../cpp/bin/archive)
 
+# 👇 Ось це вказує на кастомну папку з AndroidManifest.xml
+if(ANDROID)
+    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android")
+endif()
+
 
 find_package (Qt6 REQUIRED COMPONENTS
     Core Network WebSockets
@@ -33,18 +38,20 @@ set (src
 
     api/api.cpp
     api/api.h
+    api/alphavantage.cpp
+    api/alphavantage.h
     api/eod.cpp
     api/eod.h
     api/finnhub.cpp
     api/finnhub.h
-    api/tradernet.cpp
-    api/tradernet.h
-    api/ibkr.cpp
-    api/ibkr.h
+    # api/tradernet.cpp
+    # api/tradernet.h
+    # api/ibkr.cpp
+    # api/ibkr.h
     api/openai.cpp
     api/openai.h
-    api/yahoo.cpp
-    api/yahoo.h
+    # api/yahoo.cpp
+    # api/yahoo.h
     api/reply.cpp
     api/reply.h
     api/twelvedata.cpp
@@ -57,6 +64,12 @@ set (src
     data/market.h
     data/ticker.cpp
     data/ticker.h
+    data/stock.cpp
+    data/stock.h
+    data/portfolio.cpp
+    data/portfolio.h
+    data/transaction.cpp
+    data/transaction.h
     data/ticker/quotes.cpp
     data/ticker/quotes.h
     data/ticker/stability.cpp
@@ -96,6 +109,19 @@ qt_add_qml_module (stock_manager
     SOURCES
     QML_FILES
         main.qml
-        ui/MarketView.qml
+        ui/Settings.qml
+        ui/StockFull.qml
+        ui/Favorite.qml
+        ui/Main.qml
+        ui/Planned.qml
+        ui/Portfolio.qml
+        ui/MarketFilter.qml
+        ui/StockShort.qml
+        ui/Charts.qml
     RESOURCES
+        ui/images/presentation.png
+        ui/images/website.png
+        ui/images/briefcase.png
+        ui/images/folder.png
+        ui/images/browser.png
 )

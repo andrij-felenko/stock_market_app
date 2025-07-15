@@ -5,7 +5,7 @@ import StockCpp 1.0  // Твій сінглтон Market
 
 Column {
     id: _
-    anchors.fill: parent
+    // anchors.fill: parent
     spacing: 8
     anchors.margins: 12
     clip: true
@@ -14,8 +14,15 @@ Column {
         id: searchField
         placeholderText: "Пошук акції..."
         width: parent.width
+        height: 80
         onAccepted: {
-            TwelveData.add_by_tag(searchField.text)
+            if (searchField.text.toUpperCase().endsWith(".US")){
+                TwelveData.add_by_tag(searchField.text)
+            }
+            else {
+                //
+            }
+
             searchField.text = ""
         }
     }
