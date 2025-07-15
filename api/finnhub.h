@@ -26,13 +26,11 @@ signals:
 private:
     explicit FinnHub(QObject* parent = nullptr);
 
-    QNetworkAccessManager m_manager;
-    QString m_api_key;
-    QNetworkReply* m_reply = nullptr;
-    // void _ready_read();
+    QString _api_key;
 
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
-    virtual void _handler_answer(Request type, QByteArray data, QString name) override;
+    virtual void _handler_answer(Request type, QByteArray data,
+                                 QString name, bool stream = false) override;
 };
 
 #endif

@@ -126,7 +126,7 @@ void Identity::set_url(const QUrl& new_url)
 }
 
 namespace data::ticker {
-    QDataStream& operator<<(QDataStream& s, const Identity& i) {
+    QDataStream& operator << (QDataStream& s, const Identity& i) {
         s << i._currency  << i._title   << i._ticker   << i._descript
           << i._sector    << i._country << i._exchange << i._industry
           << i._headquart << i._isin    << i._ipo      << i._logo
@@ -134,11 +134,12 @@ namespace data::ticker {
         return s;
     }
 
-    QDataStream& operator>>(QDataStream& s, Identity& i) {
+    QDataStream& operator >> (QDataStream& s, Identity& i) {
         s >> i._currency  >> i._title   >> i._ticker   >> i._descript
           >> i._sector    >> i._country >> i._exchange >> i._industry
           >> i._headquart >> i._isin    >> i._ipo      >> i._logo
           >> i._url;
+        i.set_ticker(i._ticker.toUpper());
         return s;
     }
 }

@@ -13,7 +13,7 @@
 namespace api {
     class API;
 
-    using StringMap = std::map <QString, QString>;
+    using StringMap = QMap <QString, QString>;
 }
 
 class api::API : public QObject {
@@ -22,12 +22,19 @@ public:
     explicit API(QObject* parent = nullptr);
 
 protected:
-    virtual void _handler_answer(Request type, QByteArray data, QString name) = 0;
     virtual bool _request(Request type, QString name, StringMap keys = {}) = 0;
+    virtual void _handler_answer(Request type, QByteArray data,
+                                 QString name, bool stream = false) = 0;
 
     virtual void _add_reply(api::Request type,
                             QNetworkReply* reply,
-                            const QString& symbol) final;
+                            const QString& symbol,
+                            std::function <QByteArray (QByteArray)> reader = nullptr) final;
+
+    QNetworkAccessManager _netmanager;
+
+signals:
+    void error_occurred(QString error);
 
 private:
     std::vector <Reply*> _replies;

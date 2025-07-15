@@ -1,8 +1,9 @@
 #include "reply.h"
 
 api::Reply::Reply(Request type, QNetworkReply* reply, const QString& symbol,
-                  QObject* parent)
-    : QObject(parent), _type(type), _reply(reply), _symbol(symbol)
+                  QObject* parent,
+                  std::function <QByteArray (QByteArray)> reader)
+    : QObject(parent), _type(type), _reply(reply), _symbol(symbol), _reader(reader)
 {
     connect(_reply, &QNetworkReply::readyRead, this, &Reply::ready_read);
 
@@ -12,5 +13,7 @@ api::Reply::Reply(Request type, QNetworkReply* reply, const QString& symbol,
 
 void api::Reply::ready_read()
 {
-    _buffer += _reply->readAll();
+    QByteArray data = _reply->readAll();
+    if (_reader) _buffer += _reader(data);
+    else         _buffer += data;
 }

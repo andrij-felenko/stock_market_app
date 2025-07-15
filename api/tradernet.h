@@ -30,7 +30,8 @@ private:
 
     QString _sign(const QString& msg) const;
 
-    virtual void _handler_answer(Request type, QByteArray data, QString name) override;
+    virtual void _handler_answer(Request type, QByteArray data,
+                                 QString name, bool stream = false) override;
 };
 
 #endif // API_TRADERNET_H

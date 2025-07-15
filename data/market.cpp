@@ -12,6 +12,8 @@ enum MarketRoles {
     IndustryRole,
     QuoteRole,
     LogoRole,
+    YearMin,
+    YearMax,
 };
 
 data::Market* data::Market::instance()
@@ -139,6 +141,8 @@ QVariant data::Market::data(const QModelIndex& index, int role) const
         case IndustryRole:return ticker->identity()->industry();
         case QuoteRole:   return ticker->quotes()->current();
         case LogoRole:    return ticker->identity()->logo();
+        case YearMin:     return ticker->quotes()->year_min();
+        case YearMax:     return ticker->quotes()->year_max();
         default:          return QVariant();
     }
 }
@@ -152,5 +156,7 @@ QHash<int, QByteArray> data::Market::roleNames() const
     roles[IndustryRole]= "industry";
     roles[QuoteRole]   = "price";
     roles[LogoRole]    = "logo";
+    roles[YearMin]     = "year_min";
+    roles[YearMax]     = "year_max";
     return roles;
 }

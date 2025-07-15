@@ -55,7 +55,7 @@ QString api::TraderNet::_sign(const QString& msg) const
     return QCryptographicHash::hash(key + data, QCryptographicHash::Sha256).toHex();
 }
 
-void api::TraderNet::_handler_answer(Request type, QByteArray data, QString name)
+void api::TraderNet::_handler_answer(Request type, QByteArray data, QString name, bool stream)
 {
     QJsonDocument doc = QJsonDocument::fromJson(data);
     if (!doc.isObject()) return;

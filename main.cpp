@@ -1,5 +1,6 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
+#include <QQuickStyle>
 
 #include "utilities/res_dir.h"
 #include "api/openai.h"
@@ -7,6 +8,10 @@
 #include "api/finnhub.h"
 #include "api/twelvedata.h"
 #include "data/market.h"
+#include "api/alphavantage.h"
+#include "data/portfolio.h"
+
+#define qmlREGS qmlRegisterSingletonInstance
 
 int main(int argc, char** argv)
 {
@@ -15,17 +20,18 @@ int main(int argc, char** argv)
     app.setOrganizationName("Andrij Felenko");
     app.setApplicationName("Stock manager");
 
+    QQuickStyle::setStyle("Fusion");
+
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, [](){ QCoreApplication::exit(-1); },
                      Qt::QueuedConnection);
 
-    qmlRegisterSingletonInstance <data::Market> ("StockCpp", 1, 0, "Market",
-                                                 data::Market::instance());
-    qmlRegisterSingletonInstance <api::TwelveData> ("StockCpp", 1, 0, "TwelveData",
-                                                 api::TwelveData::instance());
-    qmlRegisterSingletonInstance <api::OpenAI> ("StockCpp", 1, 0, "OpenAI",
-                                                 api::OpenAI::instance());
+    qmlREGS <data::Market>    ("StockCpp", 1, 0, "Market",       data::Market   ::instance());
+    qmlREGS <data::Portfolio> ("StockCpp", 1, 0, "PortfolioCpp", data::Portfolio::instance());
+
+    qmlREGS <api::OpenAI>     ("StockCpp", 1, 0, "OpenAI",     api::OpenAI    ::instance());
+    qmlREGS <api::TwelveData> ("StockCpp", 1, 0, "TwelveData", api::TwelveData::instance());
 
     // util::ResDir::list_qrc_files();
     engine.load("qrc:/Stock/main.qml");
@@ -58,6 +64,11 @@ int main(int argc, char** argv)
 
     // api::TwelveData twelve;
     // twelve.request(api::Request::Candle, "FMC.US", params2);
+
+    // api::AlphaVantage::
+    // api::AlphaVantage::daily_candle_by_tag("POLN.EU");
+
+    // api::OpenAI::instance()->recheck_tag("nokia");
 
     return app.exec();
 }

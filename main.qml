@@ -8,7 +8,7 @@ ApplicationWindow {
 
     property bool isLandscape: width > height
 
-    // Збереження позиції і розмірів -------------------------------------
+    // // Збереження позиції і розмірів -------------------------------------
     Settings {
         id: app_settings
         property real win_x:  100
@@ -28,7 +28,7 @@ ApplicationWindow {
     onHeightChanged: app_settings.win_h = height
     // ===================================================================
 
-    MarketView {
+    Main {
         anchors.fill: parent
     }
 }

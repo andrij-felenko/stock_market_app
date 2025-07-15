@@ -19,6 +19,9 @@ namespace api {
         Reported,
         Candle,
         Dividend,
+
+        Tag,
+        Text,
     };
 }
 
@@ -27,7 +30,8 @@ class api::Reply : public QObject
     Q_OBJECT
 public:
     Reply(Request type, QNetworkReply* reply, const QString& symbol,
-          QObject*parent = nullptr);
+          QObject*parent = nullptr,
+          std::function <QByteArray (QByteArray)> reader = nullptr);
 
 signals:
     void finish(QNetworkReply* reply);
@@ -36,6 +40,7 @@ private:
     QNetworkReply* _reply;
     api::Request _type;
     QString _symbol;
+    std::function <QByteArray (QByteArray)> _reader;
 
     QByteArray _buffer;
 

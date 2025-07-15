@@ -17,7 +17,7 @@ struct data::ticker::QuotesDate {
     float close;
     float high;
     float low;
-    uint64_t volume;
+    quint64  volume;
 };
 
 struct data::ticker::QuotesTime {
@@ -26,7 +26,7 @@ struct data::ticker::QuotesTime {
     float close;
     float high;
     float low;
-    uint64_t volume;
+    quint64  volume;
 };
 
 class data::ticker::Quotes : public QObject
@@ -40,7 +40,10 @@ public:
     QVector <QObject*> points();
 
     void recalculate();
-    void set_data(QDate d, float open, float close, float high, float low, uint64_t v);
+    void set_data(QDate d, float open, float close, float high, float low, quint64  v);
+
+    float year_max() const;
+    float year_min() const;
 
     float current() const;
 

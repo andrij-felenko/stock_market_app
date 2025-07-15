@@ -1,4 +1,4 @@
-#include "finnhub.h"
+#include "alphavantage.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -8,34 +8,46 @@
 
 #include "data/market.h"
 
-api::FinnHub::FinnHub(QObject* parent) : API(parent)
+api::AlphaVantage::AlphaVantage(QObject* parent) : API(parent)
 {
-    set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
+    set_api_key("539EYFYAYCXFMWIL");
 }
 
-api::FinnHub* api::FinnHub::instance()
+api::AlphaVantage* api::AlphaVantage::instance()
 {
-    static FinnHub* _instance = nullptr;
+    static AlphaVantage* _instance = nullptr;
     if (_instance == nullptr){
-        _instance = new FinnHub(qApp);
+        _instance = new AlphaVantage(qApp);
     }
     return _instance;
 }
 
-void api::FinnHub::set_api_key(const QString& key) { _api_key = key; }
+void api::AlphaVantage::set_api_key(const QString& key) { m_api_key = key; }
 
-void api::FinnHub::update_info_by_tag(QString tag)
+void api::AlphaVantage::update_info_by_tag(QString tag)
 {
-    FinnHub* data = FinnHub::instance();
+    AlphaVantage* data = AlphaVantage::instance();
     data->_request(Request::Info, tag);
 }
 
-bool api::FinnHub::_request(Request type, QString name, StringMap keys)
+void api::AlphaVantage::daily_candle_by_tag(QString tag)
 {
-    QString base("https://finnhub.io/api/v1/");
+    AlphaVantage* data = AlphaVantage::instance();
+    api::StringMap params;
+    params["func"] = "TIME_SERIES_DAILY";
+    data->_request(Request::Candle, tag, params);
+}
+
+bool api::AlphaVantage::_request(Request type, QString name, StringMap keys)
+{
+    QString base("https://www.alphavantage.co/query");
+    // as we work only with US marker, we nee to cut .US domen from tag
 
     QUrl url;
     switch (type){
+        case api::Request::Tag:
+        case api::Request::Text: return false;
+
         case api::Request::MetricAll:
         case api::Request::MetricPrice:
         case api::Request::MetricMargin:
@@ -44,23 +56,13 @@ bool api::FinnHub::_request(Request type, QString name, StringMap keys)
         case api::Request::Info:     url = base + "stock/profile2"; break;
         case api::Request::Peers:    url = base + "stock/peers";    break;
         case api::Request::Quote:    url = base + "quote";          break;
-        case api::Request::Candle:   url = base + "stock/candle";   break;
+        case api::Request::Candle:   url = base + "";   break;
         case api::Request::Dividend: url = base + "stock/dividend"; break;
         case api::Request::Earnings: url = base + "calendar/earnings";         break;
         case api::Request::Reported: url = base + "stock/financials-reported"; break;
-
-        case api::Request::Tag:
-        default: return false;
     }
 
-    // as we work only with US marker, we nee to cut .US domen from tag
-    QString subname = name;
-    if (subname.right(3).toUpper() == ".US")
-        subname.chop(3);
-
     QUrlQuery query;
-    query.addQueryItem("symbol", subname);
-    query.addQueryItem("token", _api_key);
 
     switch (type){
         case api::Request::MetricAll:       query.addQueryItem("metric", "all");       break;
@@ -72,14 +74,13 @@ bool api::FinnHub::_request(Request type, QString name, StringMap keys)
         // Supported resolution includes 1, 5, 15, 30, 60, D, W, M .
         // Some timeframes might not be available depending on the exchange.
         case api::Request::Candle: {
-            if (!keys.contains("from") ||
-                !keys.contains("to")   ||
-                !keys.contains("resolution")) // can be
+            if (!keys.contains("func"))
                 return false;
 
-            query.addQueryItem("resolution", keys["resolution"]);
-            query.addQueryItem("from",       keys["from"]);
-            query.addQueryItem("to",         keys["to"]);
+            query.addQueryItem("function", keys["func"]);
+            query.addQueryItem("symbol", name);
+            query.addQueryItem("outputsize", "full");
+            query.addQueryItem("apikey", m_api_key);
             break;
         }
         case api::Request::Dividend: {
@@ -101,12 +102,12 @@ bool api::FinnHub::_request(Request type, QString name, StringMap keys)
     url.setQuery(query);
 
     QNetworkRequest request(url);
-    API::_add_reply(type, _netmanager.get(request), name);
+    API::_add_reply(type, m_manager.get(request), name);
     qDebug() << "request:" << url;
     return true;
 }
 
-void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, bool stream)
+void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString name, bool stream)
 {
     qDebug() << "handler answer";
     qDebug() << data;
@@ -126,25 +127,25 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
     data::Ticker* t = finded.value();
     QJsonObject obj = doc.object();
     switch (type){
-        case api::Request::Info: {
-            // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
-            t->identity()->set_title(obj.value("name").toString());
-            t->identity()->set_logo(obj.value("logo").toString());
-            t->identity()->set_country   (obj.value("country").toString());
-            t->identity()->set_industry  (obj.value("finnhubIndustry").toString());
-            t->identity()->set_exchange  (obj.value("exchange").toString());
-            t->valuation()->set_market_cap(obj.value("marketCapitalization").toDouble() * 1'000'000);
+    case api::Request::Info: {
+        // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
+        t->identity()->set_title(obj.value("name").toString());
+        t->identity()->set_logo(obj.value("logo").toString());
+        t->identity()->set_country   (obj.value("country").toString());
+        t->identity()->set_industry  (obj.value("finnhubIndustry").toString());
+        t->identity()->set_exchange  (obj.value("exchange").toString());
+        t->valuation()->set_market_cap(obj.value("marketCapitalization").toDouble() * 1'000'000);
 
-            t->identity()->set_ipo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
-            t->identity()->set_url(obj.value("weburl").toString());
-            t->save();
-            // ticker->count_akcij = obj.value("sharedOutstanding").toDouble() * 1'000'000;
-            break;
-        }
-        case api::Request::Quote: {
-            //
-            break;
-        }
-        default:;
+        t->identity()->set_ipo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
+        t->identity()->set_url(obj.value("weburl").toString());
+        t->save();
+        // ticker->count_akcij = obj.value("sharedOutstanding").toDouble() * 1'000'000;
+        break;
+    }
+    case api::Request::Quote: {
+        //
+        break;
+    }
+    default:;
     }
 }

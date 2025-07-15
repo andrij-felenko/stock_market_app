@@ -36,7 +36,7 @@ void Quotes::recalculate()
     emit pointsChanged();
 }
 
-void Quotes::set_data(QDate d, float open, float close, float high, float low, uint64_t v)
+void Quotes::set_data(QDate d, float open, float close, float high, float low, quint64  v)
 {
     for (auto& p : _points)
         if (d == p.date){
@@ -58,6 +58,34 @@ void Quotes::set_data(QDate d, float open, float close, float high, float low, u
     p.volume = v;
 
     _points.emplaceBack(p);
+}
+
+float Quotes::year_max() const
+{
+    float max = 0;
+    for (const auto& it : _points)
+        if (it.date.daysTo(QDate::currentDate()) < 366)
+            if (it.high > max)
+                max = it.high;
+
+    if (max == 0)
+        return std::numeric_limits <float>::max();
+
+    return max;
+}
+
+float Quotes::year_min() const
+{
+    float min = std::numeric_limits <float>::max();
+    for (const auto& it : _points)
+        if (it.date.daysTo(QDate::currentDate()) < 366)
+            if (it.low < min)
+                min = it.low;
+
+    if (min == std::numeric_limits <float>::max())
+        return 0;
+
+    return min;
 }
 
 float Quotes::current() const

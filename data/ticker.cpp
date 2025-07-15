@@ -23,7 +23,7 @@ void data::Ticker::save() const
 
     QFile file(filename);
     qDebug() << "file" << file.fileName();
-    if (!file.open(QIODevice::WriteOnly))
+    if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly))
         return;
 
     QDataStream out(&file);
@@ -56,12 +56,12 @@ Valuation*     data::Ticker::valuation()     const { return _valuation; }
 Profitability* data::Ticker::profitability() const { return _profitability; }
 
 namespace data {
-    QDataStream& operator<<(QDataStream& s, const Ticker& d) {
+    QDataStream& operator << (QDataStream& s, const Ticker& d) {
         return s << *d._dividend << *d._identity  << *d._profitability
                  << *d._quotes   << *d._stability << *d._valuation;
     }
 
-    QDataStream& operator>>(QDataStream& s, Ticker& d) {
+    QDataStream& operator >> (QDataStream& s, Ticker& d) {
         return s >> *d._dividend >> *d._identity  >> *d._profitability
                  >> *d._quotes   >> *d._stability >> *d._valuation;
     }

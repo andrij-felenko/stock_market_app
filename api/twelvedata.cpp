@@ -80,7 +80,7 @@ void api::TwelveData::add_by_tag(QString tag)
     _request(Request::Candle, tag, params);
 }
 
-void api::TwelveData::_handler_answer(Request type, QByteArray data, QString name)
+void api::TwelveData::_handler_answer(Request type, QByteArray data, QString name, bool stream)
 {
     qDebug() << "handler answer";
     qDebug() << data;
