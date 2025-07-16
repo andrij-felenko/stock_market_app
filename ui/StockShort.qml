@@ -7,10 +7,11 @@ Rectangle {
     id: _
     // width: ListView.view.width
     height: 90
-    color: "gray"
+    color: "#707070"
     radius: 5
     border.width: 2
     border.color: "black"
+    // anchors.margins: 8
 
     ColumnLayout {
         id: _column

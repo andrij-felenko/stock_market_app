@@ -6,6 +6,9 @@ ApplicationWindow {
     id: window
     visible: true
 
+    minimumWidth: 500
+    minimumHeight: 650
+
     property bool isLandscape: width > height
 
     // // Збереження позиції і розмірів -------------------------------------

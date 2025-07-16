@@ -18,16 +18,16 @@ Item {
         clip: true
         padding: 8
 
-        ListView {
+        GridView {
+            id: grid
+            property int columnCount: Math.max(1, Math.floor(width / 320))
+
             width: scroll_view.width - scroll_view.padding * 2
             model: Market
-            spacing: 8
+            cellWidth: width / columnCount
 
             delegate: StockShort {
-                // height: 80
-                width: ListView.view.width
-                // color: "red"
-                // radius: 5
+                width: GridView.view.cellWidth - 8
             }
         }
     }
