@@ -20,17 +20,19 @@ public:
 
     static void update_info_by_tag(QString tag);
     static void daily_candle_by_tag(QString tag);
+    static void today_candle_by_tag(QString tag);
+    static void find_tag(QString str);
 
 signals:
     void error_occurred(const QString& message);
 
+public slots:
+    void find_symbol(QString str);
+
 private:
     explicit AlphaVantage(QObject* parent = nullptr);
 
-    QNetworkAccessManager m_manager;
-    QString m_api_key;
-    QNetworkReply* m_reply = nullptr;
-    // void _ready_read();
+    QString _api_key;
 
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
     virtual void _handler_answer(Request type, QByteArray data,

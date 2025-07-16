@@ -44,6 +44,14 @@ void  Dividend::set_next_date(const QDate& new_next_date)
 }
 
 QDate Dividend::    prev_date() const { return _prev_date; }
+
+void Dividend::set_history(QDate date, float amount)
+{
+    DividendList dl;
+    dl.amount = amount;
+    dl.date = date;
+    _history.emplace_back(dl);
+}
 void  Dividend::set_prev_date(const QDate& new_prev_date)
 {
     if (_prev_date == new_prev_date)
@@ -61,8 +69,8 @@ namespace data::ticker {
           << d._prev_date;
 
         s << quint32(d._history.size());
-        for (const QDate& date : d._history)
-            s << date;
+        for (const DividendList& dl : d._history)
+            s << dl.amount << dl.date;
 
         return s;
     }
@@ -80,9 +88,11 @@ namespace data::ticker {
         d._history.clear();
         d._history.reserve(size);
         for (quint32 i = 0; i < size; ++i) {
-            QDate date;
-            s >> date;
-            d._history.push_back(date);
+            DividendList dl;
+            float amount;
+
+            s >> dl.amount >> dl.date;
+            d._history.push_back(dl);
         }
 
         return s;

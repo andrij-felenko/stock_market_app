@@ -31,6 +31,8 @@ Makefile*
 *build-*
 *.qm
 *.prl
+build/Android*
+build/Desktop*
 
 # Qt unit tests
 target_wrapper.*
@@ -52,3 +54,5 @@ compile_commands.json
 *creator.user*
 
 *_qmlcache.qrc
+
+build/cpp/*

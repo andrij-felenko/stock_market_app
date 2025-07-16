@@ -6,7 +6,14 @@
 #include <QtCore/QUrl>
 #include <QtCore/QDataStream>
 
-namespace data::ticker { class Dividend; }
+namespace data::ticker {
+    class Dividend;
+
+    struct DividendList {
+        QDate date;
+        float amount;
+    };
+}
 
 class data::ticker::Dividend : public QObject
 {
@@ -24,6 +31,8 @@ public:
     float pay_ratio() const;
     QDate next_date() const;
     QDate prev_date() const;
+
+    void set_history(QDate date, float f);
 
 public slots:
     void set_yield    (float new_yield);
@@ -46,7 +55,7 @@ private:
     QDate _next_date;
     QDate _prev_date;
 
-    std::vector <QDate> _history;
+    std::vector <DividendList> _history;
 
     friend QDataStream& operator << (QDataStream& s, const Dividend& d);
     friend QDataStream& operator >> (QDataStream& s,       Dividend& d);

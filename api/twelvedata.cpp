@@ -31,9 +31,10 @@ bool api::TwelveData::_request(Request type, QString name, StringMap keys)
 {
     QString base = "https://api.twelvedata.com/";
 
-    QStringList cutted_list = name.split('.');
-    cutted_list.removeLast();
-    QString cutted = cutted_list.join('.');
+    QString subname = name;
+    while (subname.right(3).toUpper() == ".US")
+        subname.chop(3);
+    qDebug() << name << subname;
 
     QUrl url;
     QUrlQuery query;
@@ -46,7 +47,7 @@ bool api::TwelveData::_request(Request type, QString name, StringMap keys)
                 !keys.contains("interval"))
                 return false;
 
-            query.addQueryItem("symbol", cutted);
+            query.addQueryItem("symbol", subname);
             query.addQueryItem("interval", keys["interval"]);
             query.addQueryItem("start_date", keys["start_date"]);
             query.addQueryItem("end_date", keys["end_date"]);

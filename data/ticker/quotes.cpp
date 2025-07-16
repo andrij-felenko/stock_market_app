@@ -60,6 +60,36 @@ void Quotes::set_data(QDate d, float open, float close, float high, float low, q
     _points.emplaceBack(p);
 }
 
+void Quotes::set_data(QTime t, float open, float close, float high, float low, quint64 v)
+{
+    for (auto& p : _intraday)
+        if (t == p.time){
+            p.open = open;
+            p.close = close;
+            p.high = high;
+            p.low = low;
+            p.volume = v;
+            return;
+        }
+
+    // add new
+    QuotesTime p;
+    p.time = t;
+    p.open = open;
+    p.close = close;
+    p.high = high;
+    p.low = low;
+    p.volume = v;
+
+    _intraday.emplaceBack(p);
+}
+
+void Quotes::set_intraday(QDate date)
+{
+    _intraday.clear();
+    _last_intraday = date;
+}
+
 float Quotes::year_max() const
 {
     float max = 0;
@@ -89,7 +119,7 @@ float Quotes::year_min() const
 }
 
 float Quotes::current() const
-{
+{    
     float ret = 0.0;
     QDate date = QDate::fromJulianDay(0);
     for (auto& it : _points)
@@ -97,6 +127,16 @@ float Quotes::current() const
             ret = it.close;
             date = it.date;
         }
+    if (! _intraday.isEmpty() && _last_intraday > date){
+        QTime time = QTime(0, 0);
+        for (auto& it : _intraday){
+            if (it.time > time){
+                ret = it.close;
+                time = it.time;
+            }
+        }
+    }
+
     return ret;
 }
 

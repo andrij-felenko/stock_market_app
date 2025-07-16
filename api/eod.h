@@ -7,22 +7,34 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QUrlQuery>
+#include "api/api.h"
 
-class EodApiClient : public QObject {
+namespace api { class Eod; }
+
+class api::Eod : public API {
     Q_OBJECT
-
 public:
-    explicit EodApiClient(QObject* parent = nullptr);
+    static Eod* instance();
+
     void set_api_key(const QString& key);
-    void fetch_ticker_data(const QString& ticker);
+
+    static void get_all_tag(QString exchange);
+    static void get_all_exchange_tag();
+
+    // void fetch_ticker_data(const QString& ticker);
 
 signals:
     void data_ready(const QJsonObject& data);
     void error_occurred(const QString& message);
 
 private:
-    QNetworkAccessManager m_manager;
-    QString m_api_key;
+    explicit Eod(QObject* parent = nullptr);
+
+    QString _api_key;
+
+    virtual bool _request(Request type, QString name, StringMap keys = {}) override;
+    virtual void _handler_answer(Request type, QByteArray data,
+                                 QString name, bool stream = false) override;
 };
 
 #endif

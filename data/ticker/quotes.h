@@ -21,7 +21,7 @@ struct data::ticker::QuotesDate {
 };
 
 struct data::ticker::QuotesTime {
-    QTime date;
+    QTime time;
     float open;
     float close;
     float high;
@@ -41,6 +41,8 @@ public:
 
     void recalculate();
     void set_data(QDate d, float open, float close, float high, float low, quint64  v);
+    void set_data(QTime t, float open, float close, float high, float low, quint64  v);
+    void set_intraday(QDate date);
 
     float year_max() const;
     float year_min() const;
@@ -51,6 +53,8 @@ signals:
     void pointsChanged();
 
 private:
+    QDate _last_intraday;
+    QVector <QuotesTime> _intraday;
     QVector <QuotesDate> _points;
     QVector <QObject*> _result;
 

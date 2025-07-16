@@ -19,7 +19,14 @@ void data::Ticker::save() const
 {
     QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir().mkpath(basePath);
-    QString filename = basePath + "/" + _identity->ticker() + ".tdsm";
+
+    QDir dir(basePath);
+    if (! dir.cd ("stocks")){
+        dir.mkdir("stocks");
+        dir.cd   ("stocks");
+    }
+
+    QString filename = basePath + "/stocks/" + _identity->ticker() + ".tdsm";
 
     QFile file(filename);
     qDebug() << "file" << file.fileName();

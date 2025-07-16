@@ -9,7 +9,7 @@ namespace api {
 
     enum class Request : uint8_t {
         Info,
-        Quote,
+        Quote, // current price, maybe inside today
         MetricAll,
         MetricPrice,
         MetricValuation,
@@ -17,8 +17,9 @@ namespace api {
         Earnings,
         Peers,
         Reported,
-        Candle,
+        Candle, // hostorical data for pricing
         Dividend,
+        Exchange,
 
         Tag,
         Text,

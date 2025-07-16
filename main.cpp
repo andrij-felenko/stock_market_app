@@ -1,6 +1,7 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 #include <QQuickStyle>
+#include <QIcon>
 
 #include "utilities/res_dir.h"
 #include "api/openai.h"
@@ -10,28 +11,34 @@
 #include "data/market.h"
 #include "api/alphavantage.h"
 #include "data/portfolio.h"
+#include "model/search_tag.h"
 
 #define qmlREGS qmlRegisterSingletonInstance
 
 int main(int argc, char** argv)
 {
     QGuiApplication app(argc, argv);
+    QQuickStyle::setStyle("Fusion");
+
     app.setOrganizationDomain("some.io");
     app.setOrganizationName("Andrij Felenko");
     app.setApplicationName("Stock manager");
+    app.setWindowIcon(QIcon(":/Stock/ui/images/bull-market.png"));
 
-    QQuickStyle::setStyle("Fusion");
 
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, [](){ QCoreApplication::exit(-1); },
                      Qt::QueuedConnection);
 
+    qmlREGS <model::SearchTag> ("StockCpp", 1, 0, "SearchTagCpp", model::SearchTag::instance());
+
     qmlREGS <data::Market>    ("StockCpp", 1, 0, "Market",       data::Market   ::instance());
     qmlREGS <data::Portfolio> ("StockCpp", 1, 0, "PortfolioCpp", data::Portfolio::instance());
 
-    qmlREGS <api::OpenAI>     ("StockCpp", 1, 0, "OpenAI",     api::OpenAI    ::instance());
-    qmlREGS <api::TwelveData> ("StockCpp", 1, 0, "TwelveData", api::TwelveData::instance());
+    qmlREGS <api::OpenAI>      ("StockCpp", 1, 0, "OpenAI",       api::OpenAI      ::instance());
+    qmlREGS <api::TwelveData>  ("StockCpp", 1, 0, "TwelveData",   api::TwelveData  ::instance());
+    qmlREGS <api::AlphaVantage>("StockCpp", 1, 0, "AlphaVantage", api::AlphaVantage::instance());
 
     // util::ResDir::list_qrc_files();
     engine.load("qrc:/Stock/main.qml");
@@ -67,8 +74,14 @@ int main(int argc, char** argv)
 
     // api::AlphaVantage::
     // api::AlphaVantage::daily_candle_by_tag("POLN.EU");
+    // api::AlphaVantage::update_info_by_tag("O");
+    // api::AlphaVantage::daily_candle_by_tag("MBG.DEX");
+    // api::AlphaVantage::today_candle_by_tag("MC");
 
-    // api::OpenAI::instance()->recheck_tag("nokia");
+    // api::OpenAI::instance()->recheck_tag("Vallourec");
+
+    // api::Eod::get_all_exchange_tag();
+    // model::SearchTag::instance();
 
     return app.exec();
 }

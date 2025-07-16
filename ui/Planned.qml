@@ -13,17 +13,39 @@ Column {
     TextField {
         id: searchField
         placeholderText: "Пошук акції..."
-        width: parent.width
+        width: _.width
         height: 80
-        onAccepted: {
-            if (searchField.text.toUpperCase().endsWith(".US")){
-                TwelveData.add_by_tag(searchField.text)
-            }
-            else {
-                //
-            }
+        // onAccepted: {
+        //     if (searchField.text.toUpperCase().endsWith(".US")){
+        //         // TwelveData.add_by_tag(searchField.text)
+        //     }
+        //     else {
+        //         //
+        //     }
 
-            searchField.text = ""
+        //     searchField.text = ""
+        // }
+
+        onTextChanged: {
+            // AlphaVantage.find_symbol(searchField.text)
+            // OpenAI.recheck_tag(searchField.text)
+            SearchTagCpp.find_by_part(searchField.text)
+        }
+    }
+
+    ListView {
+        width: parent.width
+        anchors.top: searchField.bottom
+        height: contentHeight
+        z: 2
+
+        model: SearchTagCpp
+
+        delegate: Button {
+            width: 500
+            height: 40
+            text:  symbol + " | " + title + " | " + region + " | " + currency
+            onClicked: TwelveData.add_by_tag(symbol)
         }
     }
 

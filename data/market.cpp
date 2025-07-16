@@ -36,8 +36,8 @@ std::optional <data::Ticker*> data::Market::find(QString tag)
         }
 
     qDebug() << "not found ticket" << tag;
-    for (auto* t : instance()->_tickers)
-        qDebug() << "...." << t->identity()->ticker();
+    // for (auto* t : instance()->_tickers)
+        // qDebug() << "...." << t->identity()->ticker();
 
     qDebug() << "find end";
     return std::nullopt;
@@ -102,6 +102,10 @@ void data::Market::load_from_local_data()
 {
     QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir dir(basePath);
+    if (! dir.cd ("stocks")){
+        dir.mkdir("stocks");
+        dir.cd   ("stocks");
+    }
     if (!dir.exists())
         return;
 

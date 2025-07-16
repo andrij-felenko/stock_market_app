@@ -91,6 +91,9 @@ set (src
     data/currency/name.cpp
     data/currency/name.h
 
+    model/search_tag.h
+    model/search_tag.cpp
+
     settings/network.cpp
     settings/network.h
 
@@ -124,4 +127,5 @@ qt_add_qml_module (stock_manager
         ui/images/briefcase.png
         ui/images/folder.png
         ui/images/browser.png
+        ui/images/bull-market.png
 )
