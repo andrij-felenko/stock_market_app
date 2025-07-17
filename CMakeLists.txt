@@ -126,15 +126,26 @@ qt_add_qml_module (stock_manager
         ui/Charts.qml
         ui/Market.qml
     RESOURCES
-        ui/images/presentation.png
-        ui/images/website.png
-        ui/images/briefcase.png
-        ui/images/folder.png
-        ui/images/browser.png
-        ui/images/bull-market.png
-        ui/images/star.png
-        ui/images/star_black.png
-        ui/images/star_black_border.png
-        ui/images/star_empty.png
-        ui/images/stock.png
+        rc/images/presentation.png
+        rc/images/website.png
+        rc/images/briefcase.png
+        rc/images/folder.png
+        rc/images/browser.png
+        rc/images/bull-market.png
+        rc/images/star.png
+        rc/images/star_black.png
+        rc/images/star_black_border.png
+        rc/images/star_empty.png
+        rc/images/stock.png
+        rc/tags/bond.edsm
+        rc/tags/common_stock.edsm
+        rc/tags/etc.edsm
+        rc/tags/etf.edsm
+        rc/tags/fund.edsm
+        rc/tags/index.edsm
+        rc/tags/mutual_fund.edsm
+        rc/tags/notes.edsm
+        rc/tags/preferred_stock.edsm
+        rc/tags/unit.edsm
+
 )

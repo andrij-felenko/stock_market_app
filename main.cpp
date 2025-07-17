@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     app.setOrganizationDomain("some.io");
     app.setOrganizationName("Andrij Felenko");
     app.setApplicationName("Stock manager");
-    app.setWindowIcon(QIcon(":/Stock/ui/images/bull-market.png"));
+    app.setWindowIcon(QIcon(":/Stock/rc/images/bull-market.png"));
 
 
     QQmlApplicationEngine engine;
