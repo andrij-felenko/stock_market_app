@@ -3,6 +3,8 @@
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 #include "api/finnhub.h"
+#include "api/alphavantage.h"
+#include "api/marketstack.h"
 #include <QTimer>
 
 enum MarketRoles {
@@ -14,6 +16,7 @@ enum MarketRoles {
     LogoRole,
     YearMin,
     YearMax,
+    Currency,
 };
 
 data::Market* data::Market::instance()
@@ -22,6 +25,27 @@ data::Market* data::Market::instance()
     if (_instance == nullptr){
         _instance = new Market(qApp);
         _instance->load_from_local_data();
+        int shift = 1;
+        for (int i = 0; i < _instance->_tickers.size(); i++){
+            if (_instance->_tickers[i]->identity()->title().isEmpty()){
+                QString str = _instance->_tickers[i]->identity()->ticker();
+                if (str.toUpper().right(3) == ".US"){
+                    QTimer::singleShot(shift * 5000, _instance, [str](){
+                        api::FinnHub::update_info_by_tag(str);
+                    });
+                }
+                else if (str.toUpper().right(3) == ".DE" || str.toUpper().right(2) == ".L" ||
+                         str.toUpper().right(3) == ".EU" || str.toUpper().right(3) == ".PA" ||
+                         str.toUpper().right(3) == ".BE" || str.toUpper().right(4) == ".DEX")
+                    continue;
+                else {
+                    QTimer::singleShot(shift * 5000, _instance, [str](){
+                        api::MarketStack::update_info_by_tag(str);
+                    });
+                }
+                shift++;
+            }
+        }
     }
     return _instance;
 }
@@ -29,6 +53,9 @@ data::Market* data::Market::instance()
 std::optional <data::Ticker*> data::Market::find(QString tag)
 {
     qDebug() << "find start";
+    if (tag.split(".").length() == 1)
+        tag += ".US";
+
     for (auto* t : instance()->_tickers)
         if (t->identity()->ticker().toUpper() == tag.toUpper()){
             qDebug() << "find ret t";
@@ -51,6 +78,9 @@ std::vector <data::Ticker*> data::Market::all()
 void data::Market::add(QString tag)
 {    
     qDebug() << "add start";
+    if (tag.split(".").length() == 1)
+        tag += ".US";
+
     Market* market = instance();
     qDebug() << "mm";
     if (market->find(tag).has_value()){
@@ -83,11 +113,12 @@ data::Market::Market(QObject* parent) : QAbstractListModel(parent)
     _timer = new QTimer(this);
 
     connect(_timer, &QTimer::timeout, this, [this]() {
-        int max = 5;
+        int max = 7;
         Market* market = Market::instance();
         for (int i = 0; i < market->_tickers.size(); i++){
             if (market->_tickers[i]->identity()->title().isEmpty()){
                 api::FinnHub::update_info_by_tag(market->_tickers[i]->identity()->ticker());
+                // api::AlphaVantage::update_info_by_tag(market->_tickers[i]->identity()->ticker());
                 max--;
 
                 if (max == 0) return;
@@ -95,7 +126,7 @@ data::Market::Market(QObject* parent) : QAbstractListModel(parent)
         }
     });
 
-    _timer->start(30'000);
+    // _timer->start(20'000);
 }
 
 void data::Market::load_from_local_data()
@@ -147,6 +178,7 @@ QVariant data::Market::data(const QModelIndex& index, int role) const
         case LogoRole:    return ticker->identity()->logo();
         case YearMin:     return ticker->quotes()->year_min();
         case YearMax:     return ticker->quotes()->year_max();
+        case Currency:    return ticker->identity()->currency_str();
         default:          return QVariant();
     }
 }
@@ -162,5 +194,6 @@ QHash<int, QByteArray> data::Market::roleNames() const
     roles[LogoRole]    = "logo";
     roles[YearMin]     = "year_min";
     roles[YearMax]     = "year_max";
+    roles[Currency]    = "currency";
     return roles;
 }

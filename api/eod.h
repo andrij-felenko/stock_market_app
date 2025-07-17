@@ -16,7 +16,7 @@ class api::Eod : public API {
 public:
     static Eod* instance();
 
-    void set_api_key(const QString& key);
+    // void set_api_key(const QString& key);
 
     static void get_all_tag(QString exchange);
     static void get_all_exchange_tag();
@@ -30,7 +30,7 @@ signals:
 private:
     explicit Eod(QObject* parent = nullptr);
 
-    QString _api_key;
+    // QString _api_key;
 
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
     virtual void _handler_answer(Request type, QByteArray data,

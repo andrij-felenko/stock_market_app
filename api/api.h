@@ -9,6 +9,7 @@
 #include <QUrlQuery>
 
 #include "reply.h"
+#include "settings/network.h" // IWYU pragma: keep
 
 namespace api {
     class API;

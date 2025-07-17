@@ -46,7 +46,7 @@ public:
 public slots:
     void set_currency(const currency::Tag& new_currency);
     void set_title(const QString& new_title);
-    void set_ticker(const QString& new_ticker);
+    void set_ticker(QString new_ticker);
     void set_descrip(const QString& new_descript);
     void set_sector(const QString& new_sector);
     void set_country(const QString& new_country);

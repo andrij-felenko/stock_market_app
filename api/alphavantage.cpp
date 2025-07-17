@@ -15,7 +15,7 @@
 api::AlphaVantage::AlphaVantage(QObject* parent) : API(parent)
 {
     // set_api_key("539EYFYAYCXFMWIL");
-    set_api_key("T6H9IGZ3PJA7PSYV");
+    // set_api_key("T6H9IGZ3PJA7PSYV");
 }
 
 api::AlphaVantage* api::AlphaVantage::instance()
@@ -27,7 +27,7 @@ api::AlphaVantage* api::AlphaVantage::instance()
     return _instance;
 }
 
-void api::AlphaVantage::set_api_key(const QString& key) { _api_key = key; }
+// void api::AlphaVantage::set_api_key(const QString& key) { _api_key = key; }
 
 void api::AlphaVantage::update_info_by_tag(QString tag)
 {
@@ -101,19 +101,19 @@ bool api::AlphaVantage::_request(Request type, QString name, StringMap keys)
             if (keys["func"] == "TIME_SERIES_INTRADAY")
                 query.addQueryItem("interval", "1min");
             query.addQueryItem("outputsize", "full");
-            query.addQueryItem("apikey", _api_key);
+            query.addQueryItem("apikey", settings::network()->key_av());
             break;
         }
         case api::Request::Dividend: {
             query.addQueryItem("function", "DIVIDENDS");
             query.addQueryItem("symbol", subname);
-            query.addQueryItem("apikey", _api_key);
+            query.addQueryItem("apikey", settings::network()->key_av());
             break;
         }
         case api::Request::Info: {
             query.addQueryItem("function", "OVERVIEW");
             query.addQueryItem("symbol", subname);
-            query.addQueryItem("apikey", _api_key);
+            query.addQueryItem("apikey", settings::network()->key_av());
             break;
         }
         case api::Request::Peers:    break;
@@ -123,7 +123,7 @@ bool api::AlphaVantage::_request(Request type, QString name, StringMap keys)
         case api::Request::Tag: {
             query.addQueryItem("function", "SYMBOL_SEARCH");
             query.addQueryItem("keywords", subname);
-            query.addQueryItem("apikey", _api_key);
+            query.addQueryItem("apikey", settings::network()->key_av());
             break;
         }
         default:;

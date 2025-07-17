@@ -10,7 +10,7 @@
 
 api::FinnHub::FinnHub(QObject* parent) : API(parent)
 {
-    set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
+    // set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
 }
 
 api::FinnHub* api::FinnHub::instance()
@@ -22,7 +22,7 @@ api::FinnHub* api::FinnHub::instance()
     return _instance;
 }
 
-void api::FinnHub::set_api_key(const QString& key) { _api_key = key; }
+// void api::FinnHub::set_api_key(const QString& key) { _api_key = key; }
 
 void api::FinnHub::update_info_by_tag(QString tag)
 {
@@ -58,9 +58,12 @@ bool api::FinnHub::_request(Request type, QString name, StringMap keys)
     if (subname.right(3).toUpper() == ".US")
         subname.chop(3);
 
+    if (subname.isEmpty())
+        return false;
+
     QUrlQuery query;
     query.addQueryItem("symbol", subname);
-    query.addQueryItem("token", _api_key);
+    query.addQueryItem("token", settings::network()->key_fh());
 
     switch (type){
         case api::Request::MetricAll:       query.addQueryItem("metric", "all");       break;
@@ -125,6 +128,9 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
 
     data::Ticker* t = finded.value();
     QJsonObject obj = doc.object();
+    if (obj.isEmpty())
+        return;
+
     switch (type){
         case api::Request::Info: {
             // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());

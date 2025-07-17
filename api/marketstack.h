@@ -1,5 +1,5 @@
-#ifndef API_ALPHA_VANTAGE_H
-#define API_ALPHA_VANTAGE_H
+#ifndef API_MARKETSTACK_H
+#define API_MARKETSTACK_H
 
 #include <QObject>
 #include <QNetworkAccessManager>
@@ -9,30 +9,24 @@
 #include "api/api.h"
 #include "reply.h"
 
-namespace api { class AlphaVantage; }
+namespace api { class MarketStack; }
 
-class api::AlphaVantage : public API {
+class api::MarketStack : public API {
     Q_OBJECT
 public:
-    static AlphaVantage* instance();
+    static MarketStack* instance();
 
     static void update_info_by_tag(QString tag);
-    static void daily_candle_by_tag(QString tag);
-    static void today_candle_by_tag(QString tag);
-    static void find_tag(QString str);
-
-signals:
-    void error_occurred(const QString& message);
-
-public slots:
-    void find_symbol(QString str);
+    static void update_quotes_by_tag(QStringList tags);
 
 private:
-    explicit AlphaVantage(QObject* parent = nullptr);
+    explicit MarketStack(QObject* parent = nullptr);
+
+    // QString _api_key;
 
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
     virtual void _handler_answer(Request type, QByteArray data,
                                  QString name, bool stream = false) override;
 };
 
-#endif
+#endif // API_MARKETSTACK_H

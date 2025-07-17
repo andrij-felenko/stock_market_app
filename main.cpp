@@ -3,15 +3,17 @@
 #include <QQuickStyle>
 #include <QIcon>
 
-#include "utilities/res_dir.h"
+// #include "utilities/res_dir.h"
 #include "api/openai.h"
 #include "api/eod.h"
 #include "api/finnhub.h"
 #include "api/twelvedata.h"
 #include "data/market.h"
 #include "api/alphavantage.h"
+#include "api/marketstack.h"
 #include "data/portfolio.h"
 #include "model/search_tag.h"
+#include "settings/network.h"
 
 #define qmlREGS qmlRegisterSingletonInstance
 
@@ -37,8 +39,13 @@ int main(int argc, char** argv)
     qmlREGS <data::Portfolio> ("StockCpp", 1, 0, "PortfolioCpp", data::Portfolio::instance());
 
     qmlREGS <api::OpenAI>      ("StockCpp", 1, 0, "OpenAI",       api::OpenAI      ::instance());
+    qmlREGS <api::Eod>         ("StockCpp", 1, 0, "EOD",          api::Eod         ::instance());
+    qmlREGS <api::FinnHub>     ("StockCpp", 1, 0, "FinnHub",      api::FinnHub     ::instance());
     qmlREGS <api::TwelveData>  ("StockCpp", 1, 0, "TwelveData",   api::TwelveData  ::instance());
+    qmlREGS <api::MarketStack> ("StockCpp", 1, 0, "MarketStack",  api::MarketStack ::instance());
     qmlREGS <api::AlphaVantage>("StockCpp", 1, 0, "AlphaVantage", api::AlphaVantage::instance());
+
+    qmlREGS <settings::Network>("StockCpp", 1, 0, "SeetingsNetwork", settings::network());
 
     // util::ResDir::list_qrc_files();
     engine.load("qrc:/Stock/main.qml");
@@ -82,6 +89,9 @@ int main(int argc, char** argv)
 
     // api::Eod::get_all_exchange_tag();
     // model::SearchTag::instance();
+    // api::MarketStack::instance()->update_quotes_by_tag({ "RUI.PA", "0JOP.L", "0NBX.L",
+    //                                                      "COLO-B.CO", "WDS", "VOW3.DE",
+    //                                                      "TITC.SA", "ULVR.L", "NHY.OL" });
 
     return app.exec();
 }

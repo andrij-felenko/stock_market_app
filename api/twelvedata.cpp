@@ -11,7 +11,7 @@
 
 api::TwelveData::TwelveData(QObject* parent) : API(parent)
 {
-    set_api_key("f9b33ba1139a4b5e8c0572bcd1e11258");
+    // set_api_key("f9b33ba1139a4b5e8c0572bcd1e11258");
 }
 
 api::TwelveData* api::TwelveData::instance()
@@ -23,9 +23,9 @@ api::TwelveData* api::TwelveData::instance()
     return _instance;
 }
 
-void api::TwelveData::set_api_key(const QString& key) {
-    m_api_key = key;
-}
+// void api::TwelveData::set_api_key(const QString& key) {
+    // m_api_key = key;
+// }
 
 bool api::TwelveData::_request(Request type, QString name, StringMap keys)
 {
@@ -51,7 +51,7 @@ bool api::TwelveData::_request(Request type, QString name, StringMap keys)
             query.addQueryItem("interval", keys["interval"]);
             query.addQueryItem("start_date", keys["start_date"]);
             query.addQueryItem("end_date", keys["end_date"]);
-            query.addQueryItem("apikey", m_api_key);
+            query.addQueryItem("apikey", settings::network()->key_td());
             break;
         default:
             return false;

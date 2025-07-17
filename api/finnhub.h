@@ -16,7 +16,7 @@ class api::FinnHub : public API {
 public:
     static FinnHub* instance();
 
-    void set_api_key(const QString& key);
+    // void set_api_key(const QString& key);
 
     static void update_info_by_tag(QString tag);
 
@@ -26,7 +26,7 @@ signals:
 private:
     explicit FinnHub(QObject* parent = nullptr);
 
-    QString _api_key;
+    // QString _api_key;
 
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
     virtual void _handler_answer(Request type, QByteArray data,

@@ -6,7 +6,7 @@
 
 api::Eod::Eod(QObject* parent) : API(parent)
 {
-    set_api_key("683ebb8bc59b60.11043967");
+    // set_api_key("683ebb8bc59b60.11043967");
 }
 
 api::Eod* api::Eod::instance()
@@ -18,7 +18,7 @@ api::Eod* api::Eod::instance()
     return _instance;
 }
 
-void api::Eod::set_api_key(const QString& key) { _api_key = key; }
+// void api::Eod::set_api_key(const QString& key) { _api_key = key; }
 
 void api::Eod::get_all_tag(QString exchange)
 {
@@ -143,7 +143,7 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
 
     switch (type){
         case api::Request::Exchange: {
-            query.addQueryItem("api_token", _api_key);
+            query.addQueryItem("api_token", settings::network()->key_eod());
             query.addQueryItem("fmt", "json");
             break;
         }

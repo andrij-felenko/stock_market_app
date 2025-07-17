@@ -16,7 +16,7 @@ class api::TwelveData : public API {
 public:
     static TwelveData* instance();
 
-    void set_api_key(const QString& key);
+    // void set_api_key(const QString& key);
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
 
     static void update_by_tag(QString tag);
@@ -31,7 +31,7 @@ private:
     explicit TwelveData(QObject* parent = nullptr);
 
     QNetworkAccessManager m_manager;
-    QString m_api_key;
+    // QString m_api_key;
     QNetworkReply* m_reply = nullptr;
 
     virtual void _handler_answer(Request type, QByteArray data,

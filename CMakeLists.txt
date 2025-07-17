@@ -56,6 +56,9 @@ set (src
     api/reply.h
     api/twelvedata.cpp
     api/twelvedata.h
+    api/marketstack.cpp
+    api/marketstack.h
+
 
     chart/quote.cpp
     chart/quote.h
@@ -128,4 +131,8 @@ qt_add_qml_module (stock_manager
         ui/images/folder.png
         ui/images/browser.png
         ui/images/bull-market.png
+        ui/images/star.png
+        ui/images/star_black.png
+        ui/images/star_black_border.png
+        ui/images/star_empty.png
 )

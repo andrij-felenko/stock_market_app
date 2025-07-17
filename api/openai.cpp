@@ -16,12 +16,12 @@ api::OpenAI::OpenAI(QObject* parent)
     : API(parent),
       _model("gpt-4.1-nano")
 {
-    set_api_key("sk-proj-vccDzzJrmHvKungJmFIz_U5X_yZI3wvadiKedhBomYzXUNv"
-                "4XVU7nP4l84VqJZ9TlMeVhQLmLXT3BlbkFJ21RmjsV5oOpor1XvYbNa"
-                "c2aJjNBNoz-S7SF8C84Lx4fqZHxEODILJk6bo8PyzBPCfXjDuQcJQA");
+    // set_api_key("sk-proj-vccDzzJrmHvKungJmFIz_U5X_yZI3wvadiKedhBomYzXUNv"
+    //             "4XVU7nP4l84VqJZ9TlMeVhQLmLXT3BlbkFJ21RmjsV5oOpor1XvYbNa"
+    //             "c2aJjNBNoz-S7SF8C84Lx4fqZHxEODILJk6bo8PyzBPCfXjDuQcJQA");
 }
 
-void api::OpenAI::set_api_key(const QString& key) { _api_key = key; }
+// void api::OpenAI::set_api_key(const QString& key) { _api_key = key; }
 
 void api::OpenAI::set_model(QString new_model) { _model = new_model; }
 
@@ -29,7 +29,7 @@ bool api::OpenAI::_request(Request type, QString text, StringMap keys) {
     QUrl url("https://api.openai.com/v1/chat/completions");
     QNetworkRequest request(url);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader("Authorization", "Bearer " + _api_key.toUtf8());
+    request.setRawHeader("Authorization", "Bearer " + settings::network()->key_oai().toUtf8());
 
     int max_chars = keys.value("max", "50").toInt();
     bool stream = keys.value("stream", "false") == "true";

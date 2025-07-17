@@ -17,8 +17,11 @@ void    Identity::set_title(const QString& new_title)
 }
 
 QString Identity::    ticker() const { return _ticker; }
-void    Identity::set_ticker(const QString& new_ticker)
+void    Identity::set_ticker(QString new_ticker)
 {
+    if (new_ticker.split(".").length() == 1)
+        new_ticker += ".US";
+
     if (_ticker == new_ticker)
         return;
     _ticker = new_ticker.toUpper();

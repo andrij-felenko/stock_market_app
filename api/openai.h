@@ -15,7 +15,7 @@ class api::OpenAI : public API {
 public:
     static OpenAI* instance();
 
-    void set_api_key(const QString& key);
+    // void set_api_key(const QString& key);
     void set_model(QString new_model);
 
 public slots:
@@ -27,7 +27,7 @@ signals:
 private:
     explicit OpenAI(QObject* parent = nullptr);
 
-    QString _api_key;
+    // QString _api_key;
     QString _model;
 
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
