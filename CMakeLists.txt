@@ -124,6 +124,7 @@ qt_add_qml_module (stock_manager
         ui/MarketFilter.qml
         ui/StockShort.qml
         ui/Charts.qml
+        ui/Market.qml
     RESOURCES
         ui/images/presentation.png
         ui/images/website.png
@@ -135,4 +136,5 @@ qt_add_qml_module (stock_manager
         ui/images/star_black.png
         ui/images/star_black_border.png
         ui/images/star_empty.png
+        ui/images/stock.png
 )

@@ -22,6 +22,10 @@ Item {
                 id: _fav
             }
 
+            Market {
+                id: _exch
+            }
+
             Portfolio {
                 id: _port
             }
@@ -90,31 +94,38 @@ Item {
         }
 
         MenuButton {
-            image_source: "qrc:/Stock/ui/images/briefcase.png"
-            button_text: "Portfolio"
+            image_source: "qrc:/Stock/ui/images/stock.png"
+            button_text: "Exchange"
             checked: _swipe.currentIndex == 1
             onClicked: _swipe.currentIndex = 1
         }
 
         MenuButton {
-            image_source: "qrc:/Stock/ui/images/presentation.png"
-            button_text: "Charts"
+            image_source: "qrc:/Stock/ui/images/briefcase.png"
+            button_text: "Portfolio"
             checked: _swipe.currentIndex == 2
             onClicked: _swipe.currentIndex = 2
         }
 
         MenuButton {
-            image_source: "qrc:/Stock/ui/images/browser.png"
-            button_text: "Planned"
+            image_source: "qrc:/Stock/ui/images/presentation.png"
+            button_text: "Charts"
             checked: _swipe.currentIndex == 3
             onClicked: _swipe.currentIndex = 3
         }
 
         MenuButton {
-            image_source: "qrc:/Stock/ui/images/website.png"
-            button_text: "Settings"
+            image_source: "qrc:/Stock/ui/images/browser.png"
+            button_text: "Planned"
             checked: _swipe.currentIndex == 4
             onClicked: _swipe.currentIndex = 4
+        }
+
+        MenuButton {
+            image_source: "qrc:/Stock/ui/images/website.png"
+            button_text: "Settings"
+            checked: _swipe.currentIndex == 5
+            onClicked: _swipe.currentIndex = 5
         }
     }
 }

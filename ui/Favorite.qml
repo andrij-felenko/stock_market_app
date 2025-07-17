@@ -23,7 +23,7 @@ Item {
             property int columnCount: Math.max(1, Math.floor(width / 320))
 
             width: scroll_view.width - scroll_view.padding * 2
-            model: Market
+            model: MarketCpp
             cellWidth: width / columnCount
 
             delegate: StockShort {
