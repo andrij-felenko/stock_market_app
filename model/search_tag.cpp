@@ -145,15 +145,32 @@ void model::SearchTag::find_by_part(QString str)
     endInsertRows();
 }
 
+
+QMap <QString, QString> edsm_map = {
+    { "common_stock", "Common Stock" },
+    { "etf", "ETF" },
+    { "fund", "FUND" },
+    { "mutual_fund", "Mutual Fund" },
+    { "preferred_stock", "Preferred Stock" },
+    { "unit", "Unit" },
+    { "notes", "Notes" },
+    { "bond", "BOND" },
+    { "etc", "ETC" },
+    { "index", "INDEX" },
+};
+
 // edsm - exchange data stock manager
 void model::SearchTag::load()
 {
     _data.clear();
 
-    std::function load_as = [this](QString title, QString type){
-        QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-        basePath += "/tags/";
-        QString filename = basePath + "/" + title + ".edsm";
+    QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    basePath += "/tags/";
+
+    std::function load_as = [this](QString title, QString type, QString path){
+        // QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+        // basePath += "/tags/";
+        QString filename = path + "/" + title + ".edsm";
 
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
@@ -176,16 +193,10 @@ void model::SearchTag::load()
         qDebug() << "SearchTag load" << size << _data.size();
     };
 
-    load_as("common_stock", "Common Stock");
-    load_as("etf", "ETF");
-    load_as("fund", "FUND");
-    load_as("mutual_fund", "Mutual Fund");
-    load_as("preferred_stock", "Preferred Stock");
-    load_as("unit", "Unit");
-    load_as("notes", "Notes");
-    load_as("bond", "BOND");
-    load_as("etc", "ETC");
-    load_as("index", "INDEX");
+    for (auto it = edsm_map.begin(); it != edsm_map.end(); ++it){
+        load_as(it.key(), it.value(), basePath);
+        load_as(it.key(), it.value(), ":/Stock/rc/tags/");
+    }
 
     qDebug() << "SEARCH TAGE ALL DATA SIZE" << _data.size();
 }
@@ -228,14 +239,6 @@ void model::SearchTag::save()
             qDebug() << it.type << "ffffffffffffffffffffffffffffffffff";
         }
 
-    save_as("common_stock", "Common Stock");
-    save_as("etf", "ETF");
-    save_as("fund", "FUND");
-    save_as("mutual_fund", "Mutual Fund");
-    save_as("preferred_stock", "Preferred Stock");
-    save_as("unit", "Unit");
-    save_as("notes", "Notes");
-    save_as("bond", "BOND");
-    save_as("etc", "ETC");
-    save_as("index", "INDEX");
+    for (auto it = edsm_map.begin(); it != edsm_map.end(); ++it)
+        save_as(it.key(), it.value());
 }
