@@ -20,7 +20,7 @@ data::Portfolio* data::Portfolio::instance()
     if (_instance == nullptr){
         _instance = new Portfolio(qApp);
         qDebug() << "df";
-        // _instance->load();
+        _instance->load();
         qDebug() << "df2";
     }
     return _instance;

@@ -29,6 +29,7 @@ Column {
         onTextChanged: {
             // AlphaVantage.find_symbol(searchField.text)
             // OpenAI.recheck_tag(searchField.text)
+            console.log("fff", searchField.text)
             SearchTagCpp.find_by_part(searchField.text)
         }
     }

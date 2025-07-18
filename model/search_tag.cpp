@@ -104,6 +104,7 @@ void model::SearchTag::add_data(QString symbol, QString name,
 
 void model::SearchTag::find_by_part(QString str)
 {
+    qDebug() << "find by part" << str;
     clear();
     if (str.isEmpty())
         return;
@@ -195,7 +196,7 @@ void model::SearchTag::load()
 
     for (auto it = edsm_map.begin(); it != edsm_map.end(); ++it){
         load_as(it.key(), it.value(), basePath);
-        load_as(it.key(), it.value(), ":/Stock/rc/tags/");
+        load_as(it.key(), it.value(), ":/rc/tags/");
     }
 
     qDebug() << "SEARCH TAGE ALL DATA SIZE" << _data.size();

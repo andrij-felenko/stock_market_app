@@ -26,26 +26,26 @@ data::Market* data::Market::instance()
         _instance = new Market(qApp);
         _instance->load_from_local_data();
         int shift = 1;
-        // for (int i = 0; i < _instance->_tickers.size(); i++){
-        //     if (_instance->_tickers[i]->identity()->title().isEmpty()){
-        //         QString str = _instance->_tickers[i]->identity()->ticker();
-        //         if (str.toUpper().right(3) == ".US"){
-        //             QTimer::singleShot(shift * 5000, _instance, [str](){
-        //                 api::FinnHub::update_info_by_tag(str);
-        //             });
-        //         }
-        //         else if (str.toUpper().right(3) == ".DE" || str.toUpper().right(2) == ".L" ||
-        //                  str.toUpper().right(3) == ".EU" || str.toUpper().right(3) == ".PA" ||
-        //                  str.toUpper().right(3) == ".BE" || str.toUpper().right(4) == ".DEX")
-        //             continue;
-        //         else {
-        //             QTimer::singleShot(shift * 5000, _instance, [str](){
-        //                 api::MarketStack::update_info_by_tag(str);
-        //             });
-        //         }
-        //         shift++;
-        //     }
-        // }
+        for (int i = 0; i < _instance->_tickers.size(); i++){
+            if (_instance->_tickers[i]->identity()->title().isEmpty()){
+                QString str = _instance->_tickers[i]->identity()->ticker();
+                if (str.toUpper().right(3) == ".US"){
+                    QTimer::singleShot(shift * 5000, _instance, [str](){
+                        api::FinnHub::update_info_by_tag(str);
+                    });
+                }
+                else if (str.toUpper().right(3) == ".DE" || str.toUpper().right(2) == ".L" ||
+                         str.toUpper().right(3) == ".EU" || str.toUpper().right(3) == ".PA" ||
+                         str.toUpper().right(3) == ".BE" || str.toUpper().right(4) == ".DEX")
+                    continue;
+                else {
+                    QTimer::singleShot(shift * 5000, _instance, [str](){
+                        api::MarketStack::update_info_by_tag(str);
+                    });
+                }
+                shift++;
+            }
+        }
     }
     return _instance;
 }
@@ -117,7 +117,7 @@ data::Market::Market(QObject* parent) : QAbstractListModel(parent)
         Market* market = Market::instance();
         for (int i = 0; i < market->_tickers.size(); i++){
             if (market->_tickers[i]->identity()->title().isEmpty()){
-                // api::FinnHub::update_info_by_tag(market->_tickers[i]->identity()->ticker());
+                api::FinnHub::update_info_by_tag(market->_tickers[i]->identity()->ticker());
                 // api::AlphaVantage::update_info_by_tag(market->_tickers[i]->identity()->ticker());
                 max--;
 
