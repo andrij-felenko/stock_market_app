@@ -103,7 +103,7 @@ qt_add_executable(stock_manager ${src})
 target_link_libraries (stock_manager PUBLIC ${Qt_libs})
 
 if(ANDROID)
-    include(${CMAKE_SOURCE_DIR}/android_openssl-master/android_openssl.cmake)
+    include(${CMAKE_SOURCE_DIR}/android_openssl/android_openssl.cmake)
 
     set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android")
     add_android_openssl_libraries(stock_manager)
