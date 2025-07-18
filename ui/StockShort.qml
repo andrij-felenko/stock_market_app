@@ -15,7 +15,7 @@ Rectangle {
     // Right section (static fields)
     Column {
         id: _right
-        width: 120
+        width: 80
         spacing: 6
         anchors.top: parent.top
         anchors.bottom: _red_green.top
@@ -71,16 +71,33 @@ Rectangle {
         clip: true
     }
 
-    Text {
+    Item {
         anchors.left: _logo.right
         anchors.right: _right.left
         anchors.top: _logo.top
         anchors.bottom: _logo.bottom
         anchors.leftMargin: 4
-        text: title
-        color: "white"
-        font.pointSize: 12
-        verticalAlignment: Text.AlignVCenter
+
+        Text {
+            id: _title_item
+            anchors.fill: parent
+            text: title
+            color: "white"
+            font.pointSize: 12
+            verticalAlignment: Text.AlignVCenter
+            clip: true
+            elide: Text.ElideRight
+            renderType: Text.NativeRendering
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+
+            ToolTip.visible: containsMouse && _title_item.implicitWidth >= parent.width
+            ToolTip.text: title
+            ToolTip.delay: 500
+        }
     }
 
     Image {

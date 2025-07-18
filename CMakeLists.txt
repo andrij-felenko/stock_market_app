@@ -15,12 +15,6 @@ set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../cpp/bin/app)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../cpp/bin/lib)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../cpp/bin/archive)
 
-# 👇 Ось це вказує на кастомну папку з AndroidManifest.xml
-if(ANDROID)
-    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android")
-endif()
-
-
 find_package (Qt6 REQUIRED COMPONENTS
     Core Network WebSockets
     Gui Widgets Svg
@@ -108,9 +102,20 @@ set (src
 qt_add_executable(stock_manager ${src})
 target_link_libraries (stock_manager PUBLIC ${Qt_libs})
 
+if(ANDROID)
+    include(${CMAKE_SOURCE_DIR}/android_openssl-master/android_openssl.cmake)
+
+    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_SOURCE_DIR}/android")
+    add_android_openssl_libraries(stock_manager)
+endif()
+
+qt_policy(SET QTP0001 NEW)
+qt_policy(SET QTP0004 NEW)
+set(QT_QML_GENERATE_QMLLS_INI ON)
+
 qt_add_qml_module (stock_manager
     URI Stock
-    VERSION 0.1
+    VERSION 1.0
     NAMESPACE ui
     SOURCES
     QML_FILES
@@ -125,7 +130,11 @@ qt_add_qml_module (stock_manager
         ui/StockShort.qml
         ui/Charts.qml
         ui/Market.qml
-    RESOURCES
+)
+
+qt_add_resources(stock_manager "rc_images"
+    PREFIX "/"
+    FILES
         rc/images/presentation.png
         rc/images/website.png
         rc/images/briefcase.png
@@ -137,6 +146,11 @@ qt_add_qml_module (stock_manager
         rc/images/star_black_border.png
         rc/images/star_empty.png
         rc/images/stock.png
+)
+
+qt_add_resources(stock_manager "rc_tags"
+    PREFIX "/"
+    FILES
         rc/tags/bond.edsm
         rc/tags/common_stock.edsm
         rc/tags/etc.edsm
@@ -147,5 +161,71 @@ qt_add_qml_module (stock_manager
         rc/tags/notes.edsm
         rc/tags/preferred_stock.edsm
         rc/tags/unit.edsm
+)
 
+qt_add_resources(stock_manager "rc_stocks"
+    PREFIX "/"
+    FILES
+        rc/stocks/C.US.tdsm
+        rc/stocks/CHCT.US.tdsm
+        rc/stocks/CMCL.US.tdsm
+        rc/stocks/COLO-B.CO.tdsm
+        rc/stocks/CVX.US.tdsm
+        rc/stocks/DELL.US.tdsm
+        rc/stocks/DOW.US.tdsm
+        rc/stocks/EBR.B.US.tdsm
+        rc/stocks/ET.US.tdsm
+        rc/stocks/FMC.US.tdsm
+        rc/stocks/gtn.us.tdsm
+        rc/stocks/GXI.DE.tdsm
+        rc/stocks/HPQ.US.tdsm
+        rc/stocks/IBM.US.tdsm
+        rc/stocks/INTC.US.tdsm
+        rc/stocks/LMT.US.tdsm
+        rc/stocks/LNVGY.US.tdsm
+        rc/stocks/MA.US.tdsm
+        rc/stocks/MBG.DEX.tdsm
+        rc/stocks/MCD.US.tdsm
+        rc/stocks/MCHP.US.tdsm
+        rc/stocks/MS.US.tdsm
+        rc/stocks/NHY.OL.tdsm
+        rc/stocks/NOC.US.tdsm
+        rc/stocks/NTOIF.US.tdsm
+        rc/stocks/O.tdsm
+        rc/stocks/O.US.tdsm
+        rc/stocks/OGN.US.tdsm
+        rc/stocks/OLED.US.tdsm
+        rc/stocks/PAA.US.tdsm
+        rc/stocks/PG.US.tdsm
+        rc/stocks/PINE.US.tdsm
+        rc/stocks/POLN.EU.tdsm
+        rc/stocks/QCOM.US.tdsm
+        rc/stocks/RHM.DE.tdsm
+        rc/stocks/RIO1.DE.tdsm
+        rc/stocks/RITM.US.tdsm
+        rc/stocks/RNECY.US.tdsm
+        rc/stocks/RNO.PA.tdsm
+        rc/stocks/RPG.US.tdsm
+        rc/stocks/RUI.PA.tdsm
+        rc/stocks/SAN.US.tdsm
+        rc/stocks/SRG.US.tdsm
+        rc/stocks/TROX.US.tdsm
+        rc/stocks/TSQ.US.tdsm
+        rc/stocks/ULVR.L.tdsm
+        rc/stocks/V.US.tdsm
+        rc/stocks/VOW3.BE.tdsm
+        rc/stocks/VOW3.DE.tdsm
+        rc/stocks/WDS.US.tdsm
+        rc/stocks/WPC.US.tdsm
+        rc/stocks/XRX.US.tdsm
+        rc/stocks/0JOP.L.tdsm
+        rc/stocks/0NBX.L.tdsm
+        rc/stocks/AAPL.US.tdsm
+        rc/stocks/AES.US.tdsm
+        rc/stocks/AGNC.US.tdsm
+        rc/stocks/AM.US.tdsm
+        rc/stocks/ANDE.US.tdsm
+        rc/stocks/APAM.MC.tdsm
+        rc/stocks/BBZA.DE.tdsm
+        rc/stocks/BWMX.US.tdsm
 )

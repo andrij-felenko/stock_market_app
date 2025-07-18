@@ -2,8 +2,9 @@
 #include <QtQml/QQmlApplicationEngine>
 #include <QQuickStyle>
 #include <QIcon>
+#include <QtQuick/QQuickWindow>
 
-// #include "utilities/res_dir.h"
+#include "utilities/res_dir.h"
 #include "api/openai.h"
 #include "api/eod.h"
 #include "api/finnhub.h"
@@ -14,6 +15,7 @@
 #include "data/portfolio.h"
 #include "model/search_tag.h"
 #include "settings/network.h"
+#include <QSslSocket>
 
 #define qmlREGS qmlRegisterSingletonInstance
 
@@ -25,7 +27,7 @@ int main(int argc, char** argv)
     app.setOrganizationDomain("some.io");
     app.setOrganizationName("Andrij Felenko");
     app.setApplicationName("Stock manager");
-    app.setWindowIcon(QIcon(":/Stock/rc/images/bull-market.png"));
+    app.setWindowIcon(QIcon(":/rc/images/bull-market.png"));
 
 
     QQmlApplicationEngine engine;
@@ -47,8 +49,13 @@ int main(int argc, char** argv)
 
     qmlREGS <settings::Network>("StockCpp", 1, 0, "SeetingsNetwork", settings::network());
 
-    // util::ResDir::list_qrc_files();
-    engine.load("qrc:/Stock/main.qml");
+    qDebug() << "Device supports OpenSSL: " << QSslSocket::supportsSsl();
+    qDebug() << "Supports SSL: " << QSslSocket::supportsSsl();
+    qDebug() << "Build uses: " << QSslSocket::sslLibraryBuildVersionString();
+    qDebug() << "Runtime uses: " << QSslSocket::sslLibraryVersionString();
+
+    engine.load("qrc:/qt/qml/Stock/main.qml");
+    util::ResDir::list_qrc_files();
 
     return app.exec();
 }
