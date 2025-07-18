@@ -33,6 +33,7 @@ Makefile*
 *.prl
 build/Android*
 build/Desktop*
+.qmlls.ini
 
 # Qt unit tests
 target_wrapper.*
