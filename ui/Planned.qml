@@ -45,7 +45,7 @@ Column {
         delegate: Button {
             width: 500
             height: 40
-            text:  symbol + " | " + title + " | " + region + " | " + currency
+            text:  symbol + " | " + title + " | " + region + " | " + currency + " | " + type + " | " + exchange
             onClicked: TwelveData.add_by_tag(symbol)
         }
     }

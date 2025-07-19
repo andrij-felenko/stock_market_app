@@ -14,6 +14,7 @@
 #include "api/marketstack.h"
 #include "data/portfolio.h"
 #include "model/search_tag.h"
+#include "api/figi.h"
 #include "settings/network.h"
 #include <QSslSocket>
 
@@ -27,7 +28,7 @@ int main(int argc, char** argv)
     app.setOrganizationDomain("some.io");
     app.setOrganizationName("Andrij Felenko");
     app.setApplicationName("Stock manager");
-    app.setWindowIcon(QIcon(":/rc/images/bull-market.png"));
+    app.setWindowIcon(QIcon(":/rc/images/Stock_app_logo2.png"));
 
 
     QQmlApplicationEngine engine;
@@ -55,7 +56,10 @@ int main(int argc, char** argv)
     qDebug() << "Runtime uses: " << QSslSocket::sslLibraryVersionString();
 
     engine.load("qrc:/qt/qml/Stock/main.qml");
-    util::ResDir::list_qrc_files();
+    // util::ResDir::list_qrc_files();
+
+    // api::Figi::instance()->update_info_by_tag("VOW3.DE");
+
 
     return app.exec();
 }

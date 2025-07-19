@@ -36,16 +36,12 @@ set (src
     api/alphavantage.h
     api/eod.cpp
     api/eod.h
+    api/figi.cpp
+    api/figi.h
     api/finnhub.cpp
     api/finnhub.h
-    # api/tradernet.cpp
-    # api/tradernet.h
-    # api/ibkr.cpp
-    # api/ibkr.h
     api/openai.cpp
     api/openai.h
-    # api/yahoo.cpp
-    # api/yahoo.h
     api/reply.cpp
     api/reply.h
     api/twelvedata.cpp
@@ -146,6 +142,8 @@ qt_add_resources(stock_manager "rc_images"
         rc/images/star_black_border.png
         rc/images/star_empty.png
         rc/images/stock.png
+        rc/images/Stock_app_logo.png
+        rc/images/Stock_app_logo2.png
 )
 
 qt_add_resources(stock_manager "rc_tags"

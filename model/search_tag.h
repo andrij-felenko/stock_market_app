@@ -42,9 +42,14 @@ private:
         QString currency;
         QString exchange;
     };
+    using MatchesList = std::vector <Matches>;
 
-    std::vector <Matches> _list;
-    std::vector <Matches> _data;
+    MatchesList _list;
+    MatchesList _data;
+
+    void reorginize();
+    MatchesList _find(const MatchesList& list, Matches m);
+    MatchesList _find(const MatchesList& list, QString str, QStringList exch = {});
 };
 
 #endif // MODEL_SEARCH_TAG_H

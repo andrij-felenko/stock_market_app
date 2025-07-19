@@ -118,7 +118,7 @@ data::Market::Market(QObject* parent) : QAbstractListModel(parent)
         for (int i = 0; i < market->_tickers.size(); i++){
             if (market->_tickers[i]->identity()->title().isEmpty()){
                 api::FinnHub::update_info_by_tag(market->_tickers[i]->identity()->ticker());
-                // api::AlphaVantage::update_info_by_tag(market->_tickers[i]->identity()->ticker());
+                api::AlphaVantage::update_info_by_tag(market->_tickers[i]->identity()->ticker());
                 max--;
 
                 if (max == 0) return;
