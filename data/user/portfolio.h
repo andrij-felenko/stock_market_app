@@ -8,6 +8,7 @@
 #include <QtCore/QTimer>
 
 #include "stock.h"
+#include "favorite.h"
 
 namespace data { class Portfolio; }
 
@@ -20,12 +21,6 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
-
-    void save() const;
-    void load();
-
-signals:
-    void update_data();
 
 private:
     Portfolio(QObject* parent = nullptr);

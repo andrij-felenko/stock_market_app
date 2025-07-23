@@ -1,5 +1,5 @@
-#ifndef DATA_PORTFOLIO_H
-#define DATA_PORTFOLIO_H
+#ifndef DATA_FAVORITE_H
+#define DATA_FAVORITE_H
 
 #include <QtCore/QObject>
 #include <QtCore/QDate>
@@ -9,29 +9,35 @@
 
 #include "stock.h"
 
-namespace data { class Portfolio; }
+namespace data { class Favorite; }
 
-class data::Portfolio : public QAbstractListModel
+class data::Favorite : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    static Portfolio* instance();
+    static Favorite* instance();
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    void save() const;
-    void load();
+protected:
+    enum MarketBaseRoles {
+        TickerRole = Qt::UserRole + 1,
+        TitleRole,
+        CountryRole,
+        IndustryRole,
+        QuoteRole,
+        LogoRole,
+    };
 
-signals:
-    void update_data();
+    std::vector <Ticker*> _tickers;
 
 private:
-    Portfolio(QObject* parent = nullptr);
-    Portfolio& operator = (const Portfolio&) = delete;
+    Favorite(QObject* parent = nullptr);
+    Favorite& operator = (const Favorite&) = delete;
 
-    std::vector <Stock*> _stocks;
+    friend class Portfolio;
 };
 
-#endif // DATA_PORTFOLIO_H
+#endif

@@ -6,8 +6,8 @@
 #include <QTimer>
 #include "data/instrument.h"
 
-enum MarketRoles {
-    TickerRole = Qt::UserRole + 1,
+enum PortfolioRoles {
+    TickerRole = Qt::UserRole + 50,
     TitleRole,
     CountryRole,
     IndustryRole,
@@ -20,9 +20,6 @@ data::Portfolio* data::Portfolio::instance()
     static Portfolio* _instance = nullptr;
     if (_instance == nullptr){
         _instance = new Portfolio(qApp);
-        qDebug() << "df";
-        _instance->load();
-        qDebug() << "df2";
     }
     return _instance;
 }
@@ -33,51 +30,51 @@ data::Portfolio::Portfolio(QObject* parent) : QAbstractListModel(parent)
     _stocks.reserve(2000);
 }
 
-// pdsm - portfolio data stock manager
-void data::Portfolio::save() const
-{
-    QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir().mkpath(basePath);
-    QString filename = basePath + "/guest" + ".pdsm";
+// // pdsm - portfolio data stock manager
+// void data::Portfolio::save() const
+// {
+//     QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+//     QDir().mkpath(basePath);
+//     QString filename = basePath + "/guest" + ".pdsm";
 
-    QFile file(filename);
-    qDebug() << "file" << file.fileName();
-    if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly))
-        return;
+//     QFile file(filename);
+//     qDebug() << "file" << file.fileName();
+//     if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly))
+//         return;
 
-    QDataStream out(&file);
-    out.setVersion(QDataStream::Qt_6_0);
-    out << int32_t(_stocks.size());
-    for (const auto& it : _stocks)
-        out << *it;
+//     QDataStream out(&file);
+//     out.setVersion(QDataStream::Qt_6_0);
+//     out << int32_t(_stocks.size());
+//     for (const auto& it : _stocks)
+//         out << *it;
 
-    file.close();
-    qDebug() << "Save to: " << filename;
-}
+//     file.close();
+//     qDebug() << "Save to: " << filename;
+// }
 
-void data::Portfolio::load()
-{
-    QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QString filename = basePath + "/guest" + ".pdsm";
+// void data::Portfolio::load()
+// {
+//     QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+//     QString filename = basePath + "/guest" + ".pdsm";
 
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly))
-        return;
+//     QFile file(filename);
+//     if (!file.open(QIODevice::ReadOnly))
+//         return;
 
-    QDataStream in(&file);
-    in.setVersion(QDataStream::Qt_6_0);
-    int32_t size = 0;
-    in >> size;
-    if (size > 0){
-        beginInsertRows(QModelIndex(), rowCount(), rowCount() + size - 1);
-        for (int i = 0; i < size; i++){
-            Stock* s = new Stock(this);
-            in >> *s;
-        }
-        endInsertRows();
-    }
-    file.close();
-}
+//     QDataStream in(&file);
+//     in.setVersion(QDataStream::Qt_6_0);
+//     int32_t size = 0;
+//     in >> size;
+//     if (size > 0){
+//         beginInsertRows(QModelIndex(), rowCount(), rowCount() + size - 1);
+//         for (int i = 0; i < size; i++){
+//             Stock* s = new Stock(this);
+//             in >> *s;
+//         }
+//         endInsertRows();
+//     }
+//     file.close();
+// }
 
 int data::Portfolio::rowCount(const QModelIndex& parent) const
 {
