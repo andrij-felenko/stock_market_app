@@ -7,6 +7,7 @@
 #include <QtGui/QGuiApplication>
 
 #include "data/market.h"
+#include "data/instrument.h"
 
 api::FinnHub::FinnHub(QObject* parent) : API(parent)
 {
@@ -127,6 +128,7 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
     }
 
     data::Ticker* t = finded.value();
+    data::Instrument* in = t->instrument();
     QJsonObject obj = doc.object();
     if (obj.isEmpty())
         return;
@@ -134,15 +136,15 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
     switch (type){
         case api::Request::Info: {
             // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
-            t->identity()->set_title(obj.value("name").toString());
-            t->identity()->set_logo(obj.value("logo").toString());
-            t->identity()->set_country   (obj.value("country").toString());
-            t->identity()->set_industry  (obj.value("finnhubIndustry").toString());
-            t->identity()->set_exchange  (obj.value("exchange").toString());
-            t->valuation()->set_market_cap(obj.value("marketCapitalization").toDouble() * 1'000'000);
+            t->set_exchange(obj.value("exchange").toString());
+            in->identity()->set_title(obj.value("name").toString());
+            in->identity()->set_logo(obj.value("logo").toString());
+            in->identity()->set_country   (obj.value("country").toString());
+            in->identity()->set_industry  (obj.value("finnhubIndustry").toString());
+            in->valuation()->set_market_cap(obj.value("marketCapitalization").toDouble() * 1'000'000);
 
-            t->identity()->set_ipo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
-            t->identity()->set_url(obj.value("weburl").toString());
+            in->identity()->set_ipo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
+            in->identity()->set_url(obj.value("weburl").toString());
             t->save();
             // ticker->count_akcij = obj.value("sharedOutstanding").toDouble() * 1'000'000;
             break;

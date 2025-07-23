@@ -32,7 +32,7 @@ private:
 
     void load_from_local_data();
 
-    std::vector <Ticker*> _tickers;
+    std::vector <Instrument*> _instruments;
     QTimer* _timer;
 };
 

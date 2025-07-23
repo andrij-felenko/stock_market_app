@@ -8,7 +8,10 @@
 #include "ticker.h"
 #include "transaction.h"
 
-namespace data { class Stock; }
+namespace data {
+    class Stock;
+    class Instrument;
+}
 
 class data::Stock : public QObject
 {
@@ -24,6 +27,8 @@ public:
     float   count()  const;
     float   price()  const;
     float   value()  const;
+
+    data::Instrument* instrument() const;
 
 signals:
     void update_data();

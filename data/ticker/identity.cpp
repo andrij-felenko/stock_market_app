@@ -16,18 +16,6 @@ void    Identity::set_title(const QString& new_title)
     emit titleChanged(_title);
 }
 
-QString Identity::    ticker() const { return _ticker; }
-void    Identity::set_ticker(QString new_ticker)
-{
-    if (new_ticker.split(".").length() == 1)
-        new_ticker += ".US";
-
-    if (_ticker == new_ticker)
-        return;
-    _ticker = new_ticker.toUpper();
-    emit tickerChanged(_ticker);
-}
-
 QString Identity::    descript() const { return _descript; }
 void    Identity::set_descrip(const QString& new_descript)
 {
@@ -46,24 +34,6 @@ void    Identity::set_sector(const QString& new_sector)
     emit sectorChanged(_sector);
 }
 
-QString Identity::    country() const { return _country; }
-void    Identity::set_country(const QString& new_country)
-{
-    if (_country == new_country)
-        return;
-    _country = new_country;
-    emit countryChanged(_country);
-}
-
-QString Identity::    exchange() const { return _exchange; }
-void    Identity::set_exchange(const QString& new_exchange)
-{
-    if (_exchange == new_exchange)
-        return;
-    _exchange = new_exchange;
-    emit exchangeChanged(_exchange);
-}
-
 QString Identity::    industry() const { return _industry; }
 void    Identity::set_industry(const QString& new_industry)
 {
@@ -80,16 +50,6 @@ void    Identity::set_headquart(const QString& new_headquart)
         return;
     _headquart = new_headquart;
     emit headquartChanged(_headquart);
-}
-
-QString       Identity::currency_str() const {return currency::Name::to_full(currency()); }
-currency::Tag Identity::    currency() const { return _currency; }
-void          Identity::set_currency(const currency::Tag& new_currency)
-{
-    if (_currency == new_currency)
-        return;
-    _currency = new_currency;
-    emit currencyChanged(_currency);
 }
 
 QString Identity::    isin() const { return _isin; }
@@ -130,19 +90,16 @@ void Identity::set_url(const QUrl& new_url)
 
 namespace data::ticker {
     QDataStream& operator << (QDataStream& s, const Identity& i) {
-        s << i._currency  << i._title   << i._ticker   << i._descript
-          << i._sector    << i._country << i._exchange << i._industry
-          << i._headquart << i._isin    << i._ipo      << i._logo
-          << i._url;
+        s << i._title    << i._descript  << i._sector
+          << i._industry << i._headquart << i._isin
+          << i._ipo      << i._logo      << i._url;
         return s;
     }
 
     QDataStream& operator >> (QDataStream& s, Identity& i) {
-        s >> i._currency  >> i._title   >> i._ticker   >> i._descript
-          >> i._sector    >> i._country >> i._exchange >> i._industry
-          >> i._headquart >> i._isin    >> i._ipo      >> i._logo
-          >> i._url;
-        i.set_ticker(i._ticker.toUpper());
+        s >> i._title    >> i._descript  >> i._sector
+          >> i._industry >> i._headquart >> i._isin
+          >> i._ipo      >> i._logo      >> i._url;
         return s;
     }
 }

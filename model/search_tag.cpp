@@ -215,7 +215,7 @@ void model::SearchTag::load()
     }
 
     qDebug() << "SEARCH TAGE ALL DATA SIZE" << _data.size();
-    reorginize();
+    // reorginize();
 }
 
 void model::SearchTag::reorginize()
@@ -242,30 +242,46 @@ void model::SearchTag::reorginize()
         qDebug() << "data" << it.name;
     }
 
+    std::function erase_list = [&](std::vector <Matches> list){
+        std::erase_if(data, [&](const Matches& d) {
+            return std::any_of(list.begin(), list.end(),
+                               [&](const Matches& m) { return m.symbol == d.symbol; });
+        });
+    };
+
     // в циклі запустити пошук масиву спільного для компаній
     while (not data.empty()){
         // отримаємо список споріднених Matches
         std::vector <Matches> list = _find(data, data[0]);
 
-        if (list.size() == 41)
-            qDebug() << "==================================" << data[0].name;
+        if (list.empty())
+            list = { data[0] };
 
+        // коли отримаємо список і там тільки PINK BATS NMFQS OTCGREY то повністю видаляємо
         bool solo = false;
-        if (list.size() == 1)
-            solo = list[0].exchange == "PINK" || list[0].exchange == "BATS" || list[0].exchange == "OTCGREY" || list[0].exchange == "NMFQS";
+        if (list.size() == 1 && (list[0].exchange == "PINK" ||
+                                 list[0].exchange == "BATS" ||
+                                 list[0].exchange == "OTCGREY" ||
+                                 list[0].exchange == "NMFQS")){
+            erase_list(list);
+            continue;
+        }
+
+
+
 
         if (not solo)
            for (const auto& it : list)
                qDebug() << "______" << it.symbol << it.name << it.exchange;
 
+        // шукаємо головний тікер серед усіх
+
+
+
         // коли отримаємо результат то створюємо нову компанію і додаємо її на маркет
         // заповнюємо данні але виключаємо некоректні пункти типу PINK
         // видаляємо весь список щоб можна було далі почати цикл
-        std::erase_if(data, [&](const Matches& d) {
-            return std::any_of(list.begin(), list.end(), [&](const Matches& m) {
-                return m.symbol == d.symbol;
-            });
-        });
+        erase_list(list);
 
         if (not solo){
             qDebug() << data.size() << list.size();

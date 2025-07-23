@@ -4,6 +4,7 @@
 #include <QtCore/QStandardPaths>
 #include "api/finnhub.h"
 #include <QTimer>
+#include "data/instrument.h"
 
 enum MarketRoles {
     TickerRole = Qt::UserRole + 1,
@@ -91,12 +92,12 @@ QVariant data::Portfolio::data(const QModelIndex& index, int role) const
     Stock* stock = _stocks[index.row()];
 
     switch (role) {
-        case TickerRole:  return stock->ticker()->identity()->ticker();
-        case TitleRole:   return stock->ticker()->identity()->title();
-        case CountryRole: return stock->ticker()->identity()->country();
-        case IndustryRole:return stock->ticker()->identity()->industry();
+        case TickerRole:  return stock->ticker()->symbol();
         case QuoteRole:   return stock->ticker()->quotes()->current();
-        case LogoRole:    return stock->ticker()->identity()->logo();
+        case TitleRole:   return stock->instrument()->identity()->title();
+        case CountryRole: return stock->instrument()->identity()->country();
+        case IndustryRole:return stock->instrument()->identity()->industry();
+        case LogoRole:    return stock->instrument()->identity()->logo();
         default:          return QVariant();
     }
 }

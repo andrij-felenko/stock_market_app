@@ -1,75 +1,64 @@
 #include "ticker.h"
-#include <QtCore/QDir>
-#include <QtCore/QStandardPaths>
+#include "instrument.h"
 
+using namespace data;
 using namespace data::ticker;
 
-data::Ticker::Ticker(QObject* parent) : QObject(parent)
+data::Ticker::Ticker(bool primary, Instrument* parent) : QObject(parent), _primary(primary)
 {
     _quotes = new ticker::Quotes(this);
-    _dividend = new ticker::Dividend(this);
-    _identity = new ticker::Identity(this);
-    _stability = new ticker::Stability(this);
-    _valuation = new ticker::Valuation(this);
-    _profitability = new ticker::Profitability(this);
 }
 
-// tdsm - ticker data stock manager
-void data::Ticker::save() const
+void        Ticker::save()             { emit update_data(); }
+Quotes*     Ticker::quotes()     const { return _quotes; }
+Instrument* Ticker::instrument() const { return static_cast <Instrument*> (parent()); }
+
+QString       Ticker::currency_str() const {return currency::Name::to_full(currency()); }
+currency::Tag Ticker::    currency() const { return _currency; }
+void          Ticker::set_currency(const currency::Tag& new_currency)
 {
-    QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir().mkpath(basePath);
-
-    QDir dir(basePath);
-    if (! dir.cd ("stocks")){
-        dir.mkdir("stocks");
-        dir.cd   ("stocks");
-    }
-
-    QString filename = basePath + "/stocks/" + _identity->ticker() + ".tdsm";
-
-    QFile file(filename);
-    qDebug() << "file" << file.fileName();
-    if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly))
+    if (_currency == new_currency)
         return;
-
-    QDataStream out(&file);
-    out.setVersion(QDataStream::Qt_6_0);
-    out << *this;
-    file.close();
-    qDebug() << "Save to: " << filename;
+    _currency = new_currency;
+    emit currencyChanged(_currency);
 }
 
-void data::Ticker::load()
+QString Ticker::    country() const { return _country; }
+void    Ticker::set_country(const QString& new_country)
 {
-    QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QString filename = basePath + "/" + _identity->ticker() + ".tdsm";
-
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly))
+    if (_country == new_country)
         return;
-
-    QDataStream in(&file);
-    in.setVersion(QDataStream::Qt_6_0);
-    in >> *this;
-    file.close();
+    _country = new_country;
+    emit countryChanged(_country);
 }
 
-Quotes*        data::Ticker::quotes()        const { return _quotes; }
-Dividend*      data::Ticker::dividend()      const { return _dividend; }
-Identity*      data::Ticker::identity()      const { return _identity; }
-Stability*     data::Ticker::stability()     const { return _stability; }
-Valuation*     data::Ticker::valuation()     const { return _valuation; }
-Profitability* data::Ticker::profitability() const { return _profitability; }
+QString Ticker::    exchange() const { return _exchange; }
+void    Ticker::set_exchange(const QString& new_exchange)
+{
+    if (_exchange == new_exchange)
+        return;
+    _exchange = new_exchange;
+    emit exchangeChanged(_exchange);
+}
+
+QString Ticker::    symbol() const { return _symbol; }
+void    Ticker::set_symbol(QString new_symbol)
+{
+    if (new_symbol.split(".").length() == 1)
+        new_symbol += ".US";
+
+    if (_symbol == new_symbol)
+        return;
+    _symbol = new_symbol;
+    emit exchangeChanged(_symbol);
+}
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const Ticker& d) {
-        return s << *d._dividend << *d._identity  << *d._profitability
-                 << *d._quotes   << *d._stability << *d._valuation;
+        return s << *d._quotes << d._currency << d._country << d._exchange << d._symbol;
     }
 
     QDataStream& operator >> (QDataStream& s, Ticker& d) {
-        return s >> *d._dividend >> *d._identity  >> *d._profitability
-                 >> *d._quotes   >> *d._stability >> *d._valuation;
+        return s >> *d._quotes >> d._currency >> d._country >> d._exchange >> d._symbol;
     }
 }

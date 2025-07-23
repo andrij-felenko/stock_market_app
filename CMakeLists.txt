@@ -63,6 +63,9 @@ set (src
     data/portfolio.h
     data/transaction.cpp
     data/transaction.h
+    data/instrument.cpp
+    data/instrument.h
+
     data/ticker/quotes.cpp
     data/ticker/quotes.h
     data/ticker/stability.cpp
@@ -75,6 +78,7 @@ set (src
     data/ticker/identity.h
     data/ticker/profitability.cpp
     data/ticker/profitability.h
+
     data/currency.cpp
     data/currency.h
     data/currency/data.cpp

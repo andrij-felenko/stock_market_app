@@ -8,6 +8,7 @@
 #include <QJsonArray>
 
 #include "data/market.h"
+#include "data/instrument.h"
 
 api::MarketStack::MarketStack(QObject* parent) : API(parent)
 {
@@ -184,13 +185,14 @@ void api::MarketStack::_handler_answer(Request type, QByteArray data, QString na
                     break;
             }
             data::Ticker* t = finded.value();
-            t->identity()->set_title(root.value("name").toString());
-            t->identity()->set_ticker(root.value("symbol").toString());
-            t->identity()->set_sector(root.value("sector").toString());
-            t->identity()->set_industry(root.value("industry").toString());
-            t->identity()->set_isin(root.value("isin").toString());
-            t->identity()->set_exchange(root.value("stock_exchange").toObject().value("acronym").toString());
-            t->identity()->set_country(root.value("stock_exchange").toObject().value("country_code").toString());
+            data::Instrument* in = t->instrument();
+            t->set_symbol(root.value("symbol").toString());
+            t->set_exchange(root.value("stock_exchange").toObject().value("acronym").toString());
+            in->identity()->set_title(root.value("name").toString());
+            in->identity()->set_sector(root.value("sector").toString());
+            in->identity()->set_industry(root.value("industry").toString());
+            in->identity()->set_isin(root.value("isin").toString());
+            in->identity()->set_country(root.value("stock_exchange").toObject().value("country_code").toString());
 
             t->save();
             break;

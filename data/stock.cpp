@@ -2,6 +2,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 #include "market.h"
+#include "instrument.h"
 
 using namespace data;
 
@@ -15,9 +16,11 @@ float   Stock::count()  const { return _count;  }
 float   Stock::price()  const { return _price;  }
 float   Stock::value()  const { return _value;  }
 
+Instrument* Stock::instrument() const { return _ticker->instrument(); }
+
 namespace data {
     QDataStream& operator << (QDataStream& s, const Stock& d) {
-        s << d._count << d._price << d._value << d._ticker->identity()->ticker()
+        s << d._count << d._price << d._value << d.instrument()->primary_ticker()->symbol()
           << int(d._list.size());
         for (const auto& it : d._list)
             s << *it;

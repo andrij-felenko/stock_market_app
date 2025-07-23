@@ -9,6 +9,7 @@
 
 #include "data/market.h"
 #include "model/search_tag.h"
+#include "data/instrument.h"
 
 // https://www.alphavantage.co/documentation/
 
@@ -155,40 +156,43 @@ void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString n
     }
 
     data::Ticker* t = finded.value();
+    data::Instrument* in = t->instrument();
     QJsonObject obj = doc.object();
     switch (type){
     case api::Request::Info: {
-        t->identity()->set_title(obj.value("Name").toString());
-        t->identity()->set_descrip(obj.value("Description").toString());
-        t->identity()->set_exchange(obj.value("Exchange").toString());
-        t->identity()->set_country(obj.value("Country").toString());
-        t->identity()->set_sector(obj.value("Sector").toString());
-        t->identity()->set_industry(obj.value("Industry").toString());
-        t->identity()->set_headquart(obj.value("Address").toString());
-        t->identity()->set_url(obj.value("OfficialSite").toString());
-        t->identity()->set_ipo(QDate::fromString(obj.value("LatestQuarter").toString(), "yyyy-MM-dd"));
-        t->identity()->set_currency(currency::Name::to_enum(obj.value("Currency").toString()));
+        t->set_exchange(obj.value("Exchange").toString());
+        t->set_currency(currency::Name::to_enum(obj.value("Currency").toString()));
 
-        t->valuation()->set_market_cap(obj.value("MarketCapitalization").toDouble());
-        t->valuation()->set_eps(obj.value("EPS").toDouble());
-        t->valuation()->set_pe_ratio(obj.value("PERatio").toDouble());
-        t->valuation()->set_pb_ratio(obj.value("PriceToBookRatio").toDouble());
-        t->valuation()->set_book_value(obj.value("BookValue").toDouble());
-        t->valuation()->set_share_count(obj.value("SharesOutstanding").toDouble());
+        in->identity()->set_title(obj.value("Name").toString());
+        in->identity()->set_descrip(obj.value("Description").toString());
 
-        t->profitability()->set_roa(obj.value("ReturnOnAssetsTTM").toDouble());
-        t->profitability()->set_roe(obj.value("ReturnOnEquityTTM").toDouble());
-        t->profitability()->set_margin_gros(obj.value("GrossProfitTTM").toDouble() / obj.value("RevenueTTM").toDouble());
-        t->profitability()->set_margin_oper(obj.value("OperatingMarginTTM").toDouble());
-        t->profitability()->set_netincome(obj.value("ProfitMargin").toDouble());
+        in->identity()->set_country(obj.value("Country").toString());
+        in->identity()->set_sector(obj.value("Sector").toString());
+        in->identity()->set_industry(obj.value("Industry").toString());
+        in->identity()->set_headquart(obj.value("Address").toString());
+        in->identity()->set_url(obj.value("OfficialSite").toString());
+        in->identity()->set_ipo(QDate::fromString(obj.value("LatestQuarter").toString(), "yyyy-MM-dd"));
 
-        t->dividend()->set_yield(obj.value("DividendYield").toDouble());
-        t->dividend()->set_per_share(obj.value("DividendPerShare").toDouble());
-        t->dividend()->set_next_date(QDate::fromString(obj.value("DividendDate").toString(), "yyyy-MM-dd"));
-        t->dividend()->set_prev_date(QDate::fromString(obj.value("ExDividendDate").toString(), "yyyy-MM-dd"));
+        in->valuation()->set_market_cap(obj.value("MarketCapitalization").toDouble());
+        in->valuation()->set_eps(obj.value("EPS").toDouble());
+        in->valuation()->set_pe_ratio(obj.value("PERatio").toDouble());
+        in->valuation()->set_pb_ratio(obj.value("PriceToBookRatio").toDouble());
+        in->valuation()->set_book_value(obj.value("BookValue").toDouble());
+        in->valuation()->set_share_count(obj.value("SharesOutstanding").toDouble());
 
-        t->stability()->set_beta(obj.value("Beta").toDouble());
-        t->stability()->set_revenue(obj.value("RevenueTTM").toDouble());
+        in->profitability()->set_roa(obj.value("ReturnOnAssetsTTM").toDouble());
+        in->profitability()->set_roe(obj.value("ReturnOnEquityTTM").toDouble());
+        in->profitability()->set_margin_gros(obj.value("GrossProfitTTM").toDouble() / obj.value("RevenueTTM").toDouble());
+        in->profitability()->set_margin_oper(obj.value("OperatingMarginTTM").toDouble());
+        in->profitability()->set_netincome(obj.value("ProfitMargin").toDouble());
+
+        in->dividend()->set_yield(obj.value("DividendYield").toDouble());
+        in->dividend()->set_per_share(obj.value("DividendPerShare").toDouble());
+        in->dividend()->set_next_date(QDate::fromString(obj.value("DividendDate").toString(), "yyyy-MM-dd"));
+        in->dividend()->set_prev_date(QDate::fromString(obj.value("ExDividendDate").toString(), "yyyy-MM-dd"));
+
+        in->stability()->set_beta(obj.value("Beta").toDouble());
+        in->stability()->set_revenue(obj.value("RevenueTTM").toDouble());
 
         t->save();
         break;
@@ -255,9 +259,9 @@ void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString n
         QJsonArray array = root.value("data").toArray();
         for (const auto& it : std::as_const(array)){
             QJsonObject obj = it.toObject();
-            t->dividend()->set_history(QDate::fromString(obj.value("ex_dividend_date").toString(),
-                                                         "yyy-MM-dd"),
-                                       obj.value("amount").toDouble());
+            in->dividend()->set_history(QDate::fromString(obj.value("ex_dividend_date").toString(),
+                                                          "yyy-MM-dd"),
+                                        obj.value("amount").toDouble());
         }
         break;
     }

@@ -131,8 +131,39 @@ data::Market::Market(QObject* parent) : QAbstractListModel(parent)
 
 void data::Market::load_from_local_data()
 {
-    std::function load_from = [this](QString basePath){
-        QDir dir(basePath);
+    std::function load_base = [this](QString path){
+        QDir dir(path);
+        if (! dir.cd ("stocks")){
+            dir.mkdir("stocks");
+            dir.cd   ("stocks");
+        }
+        if (!dir.exists())
+            return;
+
+        QFile file(dir.filePath("ticker_base.tdsm"));
+        if (!file.open(QIODevice::ReadOnly))
+            return;
+
+        QDataStream in(&file);
+        in.setVersion(QDataStream::Qt_6_0);
+
+        // читаємо весь список і зберігаємо її в Маркет
+        int32_t size;
+        in >> size;
+
+        for (int i = 0; i < size; i++){
+            //
+        }
+
+        Market::add(QFileInfo(filename).completeBaseName());
+        if (auto t = Market::find(QFileInfo(filename).completeBaseName()); t.has_value())
+            in >> *t.value();
+
+        file.close();
+    };
+
+    std::function load_from = [this](QString path){
+        QDir dir(path);
         if (! dir.cd ("stocks")){
             dir.mkdir("stocks");
             dir.cd   ("stocks");
@@ -156,6 +187,7 @@ void data::Market::load_from_local_data()
             file.close();
         }
     };
+    load_base(":/rc/");
     load_from(":/rc/");
     load_from(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
