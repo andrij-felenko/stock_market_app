@@ -1,5 +1,5 @@
-#ifndef DATA_PORTFOLIO_H
-#define DATA_PORTFOLIO_H
+#ifndef MODEL_ASSET_LIST_H
+#define MODEL_ASSET_LIST_H
 
 #include <QtCore/QObject>
 #include <QtCore/QDate>
@@ -7,26 +7,25 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
 
-#include "stock.h"
-#include "favorite.h"
+#include "data/user/stock.h"
 
-namespace data { class Portfolio; }
+namespace model { class AssetList; }
 
-class data::Portfolio : public QAbstractListModel
+class model::AssetList : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    static Portfolio* instance();
+    static AssetList* instance();
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    Portfolio(QObject* parent = nullptr);
-    Portfolio& operator = (const Portfolio&) = delete;
+    AssetList(QObject* parent = nullptr);
+    AssetList& operator = (const AssetList&) = delete;
 
-    std::vector <Stock*> _stocks;
+    std::vector <data::Stock*> _assets;
 };
 
 #endif // DATA_PORTFOLIO_H

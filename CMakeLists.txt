@@ -49,7 +49,6 @@ set (src
     api/marketstack.cpp
     api/marketstack.h
 
-
     chart/quote.cpp
     chart/quote.h
 
@@ -79,10 +78,6 @@ set (src
     data/user/info.h
     data/user/stock.cpp
     data/user/stock.h
-    data/user/favorite.cpp
-    data/user/favorite.h
-    data/user/portfolio.cpp
-    data/user/portfolio.h
     data/user/transaction.cpp
     data/user/transaction.h
 
@@ -97,6 +92,10 @@ set (src
 
     model/search_tag.h
     model/search_tag.cpp
+    model/asset_list.cpp
+    model/asset_list.h
+    model/instrument_list.cpp
+    model/instrument_list.h
 
     settings/network.cpp
     settings/network.h

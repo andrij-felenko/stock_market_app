@@ -1,5 +1,5 @@
-#ifndef DATA_FAVORITE_H
-#define DATA_FAVORITE_H
+#ifndef MODEL_INSTRUMENT_LIST_H
+#define MODEL_INSTRUMENT_LIST_H
 
 #include <QtCore/QObject>
 #include <QtCore/QDate>
@@ -7,15 +7,15 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
 
-#include "stock.h"
+#include "data/instrument.h"
 
-namespace data { class Favorite; }
+namespace model { class InstrumentList; }
 
-class data::Favorite : public QAbstractListModel
+class model::InstrumentList : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    static Favorite* instance();
+    static InstrumentList* instance();
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -31,11 +31,11 @@ protected:
         LogoRole,
     };
 
-    std::vector <Ticker*> _tickers;
+    std::vector <data::Instrument*> _instruments;
 
 private:
-    Favorite(QObject* parent = nullptr);
-    Favorite& operator = (const Favorite&) = delete;
+    InstrumentList(QObject* parent = nullptr);
+    InstrumentList& operator = (const InstrumentList&) = delete;
 
     friend class Portfolio;
 };
