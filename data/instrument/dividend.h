@@ -6,7 +6,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QDataStream>
 
-namespace data::ticker {
+namespace data {
     class Dividend;
 
     struct DividendList {
@@ -15,7 +15,7 @@ namespace data::ticker {
     };
 }
 
-class data::ticker::Dividend : public QObject
+class data::Dividend : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(float yield     READ yield     WRITE set_yield     NOTIFY     yieldChanged)

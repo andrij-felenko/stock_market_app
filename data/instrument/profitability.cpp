@@ -1,8 +1,8 @@
 #include "profitability.h"
 
-using namespace data::ticker;
+using namespace data;
 
-data::ticker::Profitability::Profitability(QObject* parent) : QObject(parent)
+data::Profitability::Profitability(QObject* parent) : QObject(parent)
 {
     //
 }
@@ -52,7 +52,7 @@ void  Profitability::set_netincome(float newNet_income)
     emit netincomeChanged(_netincome);
 }
 
-namespace data::ticker {
+namespace data {
     QDataStream& operator<<(QDataStream& s, const Profitability& p) {
         return s << p._margin_gros << p._margin_oper << p._netincome << p._roa << p._roe;
     }

@@ -1,8 +1,8 @@
 #include "valuation.h"
 
-using namespace data::ticker;
+using namespace data;
 
-data::ticker::Valuation::Valuation(QObject* parent) : QObject(parent)
+data::Valuation::Valuation(QObject* parent) : QObject(parent)
 {
     //
 }
@@ -61,7 +61,7 @@ void  Valuation::set_share_count(float new_share_count)
     emit share_countChanged(_share_count);
 }
 
-namespace data::ticker {
+namespace data {
     QDataStream& operator<<(QDataStream& s, const Valuation& d) {
         return s << d._book_value << d._eps      << d._market_cap
                  << d._pb_ratio   << d._pe_ratio << d._share_count;

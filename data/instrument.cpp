@@ -2,8 +2,6 @@
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 
-using namespace data::ticker;
-
 enum InstRole {
     Ticker,
     TickerObject,
@@ -15,18 +13,18 @@ enum InstRole {
 
 data::Instrument::Instrument(QObject* parent) : QAbstractListModel(parent)
 {
-    _dividend = new ticker::Dividend(this);
-    _identity = new ticker::Identity(this);
-    _stability = new ticker::Stability(this);
-    _valuation = new ticker::Valuation(this);
-    _profitability = new ticker::Profitability(this);
+    _dividend = new Dividend(this);
+    _identity = new Identity(this);
+    _stability = new Stability(this);
+    _valuation = new Valuation(this);
+    _profitability = new Profitability(this);
 }
 
-Dividend*      data::Instrument::dividend()      const { return _dividend; }
-Identity*      data::Instrument::identity()      const { return _identity; }
-Stability*     data::Instrument::stability()     const { return _stability; }
-Valuation*     data::Instrument::valuation()     const { return _valuation; }
-Profitability* data::Instrument::profitability() const { return _profitability; }
+data::Dividend*      data::Instrument::dividend()      const { return _dividend; }
+data::Identity*      data::Instrument::identity()      const { return _identity; }
+data::Stability*     data::Instrument::stability()     const { return _stability; }
+data::Valuation*     data::Instrument::valuation()     const { return _valuation; }
+data::Profitability* data::Instrument::profitability() const { return _profitability; }
 
 // tdsm - ticker data stock manager
 void data::Instrument::save() const

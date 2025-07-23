@@ -5,9 +5,9 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-namespace data::ticker { class Stability; }
+namespace data { class Stability; }
 
-class data::ticker::Stability : public QObject
+class data::Stability : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(float debt_equity READ debt_equity WRITE set_debt_equity NOTIFY debt_equityChanged)

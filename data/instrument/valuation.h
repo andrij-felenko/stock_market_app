@@ -5,9 +5,9 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-namespace data::ticker { class Valuation; }
+namespace data { class Valuation; }
 
-class data::ticker::Valuation : public QObject
+class data::Valuation : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(float eps         READ eps         WRITE set_eps         NOTIFY         epsChanged)

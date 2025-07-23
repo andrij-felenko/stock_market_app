@@ -7,26 +7,31 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
 
-#include "ticker.h"
+#include "instrument/ticker.h"
+#include "instrument/dividend.h"
+#include "instrument/identity.h"
+#include "instrument/profitability.h"
+#include "instrument/stability.h"
+#include "instrument/valuation.h"
 
 namespace data { class Instrument; }
 
 class data::Instrument : public QAbstractListModel
 {
     Q_OBJECT
-    Q_PROPERTY(ticker::Dividend*      dividend      READ dividend      CONSTANT)
-    Q_PROPERTY(ticker::Identity*      identity      READ identity      CONSTANT)
-    Q_PROPERTY(ticker::Stability*     stability     READ stability     CONSTANT)
-    Q_PROPERTY(ticker::Valuation*     valuation     READ valuation     CONSTANT)
-    Q_PROPERTY(ticker::Profitability* profitability READ profitability CONSTANT)
+    Q_PROPERTY(Dividend*      dividend      READ dividend      CONSTANT)
+    Q_PROPERTY(Identity*      identity      READ identity      CONSTANT)
+    Q_PROPERTY(Stability*     stability     READ stability     CONSTANT)
+    Q_PROPERTY(Valuation*     valuation     READ valuation     CONSTANT)
+    Q_PROPERTY(Profitability* profitability READ profitability CONSTANT)
 public:
     Instrument(QObject* parent = nullptr);
 
-    ticker::Dividend* dividend() const;
-    ticker::Identity* identity() const;
-    ticker::Stability* stability() const;
-    ticker::Valuation* valuation() const;
-    ticker::Profitability* profitability() const;
+    Dividend* dividend() const;
+    Identity* identity() const;
+    Stability* stability() const;
+    Valuation* valuation() const;
+    Profitability* profitability() const;
 
     Ticker* primary_ticker() const;
     Ticker* primary_ticker_user() const;
@@ -39,11 +44,11 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    ticker::Dividend* _dividend = nullptr;
-    ticker::Identity* _identity = nullptr;
-    ticker::Stability* _stability = nullptr;
-    ticker::Valuation* _valuation = nullptr;
-    ticker::Profitability* _profitability = nullptr;
+    Dividend* _dividend = nullptr;
+    Identity* _identity = nullptr;
+    Stability* _stability = nullptr;
+    Valuation* _valuation = nullptr;
+    Profitability* _profitability = nullptr;
 
     std::vector <Ticker*> _tickers;
     QString _primary_ticker;

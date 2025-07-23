@@ -1,8 +1,8 @@
 #include "identity.h"
 
-using namespace data::ticker;
+using namespace data;
 
-data::ticker::Identity::Identity(QObject* parent) : QObject(parent)
+data::Identity::Identity(QObject* parent) : QObject(parent)
 {
     //
 }
@@ -88,7 +88,7 @@ void Identity::set_url(const QUrl& new_url)
     emit urlChanged(_url);
 }
 
-namespace data::ticker {
+namespace data {
     QDataStream& operator << (QDataStream& s, const Identity& i) {
         s << i._title    << i._descript  << i._sector
           << i._industry << i._headquart << i._isin

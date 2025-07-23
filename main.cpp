@@ -12,7 +12,7 @@
 #include "data/market.h"
 #include "api/alphavantage.h"
 #include "api/marketstack.h"
-#include "data/portfolio.h"
+#include "data/user/portfolio.h"
 #include "model/search_tag.h"
 #include "api/figi.h"
 #include "settings/network.h"

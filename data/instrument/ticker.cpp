@@ -1,12 +1,12 @@
 #include "ticker.h"
-#include "instrument.h"
+#include "../instrument.h"
+#include "../instrument/quotes.h"
 
 using namespace data;
-using namespace data::ticker;
 
 data::Ticker::Ticker(bool primary, Instrument* parent) : QObject(parent), _primary(primary)
 {
-    _quotes = new ticker::Quotes(this);
+    _quotes = new Quotes(this);
 }
 
 void        Ticker::save()             { emit update_data(); }

@@ -5,13 +5,13 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-namespace data::ticker {
+namespace data {
     struct QuotesDate;
     struct QuotesTime;
     class  Quotes;
 }
 
-struct data::ticker::QuotesDate {
+struct data::QuotesDate {
     QDate date;
     float open;
     float close;
@@ -20,7 +20,7 @@ struct data::ticker::QuotesDate {
     quint64  volume;
 };
 
-struct data::ticker::QuotesTime {
+struct data::QuotesTime {
     QTime time;
     float open;
     float close;
@@ -29,7 +29,7 @@ struct data::ticker::QuotesTime {
     quint64  volume;
 };
 
-class data::ticker::Quotes : public QObject
+class data::Quotes : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVector <QObject*> points READ points NOTIFY pointsChanged)

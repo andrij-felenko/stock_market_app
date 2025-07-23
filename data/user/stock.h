@@ -5,7 +5,7 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-#include "ticker.h"
+#include "../instrument/ticker.h"
 #include "transaction.h"
 
 namespace data {

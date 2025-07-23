@@ -55,29 +55,36 @@ set (src
 
     data/market.cpp
     data/market.h
-    data/ticker.cpp
-    data/ticker.h
-    data/stock.cpp
-    data/stock.h
-    data/portfolio.cpp
-    data/portfolio.h
-    data/transaction.cpp
-    data/transaction.h
+
     data/instrument.cpp
     data/instrument.h
+    data/instrument/ticker.cpp
+    data/instrument/ticker.h
+    data/instrument/quotes.cpp
+    data/instrument/quotes.h
+    data/instrument/stability.cpp
+    data/instrument/stability.h
+    data/instrument/valuation.cpp
+    data/instrument/valuation.h
+    data/instrument/dividend.cpp
+    data/instrument/dividend.h
+    data/instrument/identity.cpp
+    data/instrument/identity.h
+    data/instrument/profitability.cpp
+    data/instrument/profitability.h
 
-    data/ticker/quotes.cpp
-    data/ticker/quotes.h
-    data/ticker/stability.cpp
-    data/ticker/stability.h
-    data/ticker/valuation.cpp
-    data/ticker/valuation.h
-    data/ticker/dividend.cpp
-    data/ticker/dividend.h
-    data/ticker/identity.cpp
-    data/ticker/identity.h
-    data/ticker/profitability.cpp
-    data/ticker/profitability.h
+    data/user.h
+    data/user.cpp
+    data/user/info.cpp
+    data/user/info.h
+    data/user/stock.cpp
+    data/user/stock.h
+    data/user/favorite.cpp
+    data/user/favorite.h
+    data/user/portfolio.cpp
+    data/user/portfolio.h
+    data/user/transaction.cpp
+    data/user/transaction.h
 
     data/currency.cpp
     data/currency.h
@@ -150,84 +157,16 @@ qt_add_resources(stock_manager "rc_images"
         rc/images/Stock_app_logo2.png
 )
 
+file(GLOB tags_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} rc/tags/*.edsm)
 qt_add_resources(stock_manager "rc_tags"
     PREFIX "/"
     FILES
-        rc/tags/bond.edsm
-        rc/tags/common_stock.edsm
-        rc/tags/etc.edsm
-        rc/tags/etf.edsm
-        rc/tags/fund.edsm
-        rc/tags/index.edsm
-        rc/tags/mutual_fund.edsm
-        rc/tags/notes.edsm
-        rc/tags/preferred_stock.edsm
-        rc/tags/unit.edsm
+        ${tags_files}
 )
 
+file(GLOB stock_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} rc/stocks/*.tdsm)
 qt_add_resources(stock_manager "rc_stocks"
     PREFIX "/"
     FILES
-        rc/stocks/C.US.tdsm
-        rc/stocks/CHCT.US.tdsm
-        rc/stocks/CMCL.US.tdsm
-        rc/stocks/COLO-B.CO.tdsm
-        rc/stocks/CVX.US.tdsm
-        rc/stocks/DELL.US.tdsm
-        rc/stocks/DOW.US.tdsm
-        rc/stocks/EBR.B.US.tdsm
-        rc/stocks/ET.US.tdsm
-        rc/stocks/FMC.US.tdsm
-        rc/stocks/gtn.us.tdsm
-        rc/stocks/GXI.DE.tdsm
-        rc/stocks/HPQ.US.tdsm
-        rc/stocks/IBM.US.tdsm
-        rc/stocks/INTC.US.tdsm
-        rc/stocks/LMT.US.tdsm
-        rc/stocks/LNVGY.US.tdsm
-        rc/stocks/MA.US.tdsm
-        rc/stocks/MBG.DEX.tdsm
-        rc/stocks/MCD.US.tdsm
-        rc/stocks/MCHP.US.tdsm
-        rc/stocks/MS.US.tdsm
-        rc/stocks/NHY.OL.tdsm
-        rc/stocks/NOC.US.tdsm
-        rc/stocks/NTOIF.US.tdsm
-        rc/stocks/O.tdsm
-        rc/stocks/O.US.tdsm
-        rc/stocks/OGN.US.tdsm
-        rc/stocks/OLED.US.tdsm
-        rc/stocks/PAA.US.tdsm
-        rc/stocks/PG.US.tdsm
-        rc/stocks/PINE.US.tdsm
-        rc/stocks/POLN.EU.tdsm
-        rc/stocks/QCOM.US.tdsm
-        rc/stocks/RHM.DE.tdsm
-        rc/stocks/RIO1.DE.tdsm
-        rc/stocks/RITM.US.tdsm
-        rc/stocks/RNECY.US.tdsm
-        rc/stocks/RNO.PA.tdsm
-        rc/stocks/RPG.US.tdsm
-        rc/stocks/RUI.PA.tdsm
-        rc/stocks/SAN.US.tdsm
-        rc/stocks/SRG.US.tdsm
-        rc/stocks/TROX.US.tdsm
-        rc/stocks/TSQ.US.tdsm
-        rc/stocks/ULVR.L.tdsm
-        rc/stocks/V.US.tdsm
-        rc/stocks/VOW3.BE.tdsm
-        rc/stocks/VOW3.DE.tdsm
-        rc/stocks/WDS.US.tdsm
-        rc/stocks/WPC.US.tdsm
-        rc/stocks/XRX.US.tdsm
-        rc/stocks/0JOP.L.tdsm
-        rc/stocks/0NBX.L.tdsm
-        rc/stocks/AAPL.US.tdsm
-        rc/stocks/AES.US.tdsm
-        rc/stocks/AGNC.US.tdsm
-        rc/stocks/AM.US.tdsm
-        rc/stocks/ANDE.US.tdsm
-        rc/stocks/APAM.MC.tdsm
-        rc/stocks/BBZA.DE.tdsm
-        rc/stocks/BWMX.US.tdsm
+        ${stock_files}
 )

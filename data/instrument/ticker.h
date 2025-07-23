@@ -5,12 +5,8 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-#include "ticker/quotes.h"
-#include "ticker/dividend.h"
-#include "ticker/identity.h"
-#include "ticker/profitability.h"
-#include "ticker/stability.h"
-#include "ticker/valuation.h"
+#include "../instrument/quotes.h"
+#include "../currency/name.h"
 
 namespace data {
     class Ticker;
@@ -20,8 +16,8 @@ namespace data {
 class data::Ticker : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(ticker::Quotes* quotes READ quotes CONSTANT)
-    Q_PROPERTY(bool           primary READ is_primary NOTIFY primaryChanged)
+    Q_PROPERTY(Quotes* quotes  READ quotes CONSTANT)
+    Q_PROPERTY(bool    primary READ is_primary NOTIFY primaryChanged)
     Q_PROPERTY(currency::Tag currency READ currency WRITE set_currency NOTIFY currencyChanged)
     Q_PROPERTY(QString   currency_str READ currency_str                NOTIFY currencyChanged)
     Q_PROPERTY(QString exchange   READ exchange   WRITE set_exchange   NOTIFY exchangeChanged)
@@ -30,7 +26,7 @@ class data::Ticker : public QObject
 public:
     Ticker(bool primary = false, Instrument* parent = nullptr);
 
-    ticker::Quotes* quotes() const;
+    Quotes* quotes() const;
     currency::Tag currency() const;
     QString currency_str() const;
     QString exchange() const;
@@ -58,7 +54,7 @@ signals:
     void update_data();
 
 private:
-    ticker::Quotes* _quotes = nullptr;
+    Quotes* _quotes = nullptr;
     currency::Tag _currency;
     QString _exchange;
     QString _country;

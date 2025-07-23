@@ -6,9 +6,9 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-namespace data::ticker { class Identity; }
+namespace data { class Identity; }
 
-class data::ticker::Identity : public QObject
+class data::Identity : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QString title     READ title     WRITE set_title     NOTIFY     titleChanged)

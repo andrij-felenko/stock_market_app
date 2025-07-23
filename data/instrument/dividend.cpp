@@ -1,8 +1,8 @@
 #include "dividend.h"
 
-using namespace data::ticker;
+using namespace data;
 
-data::ticker::Dividend::Dividend(QObject* parent) : QObject(parent)
+data::Dividend::Dividend(QObject* parent) : QObject(parent)
 {
     //
 }
@@ -60,7 +60,7 @@ void  Dividend::set_prev_date(const QDate& new_prev_date)
     emit prev_dateChanged(_prev_date);
 }
 
-namespace data::ticker {
+namespace data {
     QDataStream& operator<<(QDataStream& s, const Dividend& d) {
         s << d._yield
           << d._per_share

@@ -7,7 +7,7 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
 
-#include "ticker.h"
+#include "instrument/ticker.h"
 
 namespace data { class Market; }
 

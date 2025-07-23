@@ -5,9 +5,9 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-namespace data::ticker { class Profitability; }
+namespace data { class Profitability; }
 
-class data::ticker::Profitability : public QObject
+class data::Profitability : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(float roe READ roe WRITE set_roe NOTIFY roeChanged)

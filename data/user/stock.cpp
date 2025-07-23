@@ -1,8 +1,8 @@
 #include "stock.h"
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
-#include "market.h"
-#include "instrument.h"
+#include "../market.h"
+#include "../instrument.h"
 
 using namespace data;
 

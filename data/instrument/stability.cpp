@@ -1,8 +1,8 @@
 #include "stability.h"
 
-using namespace data::ticker;
+using namespace data;
 
-data::ticker::Stability::Stability(QObject* parent) : QObject(parent)
+data::Stability::Stability(QObject* parent) : QObject(parent)
 {
     //
 }
@@ -34,7 +34,7 @@ void  Stability::set_beta(float new_beta)
     emit betaChanged(_beta);
 }
 
-namespace data::ticker {
+namespace data {
     QDataStream& operator<<(QDataStream& s, const Stability& d) {
         return s << d._beta << d._debt_equity << d._revenue;
     }

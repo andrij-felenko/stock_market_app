@@ -1,8 +1,8 @@
 #include "quotes.h"
 
-using namespace data::ticker;
+using namespace data;
 
-data::ticker::Quotes::Quotes(QObject* parent) : QObject(parent)
+data::Quotes::Quotes(QObject* parent) : QObject(parent)
 {
     //
 }
@@ -140,7 +140,7 @@ float Quotes::current() const
     return ret;
 }
 
-namespace data::ticker {
+namespace data {
     QDataStream& operator << (QDataStream& s, const Quotes& q) {
         s << quint32(q._points.size());
         for (const auto& it : q._points)
