@@ -39,12 +39,15 @@ public:
     // sorted instruments list basic data
     void load_instruments();
     void save_instruments();
+    void write_instrument(TickerMetaList list);
 
     void load_ticker_meta();
     void save_ticker_meta();
+    void write_ticker_meta(TickerMetaList list);
 
     // parse ticker meta for create instruments
     void clusterise_ticker_meta();
+    void clusterise_ticker_meta(TickerMetaList metalist);
 
 private:
     Market(QObject* parent = nullptr);

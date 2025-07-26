@@ -6,6 +6,7 @@
 // #include "api/alphavantage.h"
 // #include "api/marketstack.h"
 #include <QTimer>
+#include <thread>
 #include "data/instrument.h"
 #include "api/eod.h"
 
@@ -77,13 +78,6 @@ void data::Market::_load_data()
 {
     load_ticker_meta();
     load_instruments();
-    qDebug() << "Market::" << _instruments.size() << _ticker_meta.size();
-    if (_instruments.empty()){
-        if (_ticker_meta.empty())
-            api::Eod::get_all_exchange_tag();
-        else
-            clusterise_ticker_meta();
-    }
 }
 
 // --------------------------- Work with basic list of all market ---------------------------------
@@ -191,14 +185,12 @@ namespace market::meta {
 
 void data::Market::clusterise_ticker_meta()
 {
-    std::vector <data::TickerMeta> metalist;
-    metalist.reserve(_ticker_meta.size());
+    std::thread([this](){ clusterise_ticker_meta(_ticker_meta); }).detach();
+}
 
+void data::Market::clusterise_ticker_meta(data::TickerMetaList metalist)
+{
     QMap <int, int> counts;
-
-    for (const auto& it : _ticker_meta)
-        if (it.type.compare("Common Stock", Qt::CaseInsensitive) == 0)
-            metalist.emplace_back(it);
 
     // видалити всі не stock параметри
     std::erase_if(metalist, [](const data::TickerMeta& m) { return m.type != "Common Stock"; });
@@ -297,14 +289,15 @@ void data::Market::clusterise_ticker_meta()
         // після США та Лондону надаємо перевавгу біржам локальним
         // немає сенсу великим компаніям там бути якщо це не їх батьківщина
         if (main_exchange.isEmpty()){
-            TickerMetaList sorted = market::meta::find(list, "", { "FI", "CH", "SE", "NO" });
+            TickerMetaList sorted = market::meta::find(list, "", { "MC", "FI", "CO", "TW"
+                                                                   "OL", "ST", "SW", "AU" });
             if (sorted.size() >= 1)
                 main_exchange = find_longer_name(sorted).symbol;
         }
 
         // пріоритет великих національним біржам далі типу DE PA BE SA
         if (main_exchange.isEmpty()){
-            for (const auto& exch : { "PA", "SA", "DE", "BE" }){
+            for (const auto& exch : { "SA", "TO", "PA", "AM", "BE", "DE" }){
                 TickerMetaList sorted = market::meta::find(list, "", { exch });
                 if (sorted.size() >= 1){
                     main_exchange = find_longer_name(sorted).symbol;
@@ -334,20 +327,23 @@ void data::Market::clusterise_ticker_meta()
 
 
         // створюємо інтрументи з набору який ми знайшли, або доповнили новими символами
-        Instrument* const in = Market::add(main_exchange);
-        for (const auto& it : list){
-            bool main_exch = main_exchange.compare(it.symbol, Qt::CaseInsensitive) == 0;
-            auto ticker = in->get(it.symbol, true, main_exch);
-            if (main_exch){
-                in->identity()->set_country(it.region);
-                in->identity()->set_title  (it.name);
-            }
-            else
-                ticker->set_country(it.region);
+        QMetaObject::invokeMethod(Market::instance(), [main_exchange, list]()
+        {
+            Instrument* const in = Market::add(main_exchange);
+            for (const auto& it : list){
+                bool main_exch = main_exchange.compare(it.symbol, Qt::CaseInsensitive) == 0;
+                auto ticker = in->get(it.symbol, true, main_exch);
+                if (main_exch){
+                    in->identity()->set_country(it.region);
+                    in->identity()->set_title  (it.name);
+                }
+                else
+                    ticker->set_country(it.region);
 
-            ticker->set_currency(currency::Name::from_short(it.currency));
-            ticker->set_exchange(it.exchange);
-        }
+                ticker->set_currency(currency::Name::from_short(it.currency));
+                ticker->set_exchange(it.exchange);
+            }
+        }, Qt::QueuedConnection);
 
         // заповнюємо список розміру компаній по символам
         counts[list.size()] = counts.value(list.size(), 0) + 1;
@@ -358,7 +354,8 @@ void data::Market::clusterise_ticker_meta()
     qDebug() << "COMMON STOCK Counts";
     for (auto it = counts.begin(); it != counts.end(); it++)
         qDebug() << it.key() << it.value();
-    save_instruments();
+    QMetaObject::invokeMethod(Market::instance(), [](){
+        Market::instance()->save_instruments(); }, Qt::QueuedConnection);
 }
 
 std::vector <data::TickerMeta> market::meta::find(const std::vector <data::TickerMeta>& list,
@@ -641,6 +638,12 @@ void data::Market::load_ticker_meta()
     }
 
     qDebug() << "SEARCH TAGE ALL DATA SIZE" << _ticker_meta.size();
+
+    if (_ticker_meta.empty())
+        QMetaObject::invokeMethod(this, [](){ api::Eod::get_all_exchange_tag(); },
+                                  Qt::QueuedConnection);
+    else if (_instruments.empty())
+        clusterise_ticker_meta();
 }
 
 void data::Market::save_ticker_meta()

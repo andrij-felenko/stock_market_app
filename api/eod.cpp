@@ -8,6 +8,15 @@
 api::Eod::Eod(QObject* parent) : API(parent)
 {
     // set_api_key("683ebb8bc59b60.11043967");
+
+    connect(this, &API::error_reply, this, [this](QNetworkReply* reply){
+        for (const auto& it : _replies)
+            if (it->_reply == reply){
+                qDebug() << "catch reply";
+                _exchange_list_queue.removeFirst();
+                _next_get_all_exchange_tag();
+            }
+    });
 }
 
 api::Eod* api::Eod::instance()
@@ -28,7 +37,7 @@ void api::Eod::get_all_tag(QString exchange)
 }
 
 QMap<QString, QString> exchange_map = {
-    // { "US",     ".US"  },  // США: без суфікса
+    { "US",     ".US"  },  // США: без суфікса
     { "LSE",    ".L"   },  // Лондон
     { "XETRA",  ".DE"  },  // Франкфурт (Xetra)
     // { "EPA",    ".PA"  },  // Париж
@@ -42,30 +51,40 @@ QMap<QString, QString> exchange_map = {
     // { "XMAD",   ".MC"  },  // Мадрид
     // { "XMEX",   ".MX"  },  // Мехіко
     // { "XSES",   ".SI"  },  // Сінгапур
-    { "TO",     ".TO"  },  // Торонто
+    { "TO",     ".TO"  }, // Торонто
+    { "PA",     ".PA"  }, // Париж
+    { "BE",     ".BE"  }, // Берлін
+    { "BR",     ".BR"  }, // Бразилія (B3)
+    { "AM",     ".AM"  }, // amsterdam
 
     // Альтернативні / дублікати
-    { "PA",     ".PA"  },  // Париж
     { "MC",     ".MC"  },  // Мадрид
     { "HE",     ".FI"  },  // Гельсінкі
     { "CO",     ".CO"  },  // Копенгаген
     { "OL",     ".OL"  },  // Осло
     { "ST",     ".ST"  },  // Стокгольм
     { "SW",     ".SW"  },  // Швейцарія
-    { "BR",     ".SA"  },  // Бразилія (B3)
-    { "BE",     ".BE"  }   // Берлін
+    { "AU",     ".AU"  }, // Australia
+    { "TW",     ".TW"  }, // Taiwan
 };
 
 void api::Eod::get_all_exchange_tag()
 {
     Eod* data = Eod::instance();
-    int i = 0;
-    for (auto it = exchange_map.constBegin(); it != exchange_map.constEnd(); ++it, ++i)
-        QTimer::singleShot(i * 5000, data, [data, ex = it.key()](){ get_all_tag(ex); });
+    data->_exchange_list_queue = exchange_map.keys();
+    data->_next_get_all_exchange_tag();
+}
 
-    QTimer::singleShot((i + 2) * 5000, data, [](){
+void api::Eod::_next_get_all_exchange_tag()
+{
+    qDebug() << "Next" << _exchange_list_queue;
+    if (_exchange_list_queue.empty()){
+        data::Market::instance()->save_ticker_meta();
         data::Market::instance()->clusterise_ticker_meta();
-    });
+        return;
+    }
+
+    get_all_tag(_exchange_list_queue[0]);
 }
 
 // void api::Eod::fetch_ticker_data(const QString& ticker) {
@@ -159,7 +178,7 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
 
     QNetworkRequest request(url);
     API::_add_reply(type, _netmanager.get(request), name);
-    qDebug() << "request:" << url;
+    qDebug() << "request:" << url << _replies.size();
     return true;
 }
 
@@ -189,6 +208,10 @@ void api::Eod::_handler_answer(Request type, QByteArray data, QString name, bool
                 market->add(meta);
         }
         market->save_ticker_meta();
+
+        // remove echange queue list
+        _exchange_list_queue.removeOne(name);
+        QTimer::singleShot(0, this, [this](){ _next_get_all_exchange_tag(); });
         break;
     }
     default:;

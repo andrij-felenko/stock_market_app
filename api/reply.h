@@ -48,6 +48,7 @@ private:
     void ready_read();
 
     friend class API;
+    friend class Eod;
 };
 
 #endif

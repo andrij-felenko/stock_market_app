@@ -35,6 +35,9 @@ private:
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
     virtual void _handler_answer(Request type, QByteArray data,
                                  QString name, bool stream = false) override;
+
+    QStringList _exchange_list_queue;
+    void _next_get_all_exchange_tag();
 };
 
 #endif

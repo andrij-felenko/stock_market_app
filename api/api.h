@@ -36,8 +36,9 @@ protected:
 
 signals:
     void error_occurred(QString error);
+    void error_reply(QNetworkReply* reply);
 
-private:
+protected:
     std::vector <Reply*> _replies;
 
     void _finish(QNetworkReply* reply);

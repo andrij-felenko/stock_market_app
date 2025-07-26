@@ -12,6 +12,7 @@ enum Tag {
     RegionRole,
     CurrencyRole,
     ExchangeRole,
+    TickerSize,
 };
 
 model::SearchTag* model::SearchTag::instance()
@@ -45,6 +46,12 @@ QVariant model::SearchTag::data(const QModelIndex& index, int role) const
         case RegionRole:   return _list[index.row()].region;
         case CurrencyRole: return _list[index.row()].currency;
         case ExchangeRole: return _list[index.row()].exchange;
+        case TickerSize: {
+            auto ticker = data::Market::instance()->find(_list[index.row()].symbol);
+            if (ticker.has_value())
+                return ticker.value()->instrument()->tickers().join(" | ");
+            return 0;
+        }
         default:           return QVariant();
     }
 }
@@ -58,6 +65,7 @@ QHash<int, QByteArray> model::SearchTag::roleNames() const
     roles[RegionRole]   = "region";
     roles[CurrencyRole] = "currency";
     roles[ExchangeRole] = "exchange";
+    roles[TickerSize]   = "ticker_size";
     return roles;
 }
 
