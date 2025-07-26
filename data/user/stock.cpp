@@ -20,7 +20,7 @@ Instrument* Stock::instrument() const { return _ticker->instrument(); }
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const Stock& d) {
-        s << d._count << d._price << d._value << d.instrument()->primary_ticker()->symbol()
+        s << d._count << d._price << d._value << d.instrument()->primary_ticker(true)->symbol()
           << int(d._list.size());
         for (const auto& it : d._list)
             s << *it;

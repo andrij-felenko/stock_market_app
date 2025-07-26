@@ -1,4 +1,6 @@
 #include "name.h"
+#include <QDataStream>
+#include <qdebug.h>
 
 using namespace currency;
 
@@ -59,6 +61,7 @@ Tag Name::from_short(QString currency)
     for (const auto &it : list)
         if (it._short == currency)
             return it._enum;
+    qDebug() << "CURRENCY can`t from SHORT" << currency;
     return Tag::None;
 }
 
@@ -199,6 +202,7 @@ void Name::_add_europe()
     _add(Tag::Belarusian_Ruble,          "Belarusian Ruble",          "BYR", cont);
     _add(Tag::Bosnian_Convertible_Marka, "Bosnian Convertible Marka", "BAM", cont);
     _add(Tag::British_Pound,             "British Pound",             "GBP", cont);
+    _add(Tag::GreatBritain_Pence,        "British Pence",             "GBX", cont);
     _add(Tag::Bulgarian_Lev,             "Bulgarian Lev",             "BGN", cont);
     _add(Tag::Croatian_Kuna,             "Croatian Kuna",             "HRK", cont);
     _add(Tag::Czech_Koruna,              "Czech Koruna",              "CZK", cont);
@@ -307,4 +311,16 @@ void Name::_add(Tag type, QString full, QString short_, Continent continent)
     temp._short = short_;
     temp._continent = continent;
     _list.push_back(temp);
+}
+
+
+QDataStream& operator <<(QDataStream& out, const currency::Tag& tag) {
+    return out << static_cast <uint32_t > (tag);
+}
+
+QDataStream& operator>>(QDataStream& in, currency::Tag& tag) {
+    uint32_t  val;
+    in >> val;
+    tag = static_cast<currency::Tag>(val);
+    return in;
 }

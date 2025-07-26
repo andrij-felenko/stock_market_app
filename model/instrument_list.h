@@ -15,27 +15,14 @@ class model::InstrumentList : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    static InstrumentList* instance();
+    InstrumentList(std::vector <data::Instrument*>& list, QObject* parent = nullptr);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-protected:
-    enum MarketBaseRoles {
-        TickerRole = Qt::UserRole + 1,
-        TitleRole,
-        CountryRole,
-        IndustryRole,
-        QuoteRole,
-        LogoRole,
-    };
-
-    std::vector <data::Instrument*> _instruments;
-
 private:
-    InstrumentList(QObject* parent = nullptr);
-    InstrumentList& operator = (const InstrumentList&) = delete;
+    std::vector <data::Instrument*>& _instruments;
 
     friend class Portfolio;
 };

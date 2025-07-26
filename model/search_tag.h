@@ -6,6 +6,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
+#include "data/market.h"
 
 namespace model { class SearchTag; }
 
@@ -14,16 +15,13 @@ class model::SearchTag : public QAbstractListModel
     Q_OBJECT
 public:
     static SearchTag* instance();
-    void save();
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
 
     void clear();
-    void add     (QString symbol, QString name, QString type, QString region, QString currency);
-    void add_data(QString symbol, QString name, QString type,
-                  QString region, QString currency, QString exchange);
+    void add(QString symbol, QString name, QString type, QString region, QString currency);
 
 public slots:
     void find_by_part(QString str);
@@ -32,24 +30,7 @@ private:
     SearchTag(QObject* parent = nullptr);
     SearchTag& operator = (const SearchTag&) = delete;
 
-    void load();
-
-    struct Matches {
-        QString symbol;
-        QString name;
-        QString type;
-        QString region;
-        QString currency;
-        QString exchange;
-    };
-    using MatchesList = std::vector <Matches>;
-
-    MatchesList _list;
-    MatchesList _data;
-
-    void reorginize();
-    MatchesList _find(const MatchesList& list, Matches m);
-    MatchesList _find(const MatchesList& list, QString str, QStringList exch = {});
+    std::vector <data::TickerMeta> _list;
 };
 
 #endif // MODEL_SEARCH_TAG_H

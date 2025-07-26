@@ -63,6 +63,7 @@ signals:
 
 private:
     QString _title;
+    QString _country;
     QString _descript;
     QString _sector;
     QString _industry;

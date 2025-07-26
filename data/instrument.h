@@ -14,9 +14,13 @@
 #include "instrument/stability.h"
 #include "instrument/valuation.h"
 
-namespace data { class Instrument; }
+namespace data {
+    class Market;
+    class Instrument;
+    struct TickerMeta;
+}
 
-class data::Instrument : public QAbstractListModel
+class data::Instrument : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(Dividend*      dividend      READ dividend      CONSTANT)
@@ -33,15 +37,18 @@ public:
     Valuation* valuation() const;
     Profitability* profitability() const;
 
-    Ticker* primary_ticker() const;
-    Ticker* primary_ticker_user() const;
+    Ticker* primary_ticker(bool absolute = false) const;
+
+    QStringList tickers() const;
+    bool contains(const QString& symbol) const;
 
     void save() const;
     void load();
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
+    Ticker* const operator[](const QString& symbol) const;
+    Ticker* const get(const QString& symbol, bool createif = false, bool prime = false);
+
+    operator data::TickerMeta() const;
 
 private:
     Dividend* _dividend = nullptr;
@@ -55,6 +62,8 @@ private:
 
     void _update_primary_ticket();
     void _add_ticker(Ticker* ticker);
+
+    friend class data::Market;
 
     friend QDataStream& operator << (QDataStream& s, const Instrument& d);
     friend QDataStream& operator >> (QDataStream& s,       Instrument& d);

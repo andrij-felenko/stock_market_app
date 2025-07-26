@@ -4,19 +4,21 @@
 #include <QIcon>
 #include <QtQuick/QQuickWindow>
 
-#include "utilities/res_dir.h"
+#include "model/asset_list.h"
+#include "model/instrument_list.h"
 #include "api/openai.h"
 #include "api/eod.h"
 #include "api/finnhub.h"
 #include "api/twelvedata.h"
-#include "data/market.h"
 #include "api/alphavantage.h"
 #include "api/marketstack.h"
-#include "data/user/portfolio.h"
 #include "model/search_tag.h"
-#include "api/figi.h"
+#include "data/user.h"
 #include "settings/network.h"
 #include <QSslSocket>
+#include <qstandardpaths.h>
+#include "model/asset_list.h"
+#include "model/instrument_list.h"
 
 #define qmlREGS qmlRegisterSingletonInstance
 
@@ -26,20 +28,24 @@ int main(int argc, char** argv)
     QQuickStyle::setStyle("Fusion");
 
     app.setOrganizationDomain("some.io");
-    app.setOrganizationName("Andrij Felenko");
-    app.setApplicationName("Stock manager");
+    app.setOrganizationName("AndrijFelenko");
+    app.setApplicationName("StockManager");
     app.setWindowIcon(QIcon(":/rc/images/Stock_app_logo2.png"));
-
 
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, [](){ QCoreApplication::exit(-1); },
                      Qt::QueuedConnection);
 
-    qmlREGS <model::SearchTag> ("StockCpp", 1, 0, "SearchTagCpp", model::SearchTag::instance());
+    qDebug() << QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 
-    qmlREGS <data::Market>    ("StockCpp", 1, 0, "MarketCpp",    data::Market   ::instance());
-    qmlREGS <data::Portfolio> ("StockCpp", 1, 0, "PortfolioCpp", data::Portfolio::instance());
+    data::Market::instance();
+    auto    asset_model = new model::AssetList     (data::account()->   asset_list(), &app);
+    auto favorite_model = new model::InstrumentList(data::account()->favorite_list(), &app);
+
+    qmlREGS <model::AssetList>      ("StockCpp", 1, 0, "AssetModel",     asset_model);
+    qmlREGS <model::InstrumentList> ("StockCpp", 1, 0, "MarketModel", favorite_model);
+    qmlREGS <model::SearchTag> ("StockCpp", 1, 0, "SearchTagCpp", model::SearchTag::instance());
 
     qmlREGS <api::OpenAI>      ("StockCpp", 1, 0, "OpenAI",       api::OpenAI      ::instance());
     qmlREGS <api::Eod>         ("StockCpp", 1, 0, "EOD",          api::Eod         ::instance());
@@ -57,9 +63,6 @@ int main(int argc, char** argv)
 
     engine.load("qrc:/qt/qml/Stock/main.qml");
     // util::ResDir::list_qrc_files();
-
-    // api::Figi::instance()->update_info_by_tag("VOW3.DE");
-
 
     return app.exec();
 }

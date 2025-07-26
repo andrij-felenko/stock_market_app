@@ -25,6 +25,15 @@ void    Identity::set_descrip(const QString& new_descript)
     emit descriptChanged(_descript);
 }
 
+QString Identity::    country() const { return  _country; }
+void    Identity::set_country(const QString& new_country)
+{
+    if (_country == new_country)
+        return;
+    _country = new_country;
+    emit countryChanged(_country);
+}
+
 QString Identity::    sector() const { return _sector; }
 void    Identity::set_sector(const QString& new_sector)
 {

@@ -2,7 +2,8 @@
 #include <QtCore/QDebug>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QJsonArray>
-#include "model/search_tag.h"
+#include "data/instrument.h"
+#include "data/market.h"
 
 api::Eod::Eod(QObject* parent) : API(parent)
 {
@@ -27,20 +28,20 @@ void api::Eod::get_all_tag(QString exchange)
 }
 
 QMap<QString, QString> exchange_map = {
-    { "US",     ".US"  },  // США: без суфікса
+    // { "US",     ".US"  },  // США: без суфікса
     { "LSE",    ".L"   },  // Лондон
     { "XETRA",  ".DE"  },  // Франкфурт (Xetra)
-    { "EPA",    ".PA"  },  // Париж
-    { "MIL",    ".MI"  },  // Мілан
-    { "TSE",    ".T"   },  // Токіо
-    { "HKEX",   ".HK"  },  // Гонконг
-    { "XHEL",   ".FI"  },  // Гельсінкі
-    { "XSTO",   ".ST"  },  // Стокгольм
-    { "XCSE",   ".CO"  },  // Копенгаген
-    { "XOSL",   ".OL"  },  // Осло
-    { "XMAD",   ".MC"  },  // Мадрид
-    { "XMEX",   ".MX"  },  // Мехіко
-    { "XSES",   ".SI"  },  // Сінгапур
+    // { "EPA",    ".PA"  },  // Париж
+    // { "MIL",    ".MI"  },  // Мілан
+    // { "TSE",    ".T"   },  // Токіо
+    // { "HKEX",   ".HK"  },  // Гонконг
+    // { "XHEL",   ".FI"  },  // Гельсінкі
+    // { "XSTO",   ".ST"  },  // Стокгольм
+    // { "XCSE",   ".CO"  },  // Копенгаген
+    // { "XOSL",   ".OL"  },  // Осло
+    // { "XMAD",   ".MC"  },  // Мадрид
+    // { "XMEX",   ".MX"  },  // Мехіко
+    // { "XSES",   ".SI"  },  // Сінгапур
     { "TO",     ".TO"  },  // Торонто
 
     // Альтернативні / дублікати
@@ -61,6 +62,10 @@ void api::Eod::get_all_exchange_tag()
     int i = 0;
     for (auto it = exchange_map.constBegin(); it != exchange_map.constEnd(); ++it, ++i)
         QTimer::singleShot(i * 5000, data, [data, ex = it.key()](){ get_all_tag(ex); });
+
+    QTimer::singleShot((i + 2) * 5000, data, [](){
+        data::Market::instance()->clusterise_ticker_meta();
+    });
 }
 
 // void api::Eod::fetch_ticker_data(const QString& ticker) {
@@ -167,20 +172,23 @@ void api::Eod::_handler_answer(Request type, QByteArray data, QString name, bool
     // qDebug() << name << "return data" << doc;
     // qDebug() << response;
 
-    auto st = model::SearchTag::instance();
+    auto market = data::Market::instance();
     switch (type){
     case api::Request::Exchange: {
         QJsonArray root = doc.array();
         for (const auto& it : std::as_const(root)){
             QJsonObject obj = it.toObject();
-            st->add_data(obj.value("Code").toString() + exchange_map[name],
-                         obj.value("Name").toString(),
-                         obj.value("Type").toString(),
-                         obj.value("Country").toString(),
-                         obj.value("Currency").toString(),
-                         obj.value("Exchange").toString());
+            data::TickerMeta meta;
+            meta.symbol   = obj.value("Code")    .toString() + exchange_map[name];
+            meta.name     = obj.value("Name")    .toString();
+            meta.region   = obj.value("Country") .toString();
+            meta.exchange = obj.value("Exchange").toString();
+            meta.currency = obj.value("Currency").toString();
+            meta.type     = obj.value("Type")    .toString();
+            // if (meta.name.startsWith("Ren", Qt::CaseInsensitive))
+                market->add(meta);
         }
-        st->save();
+        market->save_ticker_meta();
         break;
     }
     default:;

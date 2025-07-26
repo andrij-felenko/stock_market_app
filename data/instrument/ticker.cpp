@@ -9,6 +9,7 @@ data::Ticker::Ticker(bool primary, Instrument* parent) : QObject(parent), _prima
     _quotes = new Quotes(this);
 }
 
+bool        Ticker::is_primary() const { return _primary; }
 void        Ticker::save()             { emit update_data(); }
 Quotes*     Ticker::quotes()     const { return _quotes; }
 Instrument* Ticker::instrument() const { return static_cast <Instrument*> (parent()); }

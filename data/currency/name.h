@@ -19,7 +19,7 @@ namespace currency {
         None = 0xF
     };
 
-    enum class Tag {
+    enum class Tag : uint32_t {
         // Africa
         South_African_Rand = 0xA00, // ZAR
         Kenyan_Shilling,      // KES
@@ -143,6 +143,7 @@ namespace currency {
         Jersey_Pound,      // JEP
         Isle_of_Man_Pound, // IMP
         Guernsey_Pound,    // GGP
+        GreatBritain_Pence,// GBP
 
         // North America
         US_Dollar = 0xD00,  // USD
@@ -241,5 +242,8 @@ private:
     inline void _add_oceania();
     inline void _add_south_america();
 };
+
+QDataStream& operator << (QDataStream& out, const currency::Tag& tag);
+QDataStream& operator >> (QDataStream& in,        currency::Tag& tag);
 
 #endif

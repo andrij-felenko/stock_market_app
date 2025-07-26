@@ -9,31 +9,51 @@
 
 #include "instrument/ticker.h"
 
-namespace data { class Market; }
+namespace data {
+    class Market;
+    struct TickerMeta {
+        QString symbol;
+        QString name;
+        QString type;
+        QString region;
+        QString currency;
+        QString exchange;
+    };
 
-class data::Market : public QAbstractListModel
+    using TickerMetaList = std::vector <TickerMeta>;
+}
+namespace model { class SearchTag; }
+
+
+class data::Market : public QObject
 {
     Q_OBJECT
 public:
     static Market* instance();
 
+    std::vector <Instrument*> search_by(QString str) const;
     static std::optional <Ticker*> find(QString tag);
-    static std::vector   <Ticker*> all();
+    static Instrument* const add(QString tag);
+    static void              add(TickerMeta meta);
 
-    static void add(QString tag);
+    // sorted instruments list basic data
+    void load_instruments();
+    void save_instruments();
 
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
+    void load_ticker_meta();
+    void save_ticker_meta();
+
+    // parse ticker meta for create instruments
+    void clusterise_ticker_meta();
 
 private:
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;
 
-    void load_from_local_data();
+    void _load_data();
 
     std::vector <Instrument*> _instruments;
-    QTimer* _timer;
+    std::vector <TickerMeta> _ticker_meta;
 };
 
 #endif

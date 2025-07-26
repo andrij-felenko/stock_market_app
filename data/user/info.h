@@ -7,6 +7,7 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
 
+namespace data { class User; }
 namespace data::user { class Info; }
 
 class data::user::Info : public QObject
@@ -18,6 +19,8 @@ public:
 private:
     Info(QObject* parent = nullptr);
     Info& operator = (const Info&) = delete;
+
+    friend class data::User;
 };
 
 #endif

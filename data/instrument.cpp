@@ -1,4 +1,5 @@
 #include "instrument.h"
+#include "data/market.h"
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 
@@ -11,13 +12,41 @@ enum InstRole {
     Region
 };
 
-data::Instrument::Instrument(QObject* parent) : QAbstractListModel(parent)
+data::Instrument::Instrument(QObject* parent) : QObject(parent)
 {
     _dividend = new Dividend(this);
     _identity = new Identity(this);
     _stability = new Stability(this);
     _valuation = new Valuation(this);
     _profitability = new Profitability(this);
+    _tickers.reserve(10);
+}
+
+data::Ticker* data::Instrument::primary_ticker(bool absolute) const
+{
+    if (not absolute){
+        // TODO add check user primary ticket settings
+    }
+
+    return operator[](_primary_ticker);
+}
+
+QStringList data::Instrument::tickers() const
+{
+    QStringList ret;
+    ret.reserve(50);
+    for (const auto& it : _tickers)
+        if (not ret.contains(it->symbol()))
+            ret.emplace_back(it->symbol());
+    return ret;
+}
+
+bool data::Instrument::contains(const QString& symbol) const
+{
+    for (const auto& it : _tickers)
+        if (it->_symbol == symbol)
+            return true;
+    return false;
 }
 
 data::Dividend*      data::Instrument::dividend()      const { return _dividend; }
@@ -29,17 +58,11 @@ data::Profitability* data::Instrument::profitability() const { return _profitabi
 // tdsm - ticker data stock manager
 void data::Instrument::save() const
 {
-    QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir().mkpath(basePath);
+    QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    path += "stocks";
+    QDir().mkpath(path);
 
-    QDir dir(basePath);
-    if (! dir.cd ("stocks")){
-        dir.mkdir("stocks");
-        dir.cd   ("stocks");
-    }
-
-    QString filename = basePath + "/stocks/" + primary_ticker()->symbol() + ".tdsm";
-    QFile file(filename);
+    QFile file(path + "/" + _primary_ticker + ".tdsm");
     qDebug() << "file" << file.fileName();
     if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly))
         return;
@@ -48,22 +71,58 @@ void data::Instrument::save() const
     out.setVersion(QDataStream::Qt_6_0);
     out << *this;
     file.close();
-    qDebug() << "Save to: " << filename;
+    qDebug() << "Save to: " << file.fileName();
 }
 
 void data::Instrument::load()
 {
-    QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QString filename = basePath + "/" + primary_ticker()->symbol() + ".tdsm";
+    std::function load_data = [this](QString path){
+        QFile file(path + "stocks/" + _primary_ticker + ".tdsm");
+        if (!file.open(QIODevice::ReadOnly))
+            return;
 
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly))
-        return;
+        QDataStream in(&file);
+        in.setVersion(QDataStream::Qt_6_0);
+        in >> *this;
+        file.close();
+    };
 
-    QDataStream in(&file);
-    in.setVersion(QDataStream::Qt_6_0);
-    in >> *this;
-    file.close();
+    load_data(":/rc/");
+    load_data(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+}
+
+data::Ticker* const data::Instrument::operator[](const QString& symbol) const
+{
+    for (const auto& it : _tickers)
+        if (it->symbol().compare(symbol, Qt::CaseInsensitive) == 0)
+            return it;
+    return nullptr;
+}
+
+data::Instrument::operator data::TickerMeta() const
+{
+    TickerMeta meta;
+    meta.name = _identity->title();
+    meta.currency = primary_ticker(true)->currency_str();
+    meta.region = _identity->country();
+    meta.symbol = _primary_ticker;
+    meta.exchange = primary_ticker(true)->exchange();
+    return meta;
+}
+
+data::Ticker* const data::Instrument::get(const QString& symbol, bool createif, bool prime)
+{
+    for (const auto& it : _tickers)
+        if (it->symbol() == symbol)
+            return it;
+
+    if (not createif)
+        return nullptr;
+
+    Ticker* ticker = new Ticker(prime, this);
+    ticker->_symbol = symbol;
+    _tickers.push_back(ticker);
+    return ticker;
 }
 
 void data::Instrument::_update_primary_ticket()

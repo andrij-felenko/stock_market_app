@@ -1,4 +1,4 @@
-#include "portfolio.h"
+#include "asset_list.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
@@ -6,7 +6,7 @@
 #include <QTimer>
 #include "data/instrument.h"
 
-enum PortfolioRoles {
+enum AssetRoles {
     TickerRole = Qt::UserRole + 50,
     TitleRole,
     CountryRole,
@@ -15,19 +15,11 @@ enum PortfolioRoles {
     LogoRole,
 };
 
-data::Portfolio* data::Portfolio::instance()
+model::AssetList::AssetList(std::vector <data::Stock*>& list, QObject* parent)
+    : QAbstractListModel(parent), _assets(list)
 {
-    static Portfolio* _instance = nullptr;
-    if (_instance == nullptr){
-        _instance = new Portfolio(qApp);
-    }
-    return _instance;
-}
-
-data::Portfolio::Portfolio(QObject* parent) : QAbstractListModel(parent)
-{
-    _stocks.clear();
-    _stocks.reserve(2000);
+    _assets.clear();
+    _assets.reserve(2000);
 }
 
 // // pdsm - portfolio data stock manager
@@ -76,17 +68,17 @@ data::Portfolio::Portfolio(QObject* parent) : QAbstractListModel(parent)
 //     file.close();
 // }
 
-int data::Portfolio::rowCount(const QModelIndex& parent) const
+int model::AssetList::rowCount(const QModelIndex& parent) const
 {
-    return _stocks.size();
+    return _assets.size();
 }
 
-QVariant data::Portfolio::data(const QModelIndex& index, int role) const
+QVariant model::AssetList::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || index.row() >= static_cast<int>(_stocks.size()))
+    if (!index.isValid() || index.row() >= static_cast<int>(_assets.size()))
         return QVariant();
 
-    Stock* stock = _stocks[index.row()];
+    data::Stock* stock = _assets[index.row()];
 
     switch (role) {
         case TickerRole:  return stock->ticker()->symbol();
@@ -99,14 +91,14 @@ QVariant data::Portfolio::data(const QModelIndex& index, int role) const
     }
 }
 
-QHash<int, QByteArray> data::Portfolio::roleNames() const
+QHash<int, QByteArray> model::AssetList::roleNames() const
 {
     QHash<int, QByteArray> roles;
-    roles[TickerRole]  = "ticker";
-    roles[TitleRole]   = "title";
-    roles[CountryRole] = "country";
-    roles[IndustryRole]= "industry";
-    roles[QuoteRole]   = "price";
-    roles[LogoRole]    = "logo";
+    roles[TickerRole]   = "ticker";
+    roles[TitleRole]    = "title";
+    roles[CountryRole]  = "country";
+    roles[IndustryRole] = "industry";
+    roles[QuoteRole]    = "price";
+    roles[LogoRole]     = "logo";
     return roles;
 }
