@@ -40,8 +40,11 @@ int main(int argc, char** argv)
     qDebug() << QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
 
     data::Market::instance();
-    auto    asset_model = new model::AssetList     (data::account()->   asset_list(), &app);
-    auto favorite_model = new model::InstrumentList(data::account()->favorite_list(), &app);
+    auto    asset_model = new model::AssetList(data::account()->asset_list(), &app);
+
+    auto favorite_model = new model::InstrumentList(data::account()->favorite_list(),
+                                                    data::account(),
+                                                    &data::User::favoriteListUpdated);
 
     qmlREGS <model::AssetList>      ("StockCpp", 1, 0, "AssetModel",     asset_model);
     qmlREGS <model::InstrumentList> ("StockCpp", 1, 0, "MarketModel", favorite_model);
@@ -54,12 +57,13 @@ int main(int argc, char** argv)
     qmlREGS <api::MarketStack> ("StockCpp", 1, 0, "MarketStack",  api::MarketStack ::instance());
     qmlREGS <api::AlphaVantage>("StockCpp", 1, 0, "AlphaVantage", api::AlphaVantage::instance());
 
+    qmlREGS <data::User>       ("StockCpp", 1, 0, "CurrentAccount", data::account());
     qmlREGS <settings::Network>("StockCpp", 1, 0, "SeetingsNetwork", settings::network());
 
-    qDebug() << "Device supports OpenSSL: " << QSslSocket::supportsSsl();
+    qDebug() << "Device supports OpenSSL: ";
     qDebug() << "Supports SSL: " << QSslSocket::supportsSsl();
-    qDebug() << "Build uses: " << QSslSocket::sslLibraryBuildVersionString();
     qDebug() << "Runtime uses: " << QSslSocket::sslLibraryVersionString();
+    qDebug() << "Build uses: "   << QSslSocket::sslLibraryBuildVersionString();
 
     engine.load("qrc:/qt/qml/Stock/main.qml");
     // util::ResDir::list_qrc_files();

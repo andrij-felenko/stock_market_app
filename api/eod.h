@@ -23,6 +23,8 @@ public:
 
     // void fetch_ticker_data(const QString& ticker);
 
+    static void historical_year(QString tag, int8_t year = -1, char period = 'd');
+
 signals:
     void data_ready(const QJsonObject& data);
     void error_occurred(const QString& message);
@@ -38,6 +40,9 @@ private:
 
     QStringList _exchange_list_queue;
     void _next_get_all_exchange_tag();
+
+    void _handle_exchange(const QJsonDocument& json, QString name);
+    void _handle_candle  (const QJsonDocument& json, QString name);
 };
 
 #endif

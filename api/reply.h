@@ -17,7 +17,7 @@ namespace api {
         Earnings,
         Peers,
         Reported,
-        Candle, // hostorical data for pricing
+        Candle, // historical data for pricing
         Dividend,
         Exchange,
 

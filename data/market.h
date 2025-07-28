@@ -49,6 +49,9 @@ public:
     void clusterise_ticker_meta();
     void clusterise_ticker_meta(TickerMetaList metalist);
 
+signals:
+    void tickerMetaLoadFinish();
+
 private:
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;

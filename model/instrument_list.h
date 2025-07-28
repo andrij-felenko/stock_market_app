@@ -15,7 +15,15 @@ class model::InstrumentList : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    InstrumentList(std::vector <data::Instrument*>& list, QObject* parent = nullptr);
+    template <typename Sender, typename Signal>
+    InstrumentList(std::vector <data::Instrument*>& list, Sender* source, Signal signal)
+        : QAbstractListModel(source), _instruments(list)
+    {
+        connect(source, signal, this, &InstrumentList::dataUpdated);
+
+        _instruments.clear();
+        _instruments.reserve(2000);
+    }
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
@@ -23,6 +31,8 @@ public:
 
 private:
     std::vector <data::Instrument*>& _instruments;
+
+    void dataUpdated();
 
     friend class Portfolio;
 };

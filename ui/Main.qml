@@ -41,6 +41,10 @@ Item {
             Settings {
                 id: _sett
             }
+
+            Account {
+                id: _acc
+            }
         }
     }
 
@@ -127,6 +131,13 @@ Item {
             button_text: "Settings"
             checked: _swipe.currentIndex == 5
             onClicked: _swipe.currentIndex = 5
+        }
+
+        MenuButton {
+            image_source: "qrc:/rc/images/person.png"
+            button_text: "Account"
+            checked: _swipe.currentIndex == 6
+            onClicked: _swipe.currentIndex = 6
         }
     }
 }

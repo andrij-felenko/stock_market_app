@@ -45,7 +45,7 @@ Column {
             width: 500
             height: 40
             text:  symbol + " | " + title + " | " + region + " | " + currency + " | " + ticker_size
-            onClicked: TwelveData.add_by_tag(symbol)
+            onClicked: CurrentAccount.addToFavorite(symbol)
         }
     }
 

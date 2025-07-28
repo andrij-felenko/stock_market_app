@@ -49,6 +49,8 @@ public:
 
     float current() const;
 
+    bool empty() const;
+
 signals:
     void pointsChanged();
 

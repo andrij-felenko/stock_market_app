@@ -15,13 +15,6 @@ enum InstrumentRoles {
     LogoRole,
 };
 
-model::InstrumentList::InstrumentList(std::vector<data::Instrument*>& list, QObject* parent)
-    : QAbstractListModel(parent), _instruments(list)
-{
-    _instruments.clear();
-    _instruments.reserve(2000);
-}
-
 int model::InstrumentList::rowCount(const QModelIndex& parent) const
 {
     return _instruments.size();
@@ -55,4 +48,10 @@ QHash<int, QByteArray> model::InstrumentList::roleNames() const
     roles[QuoteRole]   = "price";
     roles[LogoRole]    = "logo";
     return roles;
+}
+
+void model::InstrumentList::dataUpdated()
+{
+    beginResetModel();
+    endResetModel();
 }

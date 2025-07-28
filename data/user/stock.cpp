@@ -3,6 +3,7 @@
 #include <QtCore/QStandardPaths>
 #include "../market.h"
 #include "../instrument.h"
+#include "utilities/features.h"
 
 using namespace data;
 
@@ -20,14 +21,13 @@ Instrument* Stock::instrument() const { return _ticker->instrument(); }
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const Stock& d) {
-        s << d._count << d._price << d._value << d.instrument()->primary_ticker(true)->symbol()
-          << int(d._list.size());
-        for (const auto& it : d._list)
-            s << *it;
-        return s;
+        util::export_list(s, d._list);
+        return s << d._count << d._price << d._value
+                 << d.instrument()->primary_ticker(true)->symbol();
     }
 
     QDataStream& operator >> (QDataStream& s, Stock& d) {
+        util::import_list(s, d._list);
         s >> d._count >> d._price >> d._value;
 
         QString tag;
@@ -35,14 +35,6 @@ namespace data {
         auto t = Market::find(tag);
         if (t.has_value())
             d._ticker = t.value();
-
-        int size = 0;
-        s >> size;
-        for (int i = 0; i < size; i++){
-            Transaction* t = new Transaction(&d);
-            s >> *t;
-            d._list.emplace_back(t);
-        }
 
         return s;
     }

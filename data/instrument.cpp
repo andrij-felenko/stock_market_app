@@ -2,6 +2,7 @@
 #include "data/market.h"
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
+#include "utilities/features.h"
 
 enum InstRole {
     Ticker,
@@ -20,6 +21,8 @@ data::Instrument::Instrument(QObject* parent) : QObject(parent)
     _valuation = new Valuation(this);
     _profitability = new Profitability(this);
     _tickers.reserve(10);
+
+    QTimer::singleShot(0, this, [this](){ this->load(); });
 }
 
 data::Ticker* data::Instrument::primary_ticker(bool absolute) const
@@ -59,7 +62,7 @@ data::Profitability* data::Instrument::profitability() const { return _profitabi
 void data::Instrument::save() const
 {
     QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    path += "stocks";
+    path += "/stocks";
     QDir().mkpath(path);
 
     QFile file(path + "/" + _primary_ticker + ".tdsm");
@@ -77,7 +80,7 @@ void data::Instrument::save() const
 void data::Instrument::load()
 {
     std::function load_data = [this](QString path){
-        QFile file(path + "stocks/" + _primary_ticker + ".tdsm");
+        QFile file(path + "/stocks/" + _primary_ticker + ".tdsm");
         if (!file.open(QIODevice::ReadOnly))
             return;
 
@@ -87,7 +90,7 @@ void data::Instrument::load()
         file.close();
     };
 
-    load_data(":/rc/");
+    load_data(":/rc");
     load_data(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
 }
 
@@ -143,22 +146,14 @@ namespace data {
     QDataStream& operator << (QDataStream& s, const Instrument& d) {
         s << *d._dividend  << *d._identity  << *d._profitability
           << *d._stability << *d._valuation << d._primary_ticker;
-        s << int32_t(d._tickers.size());
-        for (const auto& it : d._tickers)
-            s << *it;
+        util::export_list(s, d._tickers);
         return s;
     }
 
     QDataStream& operator >> (QDataStream& s, Instrument& d) {
         s >> *d._dividend  >> *d._identity  >> *d._profitability
           >> *d._stability >> *d._valuation >> d._primary_ticker;
-        int32_t size;
-        s >> size;
-        for (int i = 0; i < size; i++){
-            Ticker* new_t = new Ticker(false, &d);
-            s >> *new_t;
-            d._add_ticker(new_t);
-        }
+        util::import_list(s, d._tickers, false, &d);
         return s;
     }
 }

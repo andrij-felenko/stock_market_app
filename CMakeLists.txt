@@ -103,6 +103,8 @@ set (src
     utilities/define.h
     utilities/res_dir.cpp
     utilities/res_dir.h
+    utilities/features.cpp
+    utilities/features.h
 )
 
 qt_add_executable(stock_manager ${src})
@@ -126,6 +128,7 @@ qt_add_qml_module (stock_manager
     SOURCES
     QML_FILES
         main.qml
+        ui/Account.qml
         ui/Settings.qml
         ui/StockFull.qml
         ui/Favorite.qml
@@ -154,6 +157,7 @@ qt_add_resources(stock_manager "rc_images"
         rc/images/stock.png
         rc/images/Stock_app_logo.png
         rc/images/Stock_app_logo2.png
+        rc/images/person.png
 )
 
 file(GLOB tags_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} rc/tags/*.edsm)

@@ -7,6 +7,7 @@ using namespace data;
 data::Ticker::Ticker(bool primary, Instrument* parent) : QObject(parent), _primary(primary)
 {
     _quotes = new Quotes(this);
+    connect(this, &Ticker::update_data, parent, &Instrument::save);
 }
 
 bool        Ticker::is_primary() const { return _primary; }

@@ -26,6 +26,16 @@ public:
     std::vector <data::Instrument*>& favorite_list();
     std::vector <data::Stock*>&         asset_list();
 
+    void save();
+    void load();
+
+public slots:
+    void addToFavorite(const QString& symbol);
+
+signals:
+    void    assetListUpdated();
+    void favoriteListUpdated();
+
 private:
     User(QObject* parent = nullptr);
     User& operator = (const User&) = delete;
@@ -35,6 +45,9 @@ private:
 
     friend class model::AssetList;
     friend class model::InstrumentList;
+
+    friend QDataStream& operator << (QDataStream& s, const User& d);
+    friend QDataStream& operator >> (QDataStream& s,       User& d);
 };
 
 namespace data { User* account(); }

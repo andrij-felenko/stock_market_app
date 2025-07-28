@@ -14,6 +14,8 @@
 #include "instrument/stability.h"
 #include "instrument/valuation.h"
 
+#include "utilities/features.h"
+
 namespace data {
     class Market;
     class Instrument;

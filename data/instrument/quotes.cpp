@@ -140,6 +140,11 @@ float Quotes::current() const
     return ret;
 }
 
+bool Quotes::empty() const
+{
+    return _points.empty();
+}
+
 namespace data {
     QDataStream& operator << (QDataStream& s, const Quotes& q) {
         s << quint32(q._points.size());

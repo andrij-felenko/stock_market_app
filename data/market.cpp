@@ -9,6 +9,7 @@
 #include <thread>
 #include "data/instrument.h"
 #include "api/eod.h"
+#include <QThread>
 
 enum MarketRoles {
     TickerRole = Qt::UserRole + 1,
@@ -71,13 +72,18 @@ data::Market::Market(QObject* parent) : QObject(parent)
     _instruments.reserve(20'000);
     _ticker_meta.reserve(40'000);
 
-    QTimer::singleShot(0, this, [this](){ this->_load_data(); });
+    QTimer::singleShot(100, this, [this](){ this->_load_data(); });
 }
 
 void data::Market::_load_data()
 {
-    load_ticker_meta();
-    load_instruments();
+    QThread* thread = QThread::create([this]() {
+        load_instruments();
+        if (_instruments.empty())
+            load_ticker_meta();
+    });
+    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    thread->start();
 }
 
 // --------------------------- Work with basic list of all market ---------------------------------
@@ -148,7 +154,7 @@ data::Instrument* const data::Market::add(QString tag)
         instr->get(tag, true, true);
         instr->_primary_ticker = tag;
         market->_instruments.emplace_back(instr);
-        qDebug() << "Market::add new" << tag << market->_instruments.size();
+        // qDebug() << "Market::add new" << tag << market->_instruments.size();
     }
 
     return instr;
@@ -185,7 +191,11 @@ namespace market::meta {
 
 void data::Market::clusterise_ticker_meta()
 {
-    std::thread([this](){ clusterise_ticker_meta(_ticker_meta); }).detach();
+    QThread* thread = QThread::create([this]() {
+        clusterise_ticker_meta(_ticker_meta);
+    });
+    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    thread->start();
 }
 
 void data::Market::clusterise_ticker_meta(data::TickerMetaList metalist)
@@ -508,26 +518,49 @@ void data::Market::load_instruments()
         int32_t size;
         in >> size;
         for (int i = 0; i < size; i++){
-            QString read;
-            in >> read; // primary_ticker
-            Instrument* instr = Market::add(read);
-            in >> read; instr->identity()->set_country(read);
-            in >> read; instr->identity()->set_title  (read);
-            int32_t symbol_size; in >> symbol_size;
+            if (i % 20 == 0)
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+
+            QString prim_ticker;
+            QString country;
+            QString title;
+            std::vector <currency::Tag> list_tag;
+            std::vector <QString> list_country;
+            std::vector <QString> list_exchange;
+            std::vector <QString> list_symbol;
+            int32_t symbol_size;
+            in >> prim_ticker >> country >> title >> symbol_size;
+
             for (int si = 0; si < symbol_size; si++){
                 currency::Tag tag;
-                in >> read >> tag; // symbol & currency
-                Ticker* t = instr->get(read, true, false);
-                t->set_currency(tag);
-                in >> read; t->set_country (read);
-                in >> read; t->set_exchange(read);
+                QString temp;
+                in >> temp >> tag;
+                list_tag.push_back(tag);
+                list_symbol.push_back(temp);
+                in >> temp; list_country.push_back(temp);
+                in >> temp; list_exchange.push_back(temp);
             }
+
+            QMetaObject::invokeMethod(Market::instance(),
+                                      [prim_ticker, country, title, symbol_size,
+                                      list_country, list_exchange, list_symbol, list_tag](){
+                Instrument* instr = Market::add(prim_ticker);
+                instr->identity()->set_country(country);
+                instr->identity()->set_title  (title);
+                for (int si = 0; si < symbol_size; si++){
+                    Ticker* t = instr->get(list_symbol[si], true, false);
+                    t->set_currency(list_tag[si]);
+                    t->set_country (list_country[si]);
+                    t->set_exchange(list_exchange[si]);
+                }
+            }, Qt::QueuedConnection);
         }
 
         file.close();
     };
     load_from(":/rc");
     load_from(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    emit tickerMetaLoadFinish();
 }
 
 void data::Market::save_instruments()

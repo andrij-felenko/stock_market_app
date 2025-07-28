@@ -13,7 +13,8 @@ api::Eod::Eod(QObject* parent) : API(parent)
         for (const auto& it : _replies)
             if (it->_reply == reply){
                 qDebug() << "catch reply";
-                _exchange_list_queue.removeFirst();
+                if (_exchange_list_queue.length() > 0)
+                    _exchange_list_queue.removeFirst();
                 _next_get_all_exchange_tag();
             }
     });
@@ -73,6 +74,22 @@ void api::Eod::get_all_exchange_tag()
     Eod* data = Eod::instance();
     data->_exchange_list_queue = exchange_map.keys();
     data->_next_get_all_exchange_tag();
+}
+
+void api::Eod::historical_year(QString tag, int8_t year, char period)
+{
+    qDebug() << "EOD ADD BY TAG" << tag;
+    if (year >= 20 || year < 1)
+        year = 20;
+
+    QDate date = QDate::currentDate();
+
+    api::StringMap params = {
+        { "period", QString(period) },
+        { "from", QDate(date.year() - year, date.month(), date.day()).toString("yyyy-MM-dd") },
+        { "to", date.toString("yyyy-MM-dd") }
+    };
+    Eod::instance()->_request(Request::Candle, tag, params);
 }
 
 void api::Eod::_next_get_all_exchange_tag()
@@ -156,11 +173,11 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
         case api::Request::Peers:
         case api::Request::Quote:
         case api::Request::Tag:
-        case api::Request::Candle:
         case api::Request::Dividend:
         case api::Request::Earnings:
         case api::Request::Reported: return false;
         case api::Request::Exchange: url = base + "/exchange-symbol-list/" + name; break;
+        case api::Request::Candle: url = base + "/eod/" + name; break;
     }
 
     QUrlQuery query;
@@ -169,6 +186,15 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
         case api::Request::Exchange: {
             query.addQueryItem("api_token", settings::network()->key_eod());
             query.addQueryItem("fmt", "json");
+            break;
+        }
+        case api::Request::Candle: {
+            // https://eodhd.com/api/eod/MCD.US?api_token=683ebb8bc59b60.11043967&fmt=json
+            query.addQueryItem("api_token", settings::network()->key_eod());
+            query.addQueryItem("period", keys.value("period", "d"));
+            query.addQueryItem("fmt", "json");
+            query.addQueryItem("from", keys.value("from"));
+            query.addQueryItem("to",   keys.value("to"));
             break;
         }
         default:;
@@ -184,36 +210,76 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
 
 void api::Eod::_handler_answer(Request type, QByteArray data, QString name, bool stream)
 {
-    qDebug() << "handler answer";
-    // qDebug() << data;
+    qDebug() << "handler answer eod";
+    qDebug() << data;
     // QByteArray response = m_reply->readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     // qDebug() << name << "return data" << doc;
     // qDebug() << response;
 
-    auto market = data::Market::instance();
     switch (type){
     case api::Request::Exchange: {
-        QJsonArray root = doc.array();
-        for (const auto& it : std::as_const(root)){
-            QJsonObject obj = it.toObject();
-            data::TickerMeta meta;
-            meta.symbol   = obj.value("Code")    .toString() + exchange_map[name];
-            meta.name     = obj.value("Name")    .toString();
-            meta.region   = obj.value("Country") .toString();
-            meta.exchange = obj.value("Exchange").toString();
-            meta.currency = obj.value("Currency").toString();
-            meta.type     = obj.value("Type")    .toString();
-            // if (meta.name.startsWith("Ren", Qt::CaseInsensitive))
-                market->add(meta);
-        }
-        market->save_ticker_meta();
-
-        // remove echange queue list
-        _exchange_list_queue.removeOne(name);
-        QTimer::singleShot(0, this, [this](){ _next_get_all_exchange_tag(); });
+        _handle_exchange(doc, name);
+        break;
+    }
+    case api::Request::Candle: {
+        _handle_candle(doc, name);
         break;
     }
     default:;
     }
+}
+
+void api::Eod::_handle_exchange(const QJsonDocument& json, QString name)
+{
+    auto market = data::Market::instance();
+    QJsonArray root = json.array();
+    for (const auto& it : std::as_const(root)){
+        QJsonObject obj = it.toObject();
+        data::TickerMeta meta;
+        meta.symbol   = obj.value("Code")    .toString() + exchange_map[name];
+        meta.name     = obj.value("Name")    .toString();
+        meta.region   = obj.value("Country") .toString();
+        meta.exchange = obj.value("Exchange").toString();
+        meta.currency = obj.value("Currency").toString();
+        meta.type     = obj.value("Type")    .toString();
+        // if (meta.name.startsWith("Ren", Qt::CaseInsensitive))
+            market->add(meta);
+    }
+    market->save_ticker_meta();
+
+    // remove echange queue list
+    _exchange_list_queue.removeOne(name);
+    QTimer::singleShot(0, this, [this](){ _next_get_all_exchange_tag(); });
+}
+
+void api::Eod::_handle_candle(const QJsonDocument& json, QString name)
+{
+    auto finded = data::Market::find(name);
+    if (!finded.has_value()) {
+        data::Market::add(name);
+        finded = data::Market::find(name);
+        if (!finded.has_value())
+            return;
+    }
+
+    data::Ticker* ticker = finded.value();
+
+    QJsonArray array = json.array();
+    for (const QJsonValue& v : std::as_const(array)){
+        QJsonObject obj = v.toObject();
+        QString dtime   = obj[  "date"].toString();
+        float open      = obj[  "open"].toString().toFloat();
+        float close     = obj[ "close"].toString().toFloat();
+        float high      = obj[  "high"].toString().toFloat();
+        float low       = obj[   "low"].toString().toFloat();
+        uint64_t volume = obj["volume"].toString().toULongLong();
+
+        QDate date = QDate::fromString(dtime, "yyyy-MM-dd");
+        ticker->quotes()->set_data(date, open, close,high, low, volume);
+    }
+
+    ticker->quotes()->recalculate();
+    emit ticker->update_data();
+    ticker->save();
 }
