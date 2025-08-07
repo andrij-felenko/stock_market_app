@@ -81,7 +81,7 @@ QVariant model::AssetList::data(const QModelIndex& index, int role) const
     data::Stock* stock = _assets[index.row()];
 
     switch (role) {
-        case TickerRole:  return stock->ticker()->symbol();
+        case TickerRole:  return stock->ticker()->symbol().full();
         case QuoteRole:   return stock->ticker()->quotes()->current();
         case TitleRole:   return stock->instrument()->identity()->title();
         case CountryRole: return stock->instrument()->identity()->country();

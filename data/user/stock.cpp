@@ -1,6 +1,7 @@
 #include "stock.h"
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
+#include "loader.h"
 #include "../market.h"
 #include "../instrument.h"
 #include "utilities/features.h"
@@ -21,18 +22,18 @@ Instrument* Stock::instrument() const { return _ticker->instrument(); }
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const Stock& d) {
-        util::export_list(s, d._list);
+        util::list_to_stream(s, d._list);
         return s << d._count << d._price << d._value
                  << d.instrument()->primary_ticker(true)->symbol();
     }
 
     QDataStream& operator >> (QDataStream& s, Stock& d) {
-        util::import_list(s, d._list);
+        util::list_from_stream(s, d._list);
         s >> d._count >> d._price >> d._value;
 
         QString tag;
         s >> tag;
-        auto t = Market::find(tag);
+        auto t = Nexus.market()->find(tag);
         if (t.has_value())
             d._ticker = t.value();
 

@@ -13,16 +13,34 @@ enum InstRole {
     Region
 };
 
-data::Instrument::Instrument(QObject* parent) : QObject(parent)
+data::Instrument::Instrument(const ticker::Symbol& tag, QObject* parent) : QObject(parent)
 {
     _dividend = new Dividend(this);
     _identity = new Identity(this);
     _stability = new Stability(this);
     _valuation = new Valuation(this);
     _profitability = new Profitability(this);
-    _tickers.reserve(10);
+    _tickers.reserve(100);
 
-    QTimer::singleShot(0, this, [this](){ this->load(); });
+    ensure(tag);
+}
+
+data::Instrument::Instrument(const meta::Ticker& meta, QObject* parent)
+    : Instrument(meta.symbol, parent)
+{
+    _identity->set_title(meta.name);
+    _identity->set_country(meta.region);
+
+    primary_ticker(true)->setCurrency(currency::Name::from_short(meta.currency));
+}
+
+data::ticker::Symbol data::Instrument::primary_symbol(bool absolute) const
+{
+    if (not absolute){
+        // TODO add check user primary ticker settings
+    }
+
+    return _tickers[0]->symbol();
 }
 
 data::Ticker* data::Instrument::primary_ticker(bool absolute) const
@@ -31,12 +49,12 @@ data::Ticker* data::Instrument::primary_ticker(bool absolute) const
         // TODO add check user primary ticket settings
     }
 
-    return operator[](_primary_ticker);
+    return _tickers[0];
 }
 
-QStringList data::Instrument::tickers() const
+data::ticker::SymbolList data::Instrument::tickers() const
 {
-    QStringList ret;
+    ticker::SymbolList ret;
     ret.reserve(50);
     for (const auto& it : _tickers)
         if (not ret.contains(it->symbol()))
@@ -44,7 +62,7 @@ QStringList data::Instrument::tickers() const
     return ret;
 }
 
-bool data::Instrument::contains(const QString& symbol) const
+bool data::Instrument::contains(const ticker::Symbol& symbol) const
 {
     for (const auto& it : _tickers)
         if (it->_symbol == symbol)
@@ -61,26 +79,31 @@ data::Profitability* data::Instrument::profitability() const { return _profitabi
 // tdsm - ticker data stock manager
 void data::Instrument::save() const
 {
+    qDebug() << Q_FUNC_INFO;
     QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     path += "/stocks";
     QDir().mkpath(path);
 
-    QFile file(path + "/" + _primary_ticker + ".tdsm");
+    QFile file(path + "/" + primary_symbol(true).full() + ".tdsm");
     qDebug() << "file" << file.fileName();
-    if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly))
+    if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly)){
+        qDebug() << "data::Instrument::save() can`t open file"
+                 << file.fileName() << file.errorString();
         return;
+    }
 
     QDataStream out(&file);
     out.setVersion(QDataStream::Qt_6_0);
     out << *this;
     file.close();
-    qDebug() << "Save to: " << file.fileName();
+    qDebug() << "data::Instrument::save() to: " << file.fileName();
 }
 
 void data::Instrument::load()
 {
+    qDebug() << Q_FUNC_INFO;
     std::function load_data = [this](QString path){
-        QFile file(path + "/stocks/" + _primary_ticker + ".tdsm");
+        QFile file(path + "/stocks/" + primary_symbol(true).full() + ".tdsm");
         if (!file.open(QIODevice::ReadOnly))
             return;
 
@@ -92,68 +115,61 @@ void data::Instrument::load()
 
     load_data(":/rc");
     load_data(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    // if (not primary_ticker()->quotes()->empty())
+        qDebug() << "load instrument" << primary_symbol().full()
+                 << primary_ticker()->quotes()->points().size()
+                 << primary_ticker()->quotes()->current();
 }
 
-data::Ticker* const data::Instrument::operator[](const QString& symbol) const
+data::Ticker* const data::Instrument::operator[](ticker::Symbol symbol) const
 {
+    // qDebug() << Q_FUNC_INFO << symbol << _tickers.size();
     for (const auto& it : _tickers)
-        if (it->symbol().compare(symbol, Qt::CaseInsensitive) == 0)
+        if (it->symbol() == symbol){
+            // qDebug() << "[" << symbol << "]" << it;
             return it;
+        }
     return nullptr;
 }
 
-data::Instrument::operator data::TickerMeta() const
+data::Ticker* const data::Instrument::ensure(ticker::Symbol symbol)
 {
-    TickerMeta meta;
-    meta.name = _identity->title();
+    qDebug() << "ensure" << symbol << _tickers.size();
+    Ticker* t = operator[](symbol);
+    if (t == nullptr){
+        t = new Ticker(_tickers.empty(), this);
+        t->set_symbol(symbol);
+        _tickers.push_back(t);
+        connect(t, &Ticker::update_data, this, &Instrument::save);
+    }
+    qDebug() << "ensure 2" << symbol << _tickers.size();
+    return t;
+}
+
+data::Instrument::operator meta::Ticker() const
+{
+    meta::Ticker meta;
+    meta.name    = _identity->title();
+    meta.region  = _identity->country();
+    meta.symbol  = _tickers[0]->symbol();
     meta.currency = primary_ticker(true)->currency_str();
-    meta.region = _identity->country();
-    meta.symbol = _primary_ticker;
-    meta.exchange = primary_ticker(true)->exchange();
     return meta;
-}
-
-data::Ticker* const data::Instrument::get(const QString& symbol, bool createif, bool prime)
-{
-    for (const auto& it : _tickers)
-        if (it->symbol() == symbol)
-            return it;
-
-    if (not createif)
-        return nullptr;
-
-    Ticker* ticker = new Ticker(prime, this);
-    ticker->_symbol = symbol;
-    _tickers.push_back(ticker);
-    return ticker;
-}
-
-void data::Instrument::_update_primary_ticket()
-{
-    for (const auto& it : _tickers)
-        if (it->_symbol == _primary_ticker)
-            it->_primary = true;
-}
-
-void data::Instrument::_add_ticker(Ticker* ticker)
-{
-    _tickers.push_back(ticker);
-    _update_primary_ticket();
-    connect(ticker, &Ticker::update_data, this, &Instrument::save);
 }
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const Instrument& d) {
+        qDebug() << Q_FUNC_INFO;
         s << *d._dividend  << *d._identity  << *d._profitability
-          << *d._stability << *d._valuation << d._primary_ticker;
-        util::export_list(s, d._tickers);
+          << *d._stability << *d._valuation;
+        util::list_to_stream(s, d._tickers);
         return s;
     }
 
     QDataStream& operator >> (QDataStream& s, Instrument& d) {
+        qDebug() << Q_FUNC_INFO;
         s >> *d._dividend  >> *d._identity  >> *d._profitability
-          >> *d._stability >> *d._valuation >> d._primary_ticker;
-        util::import_list(s, d._tickers, false, &d);
+          >> *d._stability >> *d._valuation;
+        util::list_from_stream(s, d._tickers, false, &d);
         return s;
     }
 }

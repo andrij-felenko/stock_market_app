@@ -44,6 +44,7 @@ public:
     void set_data(QTime t, float open, float close, float high, float low, quint64  v);
     void set_intraday(QDate date);
 
+public slots:
     float year_max() const;
     float year_min() const;
 

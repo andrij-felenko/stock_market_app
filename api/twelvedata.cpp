@@ -8,6 +8,7 @@
 #include <QtGui/QGuiApplication>
 
 #include "data/market.h"
+#include "loader.h"
 
 api::TwelveData::TwelveData(QObject* parent) : API(parent)
 {
@@ -95,10 +96,10 @@ void api::TwelveData::_handler_answer(Request type, QByteArray data, QString nam
     }
     qDebug() << 2;
 
-    auto finded = data::Market::find(name);
+    auto finded = Nexus.market()->find(name);
     if (!finded.has_value()) {
-        data::Market::add(name);
-        finded = data::Market::find(name);
+        // Nexus.market()->add(name);
+        finded = Nexus.market()->find(name);
         qDebug() << finded.has_value();
         if (!finded.has_value())
             return;

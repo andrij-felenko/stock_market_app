@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QUrlQuery>
 #include "api/api.h"
+#include "data/instrument/symbol.h"
 
 namespace api { class Eod; }
 
@@ -23,7 +24,7 @@ public:
 
     // void fetch_ticker_data(const QString& ticker);
 
-    static void historical_year(QString tag, int8_t year = -1, char period = 'd');
+    static void historical_year(data::ticker::Symbol tag, int8_t year = -1, char period = 'd');
 
 signals:
     void data_ready(const QJsonObject& data);

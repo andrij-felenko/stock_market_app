@@ -7,6 +7,8 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
 
+#include "data/meta.h"
+#include "instrument/symbol.h"
 #include "instrument/ticker.h"
 #include "instrument/dividend.h"
 #include "instrument/identity.h"
@@ -20,6 +22,10 @@ namespace data {
     class Market;
     class Instrument;
     struct TickerMeta;
+
+    struct InstrumentMeta {
+        //
+    };
 }
 
 class data::Instrument : public QObject
@@ -31,7 +37,8 @@ class data::Instrument : public QObject
     Q_PROPERTY(Valuation*     valuation     READ valuation     CONSTANT)
     Q_PROPERTY(Profitability* profitability READ profitability CONSTANT)
 public:
-    Instrument(QObject* parent = nullptr);
+    Instrument(const ticker::Symbol& tag,  QObject* parent = nullptr);
+    Instrument(const meta  ::Ticker& meta, QObject* parent = nullptr);
 
     Dividend* dividend() const;
     Identity* identity() const;
@@ -41,18 +48,21 @@ public:
 
     Ticker* primary_ticker(bool absolute = false) const;
 
-    QStringList tickers() const;
-    bool contains(const QString& symbol) const;
+    ticker::SymbolList tickers() const;
+    ticker::Symbol primary_symbol(bool absolute = false) const;
+    bool contains(const ticker::Symbol& symbol) const;
 
     void save() const;
     void load();
 
-    Ticker* const operator[](const QString& symbol) const;
-    Ticker* const get(const QString& symbol, bool createif = false, bool prime = false);
+    Ticker* const operator [] (ticker::Symbol symbol) const;
 
-    operator data::TickerMeta() const;
+    operator meta::Ticker() const;
+    // void set_meta_ticker(const meta::Ticker& meta);
 
 private:
+    Ticker* const ensure(ticker::Symbol symbol);
+
     Dividend* _dividend = nullptr;
     Identity* _identity = nullptr;
     Stability* _stability = nullptr;
@@ -60,10 +70,6 @@ private:
     Profitability* _profitability = nullptr;
 
     std::vector <Ticker*> _tickers;
-    QString _primary_ticker;
-
-    void _update_primary_ticket();
-    void _add_ticker(Ticker* ticker);
 
     friend class data::Market;
 

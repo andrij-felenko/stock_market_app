@@ -4,6 +4,7 @@
 #include <QtCore/QStandardPaths>
 #include "data/instrument.h"
 #include "data/market.h"
+#include "loader.h"
 
 enum Tag {
     NameRole = Qt::UserRole + 1,
@@ -14,15 +15,6 @@ enum Tag {
     ExchangeRole,
     TickerSize,
 };
-
-model::SearchTag* model::SearchTag::instance()
-{
-    static SearchTag* _instance = nullptr;
-    if (_instance == nullptr){
-        _instance = new SearchTag(qApp);
-    }
-    return _instance;
-}
 
 model::SearchTag::SearchTag(QObject* parent) : QAbstractListModel(parent)
 {
@@ -40,16 +32,17 @@ QVariant model::SearchTag::data(const QModelIndex& index, int role) const
         return QVariant();
 
     switch (role) {
-        case TagRole:      return _list[index.row()].symbol;
+        case TagRole:      return _list[index.row()].symbol.full();
         case NameRole:     return _list[index.row()].name;
         case TypeRole:     return _list[index.row()].type;
         case RegionRole:   return _list[index.row()].region;
         case CurrencyRole: return _list[index.row()].currency;
-        case ExchangeRole: return _list[index.row()].exchange;
+        case ExchangeRole: return _list[index.row()].symbol.to_short();
         case TickerSize: {
-            auto ticker = data::Market::instance()->find(_list[index.row()].symbol);
-            if (ticker.has_value())
-                return ticker.value()->instrument()->tickers().join(" | ");
+            // TODO make list of values of symbols
+            // auto ticker = Loader::instance()->market()->find(_list[index.row()].symbol);
+            // if (ticker.has_value())
+                // return ticker.value()->instrument()->tickers();
             return 0;
         }
         default:           return QVariant();
@@ -81,7 +74,7 @@ void model::SearchTag::add(QString symbol, QString name,
                            QString currency)
 {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    data::TickerMeta m;
+    meta::Ticker m;
     m.symbol = symbol;
     m.name = name;
     m.type = type;
@@ -98,7 +91,7 @@ void model::SearchTag::find_by_part(QString str)
     if (str.isEmpty())
         return;
 
-    auto list = data::Market::instance()->search_by(str);
+    auto list = Loader::instance()->market()->search_by(str);
 
     // --------------------------------------------------------------
     beginInsertRows(QModelIndex(), 0, list.size() - 1);

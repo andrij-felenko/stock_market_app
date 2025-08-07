@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QtGui/QGuiApplication>
 
+#include "loader.h"
 #include "data/market.h"
 #include "data/instrument.h"
 
@@ -119,10 +120,10 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
     qDebug() << name << "return data" << doc;
     // qDebug() << response;
 
-    auto finded = data::Market::find(name);
+    auto finded = Nexus.market()->find(name);
     if (!finded.has_value()){
-        data::Market::add(name);
-        finded = data::Market::find(name);
+        // Nexus.market()->add(name);
+        finded = Nexus.market()->find(name);
         if (!finded.has_value())
             return;
     }
@@ -136,7 +137,7 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
     switch (type){
         case api::Request::Info: {
             // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
-            t->set_exchange(obj.value("exchange").toString());
+            t->symbol().set_exchange(obj.value("exchange").toString());
             in->identity()->set_title(obj.value("name").toString());
             in->identity()->set_logo(obj.value("logo").toString());
             in->identity()->set_country   (obj.value("country").toString());

@@ -1,4 +1,5 @@
 #include "alphavantage.h"
+#include "loader.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -147,10 +148,10 @@ void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString n
     // qDebug() << name << "return data" << doc;
     // qDebug() << response;
 
-    auto finded = data::Market::find(name);
+    auto finded = Nexus.market()->find(name);
     if (!finded.has_value()){
-        data::Market::add(name);
-        finded = data::Market::find(name);
+        // Nexus.market()->add(name);
+        finded = Nexus.market()->find(name);
         if (!finded.has_value())
             return;
     }
@@ -160,8 +161,8 @@ void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString n
     QJsonObject obj = doc.object();
     switch (type){
     case api::Request::Info: {
-        t->set_exchange(obj.value("Exchange").toString());
-        t->set_currency(currency::Name::to_enum(obj.value("Currency").toString()));
+        t->setExchange(obj.value("Exchange").toString());
+        t->setCurrency(currency::Name::to_enum(obj.value("Currency").toString()));
 
         in->identity()->set_title(obj.value("Name").toString());
         in->identity()->set_descrip(obj.value("Description").toString());
@@ -242,15 +243,14 @@ void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString n
     case api::Request::Tag: {
         QJsonObject root = doc.object();
         QJsonArray list = root.value("bestMatches").toArray();
-        model::SearchTag* st = model::SearchTag::instance();
-        st->clear();
+        Loader::instance()->search_tag()->clear();
         for (const auto& it : std::as_const(list)){
             QJsonObject obj = it.toObject();
-            st->add(obj.value("1. symbol"  ).toString(),
-                    obj.value("2. name"    ).toString(),
-                    obj.value("3. type"    ).toString(),
-                    obj.value("4. region"  ).toString(),
-                    obj.value("8. currency").toString());
+            Loader::instance()->search_tag()->add(obj.value("1. symbol"  ).toString(),
+                                    obj.value("2. name"    ).toString(),
+                                    obj.value("3. type"    ).toString(),
+                                    obj.value("4. region"  ).toString(),
+                                    obj.value("8. currency").toString());
         }
         break;
     }

@@ -113,7 +113,6 @@ void api::OpenAI::recheck_tag(QString tag)
         "[{\"all_tags\": [\"OR.EPA\", \"LRLCY.US\"], \"tag\": \"OR.EPA\", "
         "\"title\": \"L'Oréal S.A.\"}]"
     );
-
 }
 
 void api::OpenAI::_handler_answer(Request type, QByteArray data, QString name, bool stream)

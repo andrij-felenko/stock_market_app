@@ -14,8 +14,6 @@ class model::SearchTag : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    static SearchTag* instance();
-
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QHash<int, QByteArray> roleNames() const override;
@@ -30,7 +28,9 @@ private:
     SearchTag(QObject* parent = nullptr);
     SearchTag& operator = (const SearchTag&) = delete;
 
-    std::vector <data::TickerMeta> _list;
+    friend class Nexus;
+
+    std::vector <meta::Ticker> _list;
 };
 
 #endif // MODEL_SEARCH_TAG_H

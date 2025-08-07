@@ -17,7 +17,7 @@ Instrument* Ticker::instrument() const { return static_cast <Instrument*> (paren
 
 QString       Ticker::currency_str() const {return currency::Name::to_full(currency()); }
 currency::Tag Ticker::    currency() const { return _currency; }
-void          Ticker::set_currency(const currency::Tag& new_currency)
+void          Ticker:: setCurrency(const currency::Tag& new_currency)
 {
     if (_currency == new_currency)
         return;
@@ -25,8 +25,8 @@ void          Ticker::set_currency(const currency::Tag& new_currency)
     emit currencyChanged(_currency);
 }
 
-QString Ticker::    country() const { return _country; }
-void    Ticker::set_country(const QString& new_country)
+QString Ticker::   country() const { return _country; }
+void    Ticker::setCountry(const QString& new_country)
 {
     if (_country == new_country)
         return;
@@ -34,8 +34,8 @@ void    Ticker::set_country(const QString& new_country)
     emit countryChanged(_country);
 }
 
-QString Ticker::    exchange() const { return _exchange; }
-void    Ticker::set_exchange(const QString& new_exchange)
+QString Ticker::   exchange() const { return _exchange; }
+void    Ticker::setExchange(const QString& new_exchange)
 {
     if (_exchange == new_exchange)
         return;
@@ -43,24 +43,35 @@ void    Ticker::set_exchange(const QString& new_exchange)
     emit exchangeChanged(_exchange);
 }
 
-QString Ticker::    symbol() const { return _symbol; }
-void    Ticker::set_symbol(QString new_symbol)
-{
-    if (new_symbol.split(".").length() == 1)
-        new_symbol += ".US";
+ticker::Symbol Ticker::   symbol()     const { return _symbol; }
+QString        Ticker::   symbol_str() const { return _symbol.full(); }
+void           Ticker::setSymbol(QString new_symbol) { set_symbol(new_symbol); }
 
-    if (_symbol == new_symbol)
+void Ticker::set_symbol(QString new_symbol)          { set_symbol(ticker::Symbol(new_symbol)); }
+void Ticker::set_symbol(QString code, QString exch)  { set_symbol(ticker::Symbol(code, exch)); }
+void Ticker::set_symbol(QString code, ExchangeEnum e){ set_symbol(ticker::Symbol(code, e)); }
+
+void Ticker::set_symbol(ticker::Symbol symbol)
+{
+    if (_symbol == symbol)
         return;
-    _symbol = new_symbol;
-    emit exchangeChanged(_symbol);
+    _symbol = symbol;
+    emit exchangeChanged(symbol.exchange_str());
+    emit symbolChanged(symbol.full());
 }
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const Ticker& d) {
+        qDebug() << Q_FUNC_INFO;
+        qDebug() << "QDataStream& operator << (QDataStream& s, const Ticker& d)"
+                 << d.quotes()->empty() << d.symbol_str();
         return s << *d._quotes << d._currency << d._country << d._exchange << d._symbol;
     }
 
     QDataStream& operator >> (QDataStream& s, Ticker& d) {
+        qDebug() << Q_FUNC_INFO;
+        qDebug() << "QDataStream& operator >> (QDataStream& s, const Ticker& d)"
+                 << d.quotes()->empty() << d.symbol_str();
         return s >> *d._quotes >> d._currency >> d._country >> d._exchange >> d._symbol;
     }
 }

@@ -4,6 +4,7 @@
 #include <QtCore/QJsonArray>
 #include "data/instrument.h"
 #include "data/market.h"
+#include "loader.h"
 
 api::Eod::Eod(QObject* parent) : API(parent)
 {
@@ -41,21 +42,11 @@ QMap<QString, QString> exchange_map = {
     { "US",     ".US"  },  // США: без суфікса
     { "LSE",    ".L"   },  // Лондон
     { "XETRA",  ".DE"  },  // Франкфурт (Xetra)
-    // { "EPA",    ".PA"  },  // Париж
-    // { "MIL",    ".MI"  },  // Мілан
-    // { "TSE",    ".T"   },  // Токіо
-    // { "HKEX",   ".HK"  },  // Гонконг
-    // { "XHEL",   ".FI"  },  // Гельсінкі
-    // { "XSTO",   ".ST"  },  // Стокгольм
-    // { "XCSE",   ".CO"  },  // Копенгаген
-    // { "XOSL",   ".OL"  },  // Осло
-    // { "XMAD",   ".MC"  },  // Мадрид
-    // { "XMEX",   ".MX"  },  // Мехіко
-    // { "XSES",   ".SI"  },  // Сінгапур
+
     { "TO",     ".TO"  }, // Торонто
     { "PA",     ".PA"  }, // Париж
     { "BE",     ".BE"  }, // Берлін
-    { "BR",     ".BR"  }, // Бразилія (B3)
+    { "BR",     ".BR"  }, // Брюссель
     { "AM",     ".AM"  }, // amsterdam
 
     // Альтернативні / дублікати
@@ -76,7 +67,7 @@ void api::Eod::get_all_exchange_tag()
     data->_next_get_all_exchange_tag();
 }
 
-void api::Eod::historical_year(QString tag, int8_t year, char period)
+void api::Eod::historical_year(data::ticker::Symbol tag, int8_t year, char period)
 {
     qDebug() << "EOD ADD BY TAG" << tag;
     if (year >= 20 || year < 1)
@@ -96,8 +87,8 @@ void api::Eod::_next_get_all_exchange_tag()
 {
     qDebug() << "Next" << _exchange_list_queue;
     if (_exchange_list_queue.empty()){
-        data::Market::instance()->save_ticker_meta();
-        data::Market::instance()->clusterise_ticker_meta();
+        Loader::instance()->market()->save_ticker_meta();
+        Loader::instance()->market()->clusterise_ticker_meta();
         return;
     }
 
@@ -232,19 +223,20 @@ void api::Eod::_handler_answer(Request type, QByteArray data, QString name, bool
 
 void api::Eod::_handle_exchange(const QJsonDocument& json, QString name)
 {
-    auto market = data::Market::instance();
+    auto market = Loader::instance()->market();
     QJsonArray root = json.array();
     for (const auto& it : std::as_const(root)){
         QJsonObject obj = it.toObject();
-        data::TickerMeta meta;
-        meta.symbol   = obj.value("Code")    .toString() + exchange_map[name];
+        meta::Ticker meta;
+        meta.symbol.set_code    (obj.value("Code")    .toString());
+        meta.symbol.set_exchange(obj.value("Exchange").toString());
+
         meta.name     = obj.value("Name")    .toString();
         meta.region   = obj.value("Country") .toString();
-        meta.exchange = obj.value("Exchange").toString();
         meta.currency = obj.value("Currency").toString();
         meta.type     = obj.value("Type")    .toString();
-        // if (meta.name.startsWith("Ren", Qt::CaseInsensitive))
-            market->add(meta);
+
+        market->add_meta(meta);
     }
     market->save_ticker_meta();
 
@@ -255,10 +247,10 @@ void api::Eod::_handle_exchange(const QJsonDocument& json, QString name)
 
 void api::Eod::_handle_candle(const QJsonDocument& json, QString name)
 {
-    auto finded = data::Market::find(name);
+    auto finded = Nexus.market()->find(name);
     if (!finded.has_value()) {
-        data::Market::add(name);
-        finded = data::Market::find(name);
+        // Nexus.market()->add(name);
+        finded = Nexus.market()->find(name);
         if (!finded.has_value())
             return;
     }

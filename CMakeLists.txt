@@ -19,6 +19,7 @@ find_package (Qt6 REQUIRED COMPONENTS
     Core Network WebSockets
     Gui Widgets Svg
     Qml QuickControls2 Quick
+    Test
 )
 
 set (Qt_lib_core  Qt6::Core   Qt6::Network         Qt6::WebSockets)
@@ -28,8 +29,8 @@ set (Qt_libs ${Qt_lib_core} ${Qt_lib_gui} ${Qt_lib_quick})
 
 # app -------------------------------------------------------------------------
 set (src
-    main.cpp
-
+    loader.h
+    loader.cpp
     api/api.cpp
     api/api.h
     api/alphavantage.cpp
@@ -54,6 +55,9 @@ set (src
 
     data/market.cpp
     data/market.h
+    data/market_meta.cpp
+    data/meta.cpp
+    data/meta.h
 
     data/instrument.cpp
     data/instrument.h
@@ -71,6 +75,8 @@ set (src
     data/instrument/identity.h
     data/instrument/profitability.cpp
     data/instrument/profitability.h
+    data/instrument/symbol.cpp
+    data/instrument/symbol.h
 
     data/user.h
     data/user.cpp
@@ -107,7 +113,7 @@ set (src
     utilities/features.h
 )
 
-qt_add_executable(stock_manager ${src})
+qt_add_executable(stock_manager main.cpp ${src})
 target_link_libraries (stock_manager PUBLIC ${Qt_libs})
 
 if(ANDROID)
@@ -119,7 +125,6 @@ endif()
 
 qt_policy(SET QTP0001 NEW)
 qt_policy(SET QTP0004 NEW)
-set(QT_QML_GENERATE_QMLLS_INI ON)
 
 qt_add_qml_module (stock_manager
     URI Stock
@@ -128,6 +133,7 @@ qt_add_qml_module (stock_manager
     SOURCES
     QML_FILES
         main.qml
+        SplashScreen.qml
         ui/Account.qml
         ui/Settings.qml
         ui/StockFull.qml
@@ -173,3 +179,28 @@ qt_add_resources(stock_manager "rc_stocks"
     FILES
         ${stock_files}
 )
+
+
+# ---------------------------- Unit test project ----------------------------------------
+set (test_src
+    test.cpp
+    data/instrument_test.h
+    data/instrument/ticker_test.h
+)
+
+add_executable (test_app ${test_src})
+
+set_target_properties(test_app PROPERTIES PROJECT_NAME "Tests")
+target_include_directories(test_app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(test_app PUBLIC ${Qt_libs} Qt6::Test)
+target_sources(test_app PRIVATE ${src})
+
+if (TARGET test_app)
+    source_group("Tests" FILES ${test_src})
+endif ()
+
+add_test(NAME test_app COMMAND test_app)
+set_target_properties(test_app PROPERTIES FOLDER "Tests")
+
+enable_testing()
+# =======================================================================================

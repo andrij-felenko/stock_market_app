@@ -7,6 +7,7 @@
 #include <QtGui/QGuiApplication>
 #include <QJsonArray>
 
+#include "loader.h"
 #include "data/market.h"
 #include "data/instrument.h"
 
@@ -157,10 +158,10 @@ void api::MarketStack::_handler_answer(Request type, QByteArray data, QString na
                 QJsonObject obj = it.toObject();
                 QString tag = obj.value("symbol").toString();
 
-                auto finded = data::Market::find(tag);
+                auto finded = Nexus.market()->find(tag);
                 if (!finded.has_value()){
-                    data::Market::add(tag);
-                    finded = data::Market::find(tag);
+                    // Nexus.market()->add(tag);
+                    finded = Nexus.market()->find(tag);
                     if (!finded.has_value())
                         continue;
                 }
@@ -177,17 +178,17 @@ void api::MarketStack::_handler_answer(Request type, QByteArray data, QString na
             break;
         }
         case api::Request::Info: {
-            auto finded = data::Market::find(name);
+            auto finded = Nexus.market()->find(name);
             if (!finded.has_value()){
-                data::Market::add(name);
-                finded = data::Market::find(name);
+                // Nexus.market()->add(name);
+                finded = Nexus.market()->find(name);
                 if (!finded.has_value())
                     break;
             }
             data::Ticker* t = finded.value();
             data::Instrument* in = t->instrument();
-            t->set_symbol(root.value("symbol").toString());
-            t->set_exchange(root.value("stock_exchange").toObject().value("acronym").toString());
+            t->symbol().set_code(root.value("symbol").toString());
+            t->symbol().set_exchange(root.value("stock_exchange").toObject().value("acronym").toString());
             in->identity()->set_title(root.value("name").toString());
             in->identity()->set_sector(root.value("sector").toString());
             in->identity()->set_industry(root.value("industry").toString());

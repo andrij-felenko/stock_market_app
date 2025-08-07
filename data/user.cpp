@@ -4,16 +4,7 @@
 #include <QStandardPaths>
 #include <qdir.h>
 #include "api/eod.h"
-
-data::User* data::account() { return User::instance(); }
-data::User* data::User::instance()
-{
-    static User* _instance = nullptr;
-    if (_instance == nullptr){
-        _instance = new User(qApp);
-    }
-    return _instance;
-}
+#include "loader.h"
 
 std::vector<data::Instrument*>& data::User::favorite_list() { return _favorite_list; }
 std::vector<data::Stock*>&      data::User::   asset_list() { return    _asset_list; }
@@ -52,10 +43,9 @@ void data::User::load()
     qDebug() << "Load from: " << file.fileName();
 }
 
-void data::User::addToFavorite(const QString& symbol)
+void data::User::addToFavorite(const ticker::Symbol& symbol)
 {
-    Market* market = Market::instance();
-    auto ticker = market->find(symbol);
+    auto ticker = Loader::instance()->market()->find(symbol);
     if (not ticker.has_value())
         return;
 
@@ -70,17 +60,11 @@ data::User::User(QObject* parent) : data::user::Info(parent)
 {
     load();
 
-    connect(Market::instance(), &Market::tickerMetaLoadFinish, this, &User::load);
+    connect(Loader::instance()->market(), &Market::tickerMetaLoadFinish, this, &User::load);
 }
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const User& d){
-        QStringList list;
-        for (const auto& it : d._favorite_list)
-            list.push_back(it->primary_ticker()->symbol());
-        s << list;
-        qDebug() << "<<" << list;
-
         // TODO add asset
         // list.clear();
         // for (const auto& it : d._asset_list)

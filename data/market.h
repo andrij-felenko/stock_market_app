@@ -8,38 +8,29 @@
 #include <QtCore/QTimer>
 
 #include "instrument/ticker.h"
+#include "meta.h"
 
-namespace data {
-    class Market;
-    struct TickerMeta {
-        QString symbol;
-        QString name;
-        QString type;
-        QString region;
-        QString currency;
-        QString exchange;
-    };
-
-    using TickerMetaList = std::vector <TickerMeta>;
-}
+class Loader;
+namespace data  { class Market; }
 namespace model { class SearchTag; }
-
 
 class data::Market : public QObject
 {
     Q_OBJECT
 public:
-    static Market* instance();
-
     std::vector <Instrument*> search_by(QString str) const;
-    static std::optional <Ticker*> find(QString tag);
-    static Instrument* const add(QString tag);
-    static void              add(TickerMeta meta);
+    std::optional <Ticker*> find(ticker::Symbol tag);
+    Instrument* const ensure(ticker::Symbol tag);
+    Instrument* const ensure(meta::Ticker meta);
+    void              add_meta(meta::Ticker meta);
+
+
 
     // sorted instruments list basic data
     void load_instruments();
     void save_instruments();
     void write_instrument(TickerMetaList list);
+    bool empty() const;
 
     void load_ticker_meta();
     void save_ticker_meta();
@@ -56,10 +47,13 @@ private:
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;
 
-    void _load_data();
+    void add_instrument_list_from_meta(QByteArrayList list);
+    void add_sorted_instrument(const ticker::Symbol main, const TickerMetaList list);
 
-    std::vector <Instrument*> _instruments;
-    std::vector <TickerMeta> _ticker_meta;
+    std::vector <Instrument*>  _instruments;
+    std::vector <meta::Ticker> _ticker_meta;
+
+    friend class ::Loader;
 };
 
 #endif

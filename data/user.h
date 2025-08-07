@@ -21,8 +21,6 @@ class data::User : public user::Info
 {
     Q_OBJECT
 public:
-    static User* instance();
-
     std::vector <data::Instrument*>& favorite_list();
     std::vector <data::Stock*>&         asset_list();
 
@@ -30,7 +28,7 @@ public:
     void load();
 
 public slots:
-    void addToFavorite(const QString& symbol);
+    void addToFavorite(const ticker::Symbol& symbol);
 
 signals:
     void    assetListUpdated();
@@ -43,6 +41,7 @@ private:
     std::vector <data::Instrument*> _favorite_list;
     std::vector <data::Stock*>         _asset_list;
 
+    friend class Nexus;
     friend class model::AssetList;
     friend class model::InstrumentList;
 
