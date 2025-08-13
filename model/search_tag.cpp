@@ -40,9 +40,12 @@ QVariant model::SearchTag::data(const QModelIndex& index, int role) const
         case ExchangeRole: return _list[index.row()].symbol.to_short();
         case TickerSize: {
             // TODO make list of values of symbols
-            // auto ticker = Loader::instance()->market()->find(_list[index.row()].symbol);
-            // if (ticker.has_value())
-                // return ticker.value()->instrument()->tickers();
+            auto ticker = Loader::instance()->market()->find(_list[index.row()].symbol);
+            QStringList list;
+            for (const auto& it : ticker.value()->instrument()->tickers())
+                list.push_back(it.full());
+            if (ticker.has_value())
+                return list.join(" | ");
             return 0;
         }
         default:           return QVariant();
@@ -97,10 +100,10 @@ void model::SearchTag::find_by_part(QString str)
     beginInsertRows(QModelIndex(), 0, list.size() - 1);
 
     for (const auto& it : std::as_const(list))
-        _list.emplace_back(*it);
+        _list.push_back(*it);
 
-    for (const auto& it : _list)
-        _list.push_back(it);
+    // for (const auto& it : _list)
+        // _list.push_back(it);
 
     endInsertRows();
 }

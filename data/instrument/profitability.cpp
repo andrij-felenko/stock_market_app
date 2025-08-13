@@ -53,11 +53,9 @@ void  Profitability::set_netincome(float newNet_income)
 }
 
 namespace data {
-    QDataStream& operator<<(QDataStream& s, const Profitability& p) {
-        return s << p._margin_gros << p._margin_oper << p._netincome << p._roa << p._roe;
-    }
+    QDataStream& operator<<(QDataStream& s, const Profitability& p)
+    { return s << p._margin_gros << p._margin_oper << p._netincome << p._roa << p._roe; }
 
-    QDataStream& operator>>(QDataStream& s, Profitability& p) {
-        return s >> p._margin_gros >> p._margin_oper >> p._netincome >> p._roa >> p._roe;
-    }
+    QDataStream& operator>>(QDataStream& s, Profitability& p)
+    { return s >> p._margin_gros >> p._margin_oper >> p._netincome >> p._roa >> p._roe; }
 }

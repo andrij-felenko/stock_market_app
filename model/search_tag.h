@@ -28,7 +28,7 @@ private:
     SearchTag(QObject* parent = nullptr);
     SearchTag& operator = (const SearchTag&) = delete;
 
-    friend class Nexus;
+    friend class ::Loader;
 
     std::vector <meta::Ticker> _list;
 };

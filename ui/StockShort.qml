@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Cpp 1.0
 
 Rectangle {
     id: root
@@ -69,11 +70,70 @@ Rectangle {
         anchors.left: parent.left
         anchors.top: parent.top
         clip: true
+        cache: true
+        asynchronous: true
+    }
+
+    Item {
+        id: _manipulate_button
+        width: 28
+        height: 28
+
+        anchors.right: _right.left
+        anchors.top: parent.top
+        property bool to_add: Nexus.user.isInAssetList(ticker)
+
+        Text {
+            text: parent.to_add ? "+" : "×"
+            anchors.fill: parent
+            font.pixelSize: 24
+            font.bold: true
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            color: parent.to_add ? "green" : "#e53935"
+            renderType: Text.NativeRendering
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: console.log("Close clicked")
+        }
+    }
+
+    function to_tag(s){
+        if (s == "USA") return "US"
+        if (s == "Germany") return "DE"
+        if (s == "UK") return "GB"
+        if (s == "France") return "FR"
+        if (s == "Belgium") return "BE"
+        if (s == "Sweden") return "SE"
+        if (s == "Spain") return "ES"
+        if (s == "Denmark") return "DK"
+        if (s == "Norway") return "NO"
+        if (s == "Finland") return "FI"
+        if (s == "Switzerland") return "CH"
+        return s
+    }
+
+    Image {
+        id: _flag
+        anchors.left: _manipulate_button.right
+        y: _right.y - 4
+        source: country == "" ? "" : "https://flagsapi.com/" + to_tag(country) + "/flat/64.png"
+        width: 24
+        height: 24
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            ToolTip.visible: containsMouse
+            ToolTip.text: logo_url
+        }
     }
 
     Item {
         anchors.left: _logo.right
-        anchors.right: _right.left
+        anchors.right: _manipulate_button.left
         anchors.top: _logo.top
         anchors.bottom: _logo.bottom
         anchors.leftMargin: 4
@@ -100,21 +160,11 @@ Rectangle {
         }
     }
 
-    Image {
-        id: _flag
-        anchors.left: _logo.left
-        anchors.top: _logo.bottom
-        source: country == "" ? "" : "https://flagsapi.com/" + country + "/flat/64.png"
-        width: 32
-        height: 24
-        fillMode: Image.PreserveAspectFit
-    }
-
     Text {
         id: _second_line
-        anchors.left: _flag.right
+        anchors.left: _logo.left
         anchors.right: _right.left
-        anchors.top: _flag.top
+        anchors.top: _logo.bottom
         height: 32
         anchors.leftMargin: 4
         text: industry
@@ -140,6 +190,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         height: 4
+        visible: cutto(year_max) != 0
 
         Rectangle {
             id: greenBar
@@ -168,6 +219,7 @@ Rectangle {
         color: "white"
         font.pointSize: 7
         verticalAlignment: Text.AlignVCenter
+        visible: cutto(year_max) != 0
     }
 
     Text {
@@ -182,5 +234,6 @@ Rectangle {
         color: "white"
         font.pointSize: 7
         verticalAlignment: Text.AlignVCenter
+        visible: cutto(year_max) != 0
     }
 }

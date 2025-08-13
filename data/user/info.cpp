@@ -15,6 +15,12 @@ data::user::Info::Info(QObject* parent) : QObject(parent)
     //
 }
 
+void data::user::Info::clear()
+{
+    setUsername("");
+    setEmail("");
+}
+
 QString data::user::Info::username() const { return _username.isEmpty() ? "guest" : _username; }
 void data::user::Info::setUsername(const QString& newName)
 {

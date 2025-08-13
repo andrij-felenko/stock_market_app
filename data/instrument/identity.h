@@ -18,9 +18,10 @@ class data::Identity : public QObject
     Q_PROPERTY(QString industry  READ industry  WRITE set_industry  NOTIFY  industryChanged)
     Q_PROPERTY(QString headquart READ headquart WRITE set_headquart NOTIFY headquartChanged)
     Q_PROPERTY(QString isin      READ isin      WRITE set_isin      NOTIFY      isinChanged)
-    Q_PROPERTY(QDate ipo READ ipo  WRITE set_ipo  NOTIFY  ipoChanged FINAL)
-    Q_PROPERTY(QUrl  url READ url  WRITE set_url  NOTIFY  urlChanged FINAL)
-    Q_PROPERTY(QUrl logo READ logo WRITE set_logo NOTIFY logoChanged FINAL)
+    Q_PROPERTY(QDate ipo     READ ipo  WRITE set_ipo  NOTIFY  ipoChanged FINAL)
+    Q_PROPERTY(QUrl  url     READ url  WRITE set_url  NOTIFY  urlChanged FINAL)
+    Q_PROPERTY(QUrl logo     READ logo WRITE set_logo NOTIFY logoChanged FINAL)
+    Q_PROPERTY(QUrl logo_url READ logo_url NOTIFY logoChanged FINAL)
 public:
     Identity(QObject* parent = nullptr);
 
@@ -32,9 +33,13 @@ public:
     QString industry() const;
     QString headquart() const;
     QString isin() const;
-    QDate ipo() const;
-    QUrl logo() const;
-    QUrl url() const;
+    QDate ipo()     const;
+    QUrl logo()     const;
+    QUrl logo_url() const;
+    QUrl url()      const;
+
+    uint8_t filled_capacity() const;
+    void set_logo_bytes(QByteArray data);
 
 public slots:
     void set_title(const QString& new_title);
@@ -72,6 +77,11 @@ private:
     QDate _ipo;
     QUrl _logo;
     QUrl _url;
+    QByteArray _logo_bytes;
+    QUrl _logo_cache;
+
+    void cache_logo();
+    void load_logo() const;
 
     friend QDataStream& operator << (QDataStream& s, const Identity& i);
     friend QDataStream& operator >> (QDataStream& s,       Identity& i);

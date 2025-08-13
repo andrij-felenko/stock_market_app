@@ -35,6 +35,7 @@ signals:
 private:
     Info(QObject* parent = nullptr);
     Info& operator = (const Info&) = delete;
+    void clear();
 
     QString _username;
     QString _email;

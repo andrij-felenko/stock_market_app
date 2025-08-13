@@ -1,4 +1,4 @@
-#include "instrument_list.h"
+#include "ticker_list.h"
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
@@ -13,6 +13,7 @@ enum InstrumentRoles {
     IndustryRole,
     QuoteRole,
     LogoRole,
+    LogoUrlRole,
     PrimaryTickerRole,
     YearMinRole,
     YearMaxRole,
@@ -20,53 +21,59 @@ enum InstrumentRoles {
     CurrentPriceRole,
 };
 
-int model::InstrumentList::rowCount(const QModelIndex& parent) const
+int model::TickerList::rowCount(const QModelIndex& parent) const
 {
-    return _instruments.size();
+    if (parent.isValid()) return 0;
+    return _tickers.size();
 }
 
-QVariant model::InstrumentList::data(const QModelIndex& index, int role) const
+QVariant model::TickerList::data(const QModelIndex& index, int role) const
 {
-    if (!index.isValid() || index.row() >= static_cast<int>(_instruments.size()))
+    if (!index.isValid() || index.row() >= static_cast<int>(_tickers.size()))
         return QVariant();
 
-    data::Instrument* in = _instruments[index.row()];
+    data::Ticker* in = _tickers[index.row()];
 
     switch (role) {
-        case TickerRole:   return in->primary_ticker()->symbol().full();
-        case QuoteRole:    return in->primary_ticker()->quotes()->current();
-        case TitleRole:    return in->identity()->title();
-        case CountryRole:  return in->identity()->country();
-        case IndustryRole: return in->identity()->industry();
-        case LogoRole:     return in->identity()->logo();
-        case PrimaryTickerRole: return QVariant::fromValue(in->primary_ticker());
-        case YearMaxRole: return in->primary_ticker()->quotes()->year_max();
-        case YearMinRole: return in->primary_ticker()->quotes()->year_min();
-        case CurrencyRole: return in->primary_ticker()->currency_str();
-        case CurrentPriceRole: return in->primary_ticker()->quotes()->current();
-        default:           return QVariant();
+        case TickerRole:   return in->symbol().full();
+        case QuoteRole:    return in->quotes()->current();
+        case TitleRole:    return in->instrument()->identity()->title();
+        case CountryRole:  return in->instrument()->identity()->country();
+        case IndustryRole: return in->instrument()->identity()->industry();
+        case LogoRole:     return in->instrument()->identity()->logo();
+        case PrimaryTickerRole: return QVariant::fromValue(in->instrument()->primary_ticker());
+        case YearMaxRole: return in->quotes()->year_max();
+        case YearMinRole: return in->quotes()->year_min();
+        case CurrencyRole: return in->currency_str();
+        case CurrentPriceRole: return in->quotes()->current();
+        case LogoUrlRole: return in->instrument()->identity()->logo_url();
     }
+    return "";
 }
 
-QHash<int, QByteArray> model::InstrumentList::roleNames() const
+QHash<int, QByteArray> model::TickerList::roleNames() const
 {
     QHash <int, QByteArray> roles;
     roles[TickerRole]  = "ticker";
     roles[TitleRole]   = "title";
     roles[CountryRole] = "country";
     roles[IndustryRole]= "industry";
-    roles[QuoteRole]   = "price";
+    roles[QuoteRole]   = "prices";
     roles[LogoRole]    = "logo";
     roles[PrimaryTickerRole] = "primary_ticker";
     roles[YearMaxRole] = "year_max";
     roles[YearMinRole] = "year_min";
     roles[CurrencyRole] = "currency";
     roles[CurrentPriceRole] = "price";
+    roles[LogoUrlRole] = "logo_url";
     return roles;
 }
 
-void model::InstrumentList::dataUpdated()
+void model::TickerList::updateAllData()
 {
     beginResetModel();
     endResetModel();
+
+    if (rowCount() > 0)
+        emit dataChanged(index(0, 0), index(rowCount() - 1, 0), roleNames().keys());
 }

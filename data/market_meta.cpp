@@ -12,11 +12,13 @@
 #include <QThread>
 #include "loader.h"
 
+using dtS = data::ticker::Symbol;
+
 // --------------------------- Clusterize meta data to instrument list ----------------------------
 namespace market::meta {
     // можна відправити тікер або початок назви компанії як str
     // exch змінна відповідає або за повну назву Біржі (etc NASDAQ) або останні цифри тегу типу US
-    TickerMetaList find(const TickerMetaList& list, QString str, QStringList exch = {});
+    TickerMetaList find(const TickerMetaList& list, QString str, ExchangeEnumList exch = {});
     TickerMetaList find(const TickerMetaList& list, ::meta::Ticker m);
 }
 
@@ -53,6 +55,8 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
         TickerMetaList list =  market::meta::find(metalist, metalist[0]);
         qDebug() << "clusterise_ticker_meta" << metalist.size() << "--------------------------"
                  << list.size() << metalist[0].name;
+        for (const auto& it : list)
+            qDebug() << it.name << it.symbol << it.currency << it.region << it.type;
 
         // завжди список має бути хоча б з одного елемента
         // (насправді якщо це правда то це значить find погано працює)
@@ -76,7 +80,7 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
 
         // спочатку перевіряємо США, але тікер не має бути ADR або PINK
         {
-            TickerMetaList sorted = market::meta::find(list, "", { "US" });
+            TickerMetaList sorted = market::meta::find(list, "", dtS::us_sufix());
             bool adr = false;
             for (const auto& it : sorted)
                 if (it.name.endsWith(" adr",  Qt::CaseInsensitive) ||
@@ -100,7 +104,7 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
 
         // якщо немає США то перевіряємо біржу LSE
         if (main_symbol.empty()){
-            TickerMetaList sorted = market::meta::find(list, "", { "LSE", "L" });
+            TickerMetaList sorted = market::meta::find(list, "", { dtS::LSE });
             for (const auto& it : sorted){
                 if (it.symbol    .empty()) continue;
                 if (it.symbol.lse_outer()) continue;
@@ -126,15 +130,21 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
         // після США та Лондону надаємо перевавгу біржам локальним
         // немає сенсу великим компаніям там бути якщо це не їх батьківщина
         if (main_symbol.empty()){
-            TickerMetaList sorted = market::meta::find(list, "", { "MC", "FI", "CO", "TW"
-                                                                   "OL", "ST", "SW", "AU" });
+            TickerMetaList sorted = market::meta::find(list, "", dtS::minor_europe_sufix());
+            if (sorted.size() >= 1)
+                main_symbol = find_longer_name(sorted).symbol;
+        }
+
+        if (main_symbol.empty()){
+            TickerMetaList sorted = market::meta::find(list, "", dtS::other_worlds_sufix());
             if (sorted.size() >= 1)
                 main_symbol = find_longer_name(sorted).symbol;
         }
 
         // пріоритет великих національним біржам далі типу DE PA BE SA
         if (main_symbol.empty()){
-            for (const auto& exch : { "SA", "TO", "PA", "AM", "BE", "DE" }){
+            const ExchangeEnumList& majoreurope = dtS::major_europe_sufix();
+            for (const auto& exch : majoreurope){
                 TickerMetaList sorted = market::meta::find(list, "", { exch });
                 if (sorted.size() >= 1){
                     main_symbol = find_longer_name(sorted).symbol;
@@ -170,8 +180,6 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
 
         // заповнюємо список розміру компаній по символам
         counts[list.size()] = counts.value(list.size(), 0) + 1;
-        for (const auto& it : list)
-            qDebug() << it.name << it.symbol << it.currency << it.region << it.type;
         qDebug() << "end -----" << main_symbol << "----------------------------------------------";
     }
     qDebug() << "COMMON STOCK Counts";
@@ -202,7 +210,7 @@ void data::Market::add_sorted_instrument(const ticker::Symbol main, const Ticker
     }
 }
 
-TickerMetaList market::meta::find(const TickerMetaList& list, QString str, QStringList exch)
+TickerMetaList market::meta::find(const TickerMetaList& list, QString str, ExchangeEnumList exch)
 {
     TickerMetaList ret;
     ret.reserve(20);
@@ -271,7 +279,7 @@ TickerMetaList market::meta::find(const TickerMetaList& list, ::meta::Ticker m)
     // шукаємо слово яке є ключовим спочатку ------------------------------------------------------
     int index = 0;
     QStringList names = m.name.split(" ");
-    qDebug() << "+++" << m.name << names;
+    qDebug() << "\n+++" << m.name << names;
     QString current;
     while (names.length() > index){
         if (not current.isEmpty())
@@ -292,7 +300,7 @@ TickerMetaList market::meta::find(const TickerMetaList& list, ::meta::Ticker m)
         ret = find(list, current);
 
         // фільтр назв по NYSE NASDAQ
-        auto us = find(ret, "", { "US" });
+        auto us = find(ret, "", dtS::us_sufix());
         // маємо одного, отже це акція з США, отже ми знайшли назву точно, або немає на США зовсім
         if (us.size() < 2)
             break;
@@ -400,6 +408,9 @@ void data::Market::save_ticker_meta()
 {
     qDebug() << Q_FUNC_INFO;
     qDebug() << "SAVE TICKER META" << _instruments.size() << _ticker_meta.size();
+    if (_ticker_meta.empty())
+        return;
+
     std::function save_as = [this](QString title, QString type){
         QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         basePath += "/tickers_meta/";

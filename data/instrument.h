@@ -52,6 +52,8 @@ public:
     ticker::Symbol primary_symbol(bool absolute = false) const;
     bool contains(const ticker::Symbol& symbol) const;
 
+    bool have_fundamental() const;
+
     void save() const;
     void load();
 

@@ -11,24 +11,28 @@
 #include "user/stock.h"
 #include "user/info.h"
 
+class Loader;
 namespace data { class User; }
 namespace model {
     class AssetList;
-    class InstrumentList;
+    class TickerList;
 }
 
 class data::User : public user::Info
 {
     Q_OBJECT
 public:
-    std::vector <data::Instrument*>& favorite_list();
-    std::vector <data::Stock*>&         asset_list();
+    std::vector <data::Ticker*>& favorite_list();
+    std::vector <data::Stock*>&     asset_list();
 
     void save();
     void load();
 
-public slots:
     void addToFavorite(const ticker::Symbol& symbol);
+
+public slots:
+    void addToFavorite(const QString& symbol);
+    bool isInAssetList(const QString& symbol);
 
 signals:
     void    assetListUpdated();
@@ -37,13 +41,14 @@ signals:
 private:
     User(QObject* parent = nullptr);
     User& operator = (const User&) = delete;
+    void clear();
 
-    std::vector <data::Instrument*> _favorite_list;
-    std::vector <data::Stock*>         _asset_list;
+    std::vector <data::Ticker*> _favorite_list;
+    std::vector <data::Stock*>     _asset_list;
 
-    friend class Nexus;
+    friend class ::Loader;
     friend class model::AssetList;
-    friend class model::InstrumentList;
+    friend class model::TickerList;
 
     friend QDataStream& operator << (QDataStream& s, const User& d);
     friend QDataStream& operator >> (QDataStream& s,       User& d);

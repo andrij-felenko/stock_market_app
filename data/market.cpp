@@ -113,7 +113,7 @@ std::vector <data::Instrument*> data::Market::search_by(QString str) const
 
 std::optional <data::Ticker*> data::Market::find(data::ticker::Symbol tag)
 {
-    qDebug() << Q_FUNC_INFO << tag;
+    // qDebug() << Q_FUNC_INFO << tag;
     for (auto& it : _instruments){
         auto ret = (*it)[tag];
         if (ret != nullptr)
@@ -124,7 +124,7 @@ std::optional <data::Ticker*> data::Market::find(data::ticker::Symbol tag)
 
 data::Instrument* const data::Market::ensure(data::ticker::Symbol tag)
 {
-    qDebug() << Q_FUNC_INFO << tag;
+    // qDebug() << Q_FUNC_INFO << tag;
     Instrument* instr = nullptr;
 
     auto ticker = find(tag);
@@ -140,7 +140,7 @@ data::Instrument* const data::Market::ensure(data::ticker::Symbol tag)
 
 data::Instrument* const data::Market::ensure(meta::Ticker meta)
 {
-    qDebug() << Q_FUNC_INFO;
+    // qDebug() << Q_FUNC_INFO;
     Instrument* instr = nullptr;
 
     auto ticker = find(meta.symbol);
@@ -175,12 +175,12 @@ bool data::Market::empty() const { return _instruments.empty(); }
 
 void data::Market::add_instrument_list_from_meta(QByteArrayList list)
 {
-    qDebug() << "invoker";
+    // qDebug() << "invoker";
     for (const auto& it : list){
         meta::Ticker meta(it);
         ensure(meta);
     }
-    qDebug() << "invoker end";
+    // qDebug() << "invoker end";
 }
 
 void data::Market::load_instruments()

@@ -98,8 +98,8 @@ float Quotes::year_max() const
             if (it.high > max)
                 max = it.high;
 
-    if (max == 0)
-        return std::numeric_limits <float>::max();
+    // if (max == 0)
+        // return std::numeric_limits <float>::max();
 
     return max;
 }
@@ -119,7 +119,7 @@ float Quotes::year_min() const
 }
 
 float Quotes::current() const
-{    
+{
     float ret = 0.0;
     QDate date = QDate::fromJulianDay(0);
     for (auto& it : _points)

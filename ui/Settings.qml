@@ -1,7 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import StockCpp 1.0  // SeetingsNetwork
+import Cpp 1.0  // SeetingsNetwork
 
 Page {
     id: root
@@ -43,8 +43,8 @@ Page {
                     TextField {
                         Layout.fillWidth: true
                         placeholderText: "Enter Alpha Vantage key"
-                        text: SeetingsNetwork.key_alpha_vantage
-                        onTextChanged: SeetingsNetwork.setAlphaVantageKey(text)
+                        text: Nexus.settings_network.key_alpha_vantage
+                        onTextChanged: Nexus.settings_network.setAlphaVantageKey(text)
                     }
                 }
 
@@ -63,8 +63,8 @@ Page {
                         Layout.preferredWidth: 1
                         Layout.fillWidth: true
                         placeholderText: "Part 1"
-                        text: SeetingsNetwork.key_eod.split(".")[0]
-                        onTextChanged: SeetingsNetwork.setEodKey(eodPart1.text + "." + eodPart2.text)
+                        text: Nexus.settings_network.key_eod.split(".")[0]
+                        onTextChanged: Nexus.settings_network.setEodKey(eodPart1.text + "." + eodPart2.text)
                     }
 
                     // Друга частина ключа
@@ -73,8 +73,9 @@ Page {
                         Layout.preferredWidth: 1
                         Layout.fillWidth: true
                         placeholderText: "Part 2"
-                        text: SeetingsNetwork.key_eod.split(".").length > 1 ? SeetingsNetwork.key_eod.split(".")[1] : ""
-                        onTextChanged: SeetingsNetwork.setEodKey(eodPart1.text + "." + eodPart2.text)
+                        text: Nexus.settings_network.key_eod.split(".").length > 1
+                              ? Nexus.settings_network.key_eod.split(".")[1] : ""
+                        onTextChanged: Nexus.settings_network.setEodKey(eodPart1.text + "." + eodPart2.text)
                     }
                 }
 
@@ -90,8 +91,8 @@ Page {
                     TextField {
                         Layout.fillWidth: true
                         placeholderText: "Enter Finnhub key"
-                        text: SeetingsNetwork.key_finnhub
-                        onTextChanged: SeetingsNetwork.setFinnHubKey(text)
+                        text: Nexus.settings_network.key_finnhub
+                        onTextChanged: Nexus.settings_network.setFinnHubKey(text)
                     }
                 }
 
@@ -106,8 +107,8 @@ Page {
                     TextField {
                         Layout.fillWidth: true
                         placeholderText: "Enter Market Stack key"
-                        text: SeetingsNetwork.key_marketstack
-                        onTextChanged: SeetingsNetwork.setMarketStackKey(text)
+                        text: Nexus.settings_network.key_marketstack
+                        onTextChanged: Nexus.settings_network.setMarketStackKey(text)
                     }
                 }
 
@@ -122,8 +123,8 @@ Page {
                     TextField {
                         Layout.fillWidth: true
                         placeholderText: "Enter Twelve Data key"
-                        text: SeetingsNetwork.key_twelve_data
-                        onTextChanged: SeetingsNetwork.setTwelveDataKey(text)
+                        text: Nexus.settings_network.key_twelve_data
+                        onTextChanged: Nexus.settings_network.setTwelveDataKey(text)
                     }
                 }
 
@@ -140,8 +141,8 @@ Page {
                         Layout.fillWidth: true
                         wrapMode: TextArea.WrapAnywhere
                         placeholderText: "Enter OpenAI API key"
-                        text: SeetingsNetwork.key_open_ai
-                        onTextChanged: SeetingsNetwork.setOpenaiKey(text)
+                        text: Nexus.settings_network.key_open_ai
+                        onTextChanged: Nexus.settings_network.setOpenaiKey(text)
                         selectByMouse: true
                         readOnly: false
                         persistentSelection: true

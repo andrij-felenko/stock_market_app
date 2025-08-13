@@ -1,7 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import StockCpp 1.0  // Твій сінглтон Market
+import Cpp 1.0  // Твій сінглтон Market
 
 Column {
     id: _
@@ -29,7 +29,7 @@ Column {
         onTextChanged: {
             // AlphaVantage.find_symbol(searchField.text)
             // OpenAI.recheck_tag(searchField.text)
-            SearchTagCpp.find_by_part(searchField.text)
+            Nexus.search_tag.find_by_part(searchField.text)
         }
     }
 
@@ -39,13 +39,13 @@ Column {
         height: contentHeight
         z: 2
 
-        model: SearchTagCpp
+        model: Nexus.search_tag
 
         delegate: Button {
             width: 500
             height: 40
             text:  symbol + " | " + title + " | " + region + " | " + currency + " | " + ticker_size
-            onClicked: CurrentAccount.addToFavorite(symbol)
+            onClicked: Nexus.user.addToFavorite(symbol)
         }
     }
 

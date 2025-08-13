@@ -1,5 +1,5 @@
-#ifndef MODEL_INSTRUMENT_LIST_H
-#define MODEL_INSTRUMENT_LIST_H
+#ifndef MODEL_TICKER_LIST_H
+#define MODEL_TICKER_LIST_H
 
 #include <QtCore/QObject>
 #include <QtCore/QDate>
@@ -9,20 +9,21 @@
 
 #include "data/instrument.h"
 
-namespace model { class InstrumentList; }
+namespace model { class TickerList; }
 
-class model::InstrumentList : public QAbstractListModel
+class model::TickerList : public QAbstractListModel
 {
     Q_OBJECT
 public:
     template <typename Sender, typename Signal>
-    InstrumentList(std::vector <data::Instrument*>& list, Sender* source, Signal signal)
-        : QAbstractListModel(source), _instruments(list)
+    TickerList(std::vector <data::Ticker*>& list, Sender* source, Signal signal)
+        : QAbstractListModel(source), _tickers(list)
     {
-        connect(source, signal, this, &InstrumentList::dataUpdated);
+        qDebug() << "polipoli" << list.size();
+        connect(source, signal, this, &TickerList::updateAllData);
 
-        _instruments.clear();
-        _instruments.reserve(2000);
+        updateAllData();
+        qDebug() << "polipoli" << list.size();
     }
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -30,9 +31,9 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    std::vector <data::Instrument*>& _instruments;
+    std::vector <data::Ticker*>& _tickers;
 
-    void dataUpdated();
+    void updateAllData();
 
     friend class Portfolio;
 };

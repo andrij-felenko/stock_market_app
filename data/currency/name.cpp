@@ -61,8 +61,8 @@ Tag Name::from_short(QString currency)
     for (const auto &it : list)
         if (it._short == currency)
             return it._enum;
-    qDebug() << "CURRENCY can`t from SHORT" << currency;
-    return Tag::None;
+
+    return to_enum(currency);
 }
 
 Continent Name::continent(QString name)

@@ -1,7 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import StockCpp 1.0  // Твій сінглтон Market
+import Cpp 1.0  // Твій сінглтон Market
 
 Item {
     Item {
@@ -23,7 +23,7 @@ Item {
             property int columnCount: Math.max(1, Math.floor(width / 320))
 
             width: scroll_view.width - scroll_view.padding * 2
-            model: MarketModel
+            model: Nexus.favorite_model
             cellWidth: width / columnCount
 
             delegate: StockShort {

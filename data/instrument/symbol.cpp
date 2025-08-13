@@ -141,6 +141,15 @@ bool dtS::check_exchange(QString ex) const
     return false;
 }
 
+bool dtS::check_exchange(Exchange ex) const { return _enum == ex; }
+bool dtS::contains(QList <Exchange> ex) const
+{
+    for (const auto& it : std::as_const(ex))
+        if (check_exchange(it))
+            return true;
+    return false;
+}
+
 bool data::ticker::Symbol::exist(Exchange e)
 {
     if (e == Unknown)
@@ -171,6 +180,47 @@ namespace data::ticker {
     }
 }
 
+ExchangeEnumList data::ticker::Symbol::major_europe_sufix()
+{
+    return { BE, PA, AM, XETRA };
+}
+
+ExchangeEnumList data::ticker::Symbol::minor_europe_sufix()
+{
+    return { SW, MC, BR, OL, HE, CO, ST, XSTO };
+}
+
+ExchangeEnumList data::ticker::Symbol::other_worlds_sufix()
+{
+    return { Taiwan, Korea, Australia, Toronto };
+}
+
+ExchangeEnumList data::ticker::Symbol::us_sufix()
+{
+    return {
+        US, NASDAQ, NYSE, NYSE_ARCA, NYSE_MKT, AMEX, BATS,
+        PINK, OTC_GREY, OTC_CE, OTC_BB,
+        OTC, OTC_QB, OTC_QX, NMFQA, OTC_MKTS, OTC_MTKS
+    };
+}
+
+QList <data::ticker::Symbol::Exchange> data::ticker::Symbol::all_exchange()
+{
+    QList <data::ticker::Symbol::Exchange> ret;
+    for (const auto& it : ex_map_list())
+        ret.push_back(it.enum_);
+    return ret;
+}
+
+QStringList data::ticker::Symbol::all_exchange_short()
+{
+    QStringList ret;
+    for (const auto& it : ex_map_list())
+        ret.push_back(it.exchange);
+    ret.removeDuplicates();
+    return ret;
+}
+
 const std::vector <data::ticker::Symbol::ExchangeEnumStruct>& data::ticker::Symbol::ex_map_list()
 {
     std::function add = [](std::vector <data::ticker::Symbol::ExchangeEnumStruct>& list,
@@ -192,7 +242,7 @@ const std::vector <data::ticker::Symbol::ExchangeEnumStruct>& data::ticker::Symb
 
         add(list, Exchange::AM, "AS", "AS", "Euronext Amsterdam");
         add(list, Exchange::BE, "BE", "BE", "Börse Berlin");
-        add(list, Exchange::XETRA, "DE", "XETRA", "Deutsche Börse");
+        add(list, Exchange::XETRA, "XETRA", "XETRA", "Deutsche Börse");
         add(list, Exchange::BR, "BR", "BR", "Euronext Brussels");
         add(list, Exchange::LSE, "L", "LSE", "London Stock Exchange");
         add(list, Exchange::CO, "CO", "CO", "Copenhagen Stock Exchange");

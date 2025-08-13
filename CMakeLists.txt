@@ -24,13 +24,11 @@ find_package (Qt6 REQUIRED COMPONENTS
 
 set (Qt_lib_core  Qt6::Core   Qt6::Network         Qt6::WebSockets)
 set (Qt_lib_gui   Qt6::Gui    Qt6::Widgets         Qt6::Svg)
-set (Qt_lib_quick Qt6::Qml    Qt6::QuickControls2  Qt::Quick)
+set (Qt_lib_quick Qt6::Qml    Qt6::QuickControls2  Qt6::Quick)
 set (Qt_libs ${Qt_lib_core} ${Qt_lib_gui} ${Qt_lib_quick})
 
 # app -------------------------------------------------------------------------
-set (src
-    loader.h
-    loader.cpp
+set (src_cpp
     api/api.cpp
     api/api.h
     api/alphavantage.cpp
@@ -49,6 +47,8 @@ set (src
     api/twelvedata.h
     api/marketstack.cpp
     api/marketstack.h
+    api/filefetch.cpp
+    api/filefetch.h
 
     chart/quote.cpp
     chart/quote.h
@@ -100,8 +100,8 @@ set (src
     model/search_tag.cpp
     model/asset_list.cpp
     model/asset_list.h
-    model/instrument_list.cpp
-    model/instrument_list.h
+    model/ticker_list.cpp
+    model/ticker_list.h
 
     settings/network.cpp
     settings/network.h
@@ -113,7 +113,15 @@ set (src
     utilities/features.h
 )
 
-qt_add_executable(stock_manager main.cpp ${src})
+set (src_qml
+    loader.h loader.cpp
+)
+
+set (src
+    ${src_cpp} ${src_qml}
+)
+
+qt_add_executable(stock_manager main.cpp ${src_cpp})
 target_link_libraries (stock_manager PUBLIC ${Qt_libs})
 
 if(ANDROID)
@@ -129,8 +137,8 @@ qt_policy(SET QTP0004 NEW)
 qt_add_qml_module (stock_manager
     URI Stock
     VERSION 1.0
-    NAMESPACE ui
     SOURCES
+        ${src_qml}
     QML_FILES
         main.qml
         SplashScreen.qml

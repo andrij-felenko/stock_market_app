@@ -96,6 +96,14 @@ public:
     static QString  exchange_str(Exchange e);
     static Exchange from_exchange(QString str);
 
+    static QList <Exchange> major_europe_sufix();
+    static QList <Exchange> minor_europe_sufix();
+    static QList <Exchange> other_worlds_sufix();
+    static QList <Exchange> us_sufix();
+
+    static QList <Exchange> all_exchange();
+    static QStringList all_exchange_short();
+
     bool us()        const;
     bool nyse()      const;
     bool nasdaq()    const;
@@ -112,6 +120,8 @@ public:
     bool lse_inner() const;
 
     bool check_exchange(QString ex) const;
+    bool check_exchange(Exchange  ex) const;
+    bool contains(QList <Exchange> ex) const;
 
     QString decription() const;
     QString to_short() const;
@@ -146,6 +156,7 @@ private:
         QString sufix;
         QString exchange;
         QString fullname;
+        int8_t priority;
     };
 
     static const std::vector <ExchangeEnumStruct>& ex_map_list();
@@ -156,8 +167,9 @@ private:
     friend QDebug operator << (QDebug dbg, const Symbol& symbol);
 };
 
-namespace data::ticker { using SymbolList = QList <Symbol>; }
+namespace data::ticker { using SymbolList = std::vector <Symbol>; }
 
 using ExchangeEnum = data::ticker::Symbol::Exchange;
+using ExchangeEnumList = QList <ExchangeEnum>;
 
 #endif // DATA_INSTRUMENT_SYMBOL_H

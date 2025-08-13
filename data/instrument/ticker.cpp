@@ -62,16 +62,10 @@ void Ticker::set_symbol(ticker::Symbol symbol)
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const Ticker& d) {
-        qDebug() << Q_FUNC_INFO;
-        qDebug() << "QDataStream& operator << (QDataStream& s, const Ticker& d)"
-                 << d.quotes()->empty() << d.symbol_str();
         return s << *d._quotes << d._currency << d._country << d._exchange << d._symbol;
     }
 
     QDataStream& operator >> (QDataStream& s, Ticker& d) {
-        qDebug() << Q_FUNC_INFO;
-        qDebug() << "QDataStream& operator >> (QDataStream& s, const Ticker& d)"
-                 << d.quotes()->empty() << d.symbol_str();
         return s >> *d._quotes >> d._currency >> d._country >> d._exchange >> d._symbol;
     }
 }

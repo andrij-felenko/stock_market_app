@@ -1,10 +1,14 @@
 #include "identity.h"
+#include "api/filefetch.h"
+#include <QtGui/QImageReader>
+#include <QtCore/QBuffer>
+#include "../instrument.h"
 
 using namespace data;
 
 data::Identity::Identity(QObject* parent) : QObject(parent)
 {
-    //
+    connect(this, &Identity::logoChanged, this, &Identity::cache_logo);
 }
 
 QString Identity::    title() const { return _title; }
@@ -79,13 +83,60 @@ void  Identity::set_ipo(const QDate& new_ipo)
     emit ipoChanged(_ipo);
 }
 
-QUrl Identity::    logo() const { return _logo; }
+QUrl Identity::logo_url() const { return _logo; }
+QUrl Identity::logo() const
+{
+    if (! _logo_cache.isEmpty())
+        return _logo_cache;
+
+    return _logo;
+}
+
+void Identity::cache_logo()
+{
+    if (_logo.isEmpty())
+        return;
+
+    QByteArray data = _logo_bytes;
+    QBuffer buffer(&data);
+    buffer.open(QIODevice::ReadOnly);
+    QImageReader reader(&buffer);
+    QByteArray fmt = reader.format();
+
+    QImage img = reader.read();
+    buffer.close();
+
+    if (img.isNull()) {
+        load_logo();
+        return;
+    }
+
+    const QString mime = fmt.isEmpty() ? QStringLiteral("png") : QString::fromLatin1(fmt);
+    const QString base64 = QString::fromLatin1(_logo_bytes.toBase64());
+
+    // QML Image чудово розуміє data: URL
+    QUrl temp = QStringLiteral("data:image/") + mime + QStringLiteral(";base64,") + base64;
+    if (temp == _logo_cache)
+        return;
+
+    _logo_cache = temp;
+    emit logoChanged(logo());
+}
+
 void Identity::set_logo(const QUrl& new_logo)
 {
     if (_logo == new_logo)
         return;
+
     _logo = new_logo;
+    load_logo();
     emit logoChanged(_logo);
+}
+
+void Identity::set_logo_bytes(QByteArray data)
+{
+    _logo_bytes = data;
+    emit logoChanged(logo());
 }
 
 QUrl Identity::    url() const { return _url; }
@@ -97,18 +148,43 @@ void Identity::set_url(const QUrl& new_url)
     emit urlChanged(_url);
 }
 
+void Identity::load_logo() const
+{
+    api::FileFetch::fetch_logo(static_cast <Instrument*> (parent())->primary_symbol(), _logo);
+}
+
+uint8_t Identity::filled_capacity() const
+{
+    uint8_t filled = 0, count = 0;
+    if (count++; not     _title.isEmpty()) filled++;
+    if (count++; not   _country.isEmpty()) filled++;
+    if (count++; not  _descript.isEmpty()) filled++;
+    if (count++; not    _sector.isEmpty()) filled++;
+    if (count++; not  _industry.isEmpty()) filled++;
+    if (count++; not _headquart.isEmpty()) filled++;
+    if (count++; not      _isin.isEmpty()) filled++;
+
+    if (count++; not  _ipo.isNull())  filled++;
+    if (count++; not _logo.isEmpty()) filled++;
+    if (count++; not  _url.isEmpty()) filled++;
+
+    return filled * 100 / count;
+}
+
 namespace data {
     QDataStream& operator << (QDataStream& s, const Identity& i) {
         s << i._title    << i._descript  << i._sector
           << i._industry << i._headquart << i._isin
           << i._ipo      << i._logo      << i._url;
-        return s;
+        return s << i._logo_bytes;
     }
 
     QDataStream& operator >> (QDataStream& s, Identity& i) {
         s >> i._title    >> i._descript  >> i._sector
           >> i._industry >> i._headquart >> i._isin
-          >> i._ipo      >> i._logo      >> i._url;
+          >> i._ipo      >> i._logo      >> i._url
+          >> i._logo_bytes;
+        i.cache_logo();
         return s;
     }
 }
