@@ -25,6 +25,7 @@ Loader& Loader::reference() { return *instance(); }
 
 void Loader::init()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     registerSingletons();
 
     setParent(qApp);
@@ -36,6 +37,7 @@ void Loader::init()
 
 void Loader::reset_engine()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     if (_engine != nullptr)
         delete _engine;
 
@@ -56,13 +58,14 @@ float   Loader::percentage() const { return _percentage; }
 
 Loader::Loader() : _engine(nullptr), _splash(false), _visible(false)
 {
-    //
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
 }
 
 
 // ------------------------------------------------------------------------------------------------
 void Loader::prepare()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     loadScreenSaver();
     load_pre_data();
 
@@ -71,6 +74,7 @@ void Loader::prepare()
 
 void Loader::start()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     load_data();
     load_user();
     create_model();
@@ -84,6 +88,7 @@ void Loader::start()
 // ------------------------------------------------------------------------------------------------
 void Loader::registerSingletons()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     QString str("Created in C++");
     qmlREGU     <data::User>   ("Cpp", 1, 0, "UserCpp",    str);
     qmlREGU     <data::Market> ("Cpp", 1, 0, "MarketCpp",  str);
@@ -107,6 +112,7 @@ void Loader::registerSingletons()
 
 void Loader::create_model()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     _tag_search = new model::SearchTag(this);
     _asset_model = new model::AssetList(account()->asset_list(), this);
     _favorite_model = new model::TickerList(account()->favorite_list(), account(),
@@ -120,6 +126,7 @@ void Loader::create_model()
 // ------------------------------------------------------------------------------------------------
 void Loader::loadScreenSaver()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     reset_engine();
     _engine->load("qrc:/qt/qml/Stock/SplashScreen.qml");
 }
@@ -133,6 +140,7 @@ void Loader::setVisible(bool v)
 
 void Loader::loadMainUI()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     reset_engine();
     _engine->load("qrc:/qt/qml/Stock/main.qml");
 }
@@ -144,26 +152,35 @@ void Loader::loadMainUI()
 // ------------------------------------------------------------------------------------------------
 void Loader::load_pre_data()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     market()->load_instruments();
+    qDebug() << Q_FUNC_INFO << 12;
     if (market()->empty()){
+        qDebug() << Q_FUNC_INFO << 13;
         market()->load_ticker_meta();
+        qDebug() << Q_FUNC_INFO << 14;
 
         if (market()->_ticker_meta.empty())
             api::Eod::get_all_exchange_tag();
-        else
+        else {
+            qDebug() << Q_FUNC_INFO << 16;
             _market->clusterise_ticker_meta();
+            qDebug() << Q_FUNC_INFO << 17;
+        }
     }
+    qDebug() << Q_FUNC_INFO << 20;
 }
 
 void Loader::load_data()
 {
-    for (const auto& it : _market->_instruments){
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
+    for (const auto& it : _market->_instruments)
         it->load();
-    }
 }
 
 void Loader::load_user()
 {
+    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
     _user = new data::User(this);
 }
 // ================================================================================================

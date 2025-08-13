@@ -63,8 +63,8 @@ enum MarketRoles {
 data::Market::Market(QObject* parent) : QObject(parent)
 {
     qDebug() << Q_FUNC_INFO;
-    _instruments.reserve(20'000);
-    _ticker_meta.reserve(40'000);
+    _instruments.reserve( 60'000);
+    _ticker_meta.reserve(100'000);
 }
 
 // --------------------------- Work with basic list of all market ---------------------------------
@@ -173,14 +173,15 @@ void data::Market::add_meta(meta::Ticker meta)
 // --------------------------- LOAD & SAVE DATA ---------------------------------------------------
 bool data::Market::empty() const { return _instruments.empty(); }
 
-void data::Market::add_instrument_list_from_meta(QByteArrayList list)
+void data::Market::add_instrument_list_from_meta(QByteArrayList list, bool force)
 {
-    // qDebug() << "invoker";
     for (const auto& it : list){
         meta::Ticker meta(it);
-        ensure(meta);
+        if (force)
+            _instruments.push_back(new Instrument(meta, this));
+        else
+            ensure(meta);
     }
-    // qDebug() << "invoker end";
 }
 
 void data::Market::load_instruments()
@@ -195,6 +196,7 @@ void data::Market::load_instruments()
         QDataStream in(&file);
         in.setVersion(QDataStream::Qt_6_0);
 
+        bool same_thread = QThread::currentThread() == qApp->thread();
         int32_t size; in >> size;
         int32_t block_size = 20;
         QByteArrayList datalist;
@@ -202,15 +204,17 @@ void data::Market::load_instruments()
         for (int i = 0, block = 0; i < size; i++){
             QByteArray data;
             in >> data;
-            datalist.push_back(data);
 
-            block++;
-            if (block == block_size || i == size - 1){
-                if (QThread::currentThread() == qApp->thread())
-                    add_instrument_list_from_meta(datalist);
-                else
+            if (same_thread)
+                add_instrument_list_from_meta({ data }, true);
+            else {
+                block++;
+                datalist.push_back(data);
+
+                if (block == block_size || i == size - 1){
                     QMetaObject::invokeMethod(this, [datalist, this]()
-                    { add_instrument_list_from_meta(datalist); }, Qt::QueuedConnection);
+                    { add_instrument_list_from_meta(datalist, true); }, Qt::QueuedConnection);
+                }
 
                 datalist.clear();
                 block = 0;
@@ -219,7 +223,7 @@ void data::Market::load_instruments()
 
         file.close();
     };
-    load_from(":/rc");
+    // load_from(":/rc");
     load_from(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     emit tickerMetaLoadFinish();
 }

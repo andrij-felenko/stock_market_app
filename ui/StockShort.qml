@@ -47,19 +47,6 @@ Rectangle {
             Layout.alignment:    Qt  .AlignRight
             width: parent.width
         }
-
-        // Text {
-        //     text: "year min: " + _right.cutto(year_min)
-        //     color: "black"
-        //     horizontalAlignment: Text.AlignRight
-        //     Layout.alignment:    Qt  .AlignRight
-        // }
-        // Text {
-        //     text: "     max: " + _right.cutto(year_max)
-        //     color: "black"
-        //     horizontalAlignment: Text.AlignRight
-        //     Layout.alignment:    Qt  .AlignRight
-        // }
     }
 
     Image {
@@ -87,7 +74,9 @@ Rectangle {
         height: 28
 
         anchors.right: _right.left
-        anchors.top: parent.top
+        anchors.top: _flag.bottom
+        anchors.topMargin: 5
+
         property bool to_add: Nexus.user.isInAssetList(ticker)
 
         Text {
@@ -103,7 +92,13 @@ Rectangle {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: console.log("Close clicked")
+            onClicked: {
+                if (parent.to_add){
+                    // TODO add to assets list
+                } else {
+                    Nexus.user.excludeFromFavorite(ticker)
+                }
+            }
         }
     }
 
@@ -124,7 +119,7 @@ Rectangle {
 
     Image {
         id: _flag
-        anchors.left: _manipulate_button.right
+        anchors.left: _manipulate_button.left
         y: _right.y - 4
         source: country == "" ? "" : "https://flagsapi.com/" + to_tag(country) + "/flat/64.png"
         width: 24

@@ -15,22 +15,8 @@ Column {
         placeholderText: "Пошук акції..."
         width: _.width
         height: 80
-        // onAccepted: {
-        //     if (searchField.text.toUpperCase().endsWith(".US")){
-        //         // TwelveData.add_by_tag(searchField.text)
-        //     }
-        //     else {
-        //         //
-        //     }
 
-        //     searchField.text = ""
-        // }
-
-        onTextChanged: {
-            // AlphaVantage.find_symbol(searchField.text)
-            // OpenAI.recheck_tag(searchField.text)
-            Nexus.search_tag.find_by_part(searchField.text)
-        }
+        onTextChanged: Nexus.search_tag.find_by_part(searchField.text)
     }
 
     ListView {

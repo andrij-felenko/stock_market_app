@@ -57,6 +57,7 @@ bool data::User::isInAssetList(const QString& symbol)
             return true;
     return false;
 }
+
 void data::User::addToFavorite(const ticker::Symbol& symbol)
 {
     auto ticker = Loader::instance()->market()->find(symbol);
@@ -78,6 +79,15 @@ void data::User::addToFavorite(const ticker::Symbol& symbol)
                 api::FinnHub::update_info_by_tag(it.code());
                 // api::AlphaVantage::update_info_by_tag(it.code());
     }
+}
+
+void data::User::excludeFromFavorite(const QString& symbol)
+{
+    std::erase_if(_favorite_list, [&](const data::Ticker* t){
+        return t && t->symbol() == ticker::Symbol(symbol);
+    });
+    emit favoriteListUpdated();
+    save();
 }
 
 data::User::User(QObject* parent) : data::user::Info(parent)

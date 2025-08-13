@@ -47,7 +47,7 @@ private:
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;
 
-    void add_instrument_list_from_meta(QByteArrayList list);
+    void add_instrument_list_from_meta(QByteArrayList list, bool force = false);
     void add_sorted_instrument(const ticker::Symbol main, const TickerMetaList list);
 
     std::vector <Instrument*>  _instruments;
