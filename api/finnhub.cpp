@@ -12,6 +12,7 @@
 
 api::FinnHub::FinnHub(QObject* parent) : API(parent)
 {
+    shift_ms = 1000;
     // set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
 }
 
@@ -29,7 +30,7 @@ api::FinnHub* api::FinnHub::instance()
 void api::FinnHub::update_info_by_tag(QString tag)
 {
     FinnHub* data = FinnHub::instance();
-    data->_request(Request::Info, tag);
+    data->_send(Request::Info, tag);
 }
 
 bool api::FinnHub::_request(Request type, QString name, StringMap keys)

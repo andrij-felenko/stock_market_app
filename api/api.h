@@ -7,6 +7,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QUrlQuery>
+#include <deque>
+#include <vector>
 
 #include "reply.h"
 #include "settings/network.h" // IWYU pragma: keep
@@ -34,14 +36,32 @@ protected:
 
     QNetworkAccessManager _netmanager;
 
+    std::vector <Reply*> _replies;
+
+    struct QueueItem {
+        Request type;
+        QString name;
+        StringMap keys;
+
+        QueueItem(Request type, QString name, StringMap keys = {})
+            : type(type), name(name), keys(keys) { /* */ }
+    };
+
+    virtual void _send(Request type, QString name, StringMap keys = {}) final;
+    virtual bool lock() const final { return _lock; }
+    void _finish(QNetworkReply* reply);
+
+    int shift_ms;
+    virtual bool _queue_contains(Request r) const final;
+
+private:
+    bool _lock;
+    std::deque <QueueItem> _queue;
+    virtual void _next() final;
+
 signals:
     void error_occurred(QString error);
     void error_reply(QNetworkReply* reply);
-
-protected:
-    std::vector <Reply*> _replies;
-
-    void _finish(QNetworkReply* reply);
 };
 
 #endif

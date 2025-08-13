@@ -79,7 +79,7 @@ void api::TwelveData::add_by_tag(QString tag)
         { "start_date", QDate(2004, 06, 6).toString("yyyy-MM-dd") },
         { "end_date", QDate(2025, 06, 6).toString("yyyy-MM-dd") }
     };
-    _request(Request::Candle, tag, params);
+    _send(Request::Candle, tag, params);
 }
 
 void api::TwelveData::_handler_answer(Request type, QByteArray data, QString name, bool stream)

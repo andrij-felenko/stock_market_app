@@ -14,7 +14,7 @@ api::OpenAI* api::OpenAI::instance()
 
 api::OpenAI::OpenAI(QObject* parent)
     : API(parent),
-      _model("gpt-4.1-nano")
+      _model("gpt-5-nano")
 {
     // set_api_key("sk-proj-vccDzzJrmHvKungJmFIz_U5X_yZI3wvadiKedhBomYzXUNv"
     //             "4XVU7nP4l84VqJZ9TlMeVhQLmLXT3BlbkFJ21RmjsV5oOpor1XvYbNa"

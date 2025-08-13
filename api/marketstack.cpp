@@ -30,7 +30,7 @@ api::MarketStack* api::MarketStack::instance()
 void api::MarketStack::update_info_by_tag(QString tag)
 {
     MarketStack* data = MarketStack::instance();
-    data->_request(Request::Info, tag);
+    data->_send(Request::Info, tag);
 }
 
 // https://api.marketstack.com/v2/eod?access_key=c68c8ac43610203b7b46616e0bb8124a&symbols=VK.PA
@@ -50,7 +50,7 @@ void api::MarketStack::update_quotes_by_tag(QStringList tags)
             it.chop(3);
 
     MarketStack* data = MarketStack::instance();
-    data->_request(Request::Quote, name);
+    data->_send(Request::Quote, name);
 }
 
 bool api::MarketStack::_request(Request type, QString name, StringMap keys)

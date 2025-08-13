@@ -8,63 +8,30 @@
 
 api::Eod::Eod(QObject* parent) : API(parent)
 {
-    // set_api_key("683ebb8bc59b60.11043967");
-
-    connect(this, &API::error_reply, this, [this](QNetworkReply* reply){
-        for (const auto& it : _replies)
-            if (it->_reply == reply){
-                qDebug() << "catch reply";
-                if (_exchange_list_queue.length() > 0)
-                    _exchange_list_queue.removeFirst();
-                _next_get_all_exchange_tag();
-            }
-    });
+    //
 }
 
 api::Eod* api::Eod::instance()
 {
     static Eod* _instance = nullptr;
-    if (_instance == nullptr){
+    if (_instance == nullptr)
         _instance = new Eod(qApp);
-    }
+
     return _instance;
 }
-
-// void api::Eod::set_api_key(const QString& key) { _api_key = key; }
 
 void api::Eod::get_all_tag(QString exchange)
 {
     Eod* data = Eod::instance();
-    data->_request(Request::Exchange, exchange);
+    data->_send(Request::Exchange, exchange);
 }
-
-QMap<QString, QString> exchange_map = {
-    { "US",     ".US"  },  // США: без суфікса
-    { "LSE",    ".L"   },  // Лондон
-    { "XETRA",  ".DE"  },  // Франкфурт (Xetra)
-
-    { "TO",     ".TO"  }, // Торонто
-    { "PA",     ".PA"  }, // Париж
-    { "BE",     ".BE"  }, // Берлін
-    { "BR",     ".BR"  }, // Брюссель
-    { "AM",     ".AM"  }, // amsterdam
-
-    // Альтернативні / дублікати
-    { "MC",     ".MC"  },  // Мадрид
-    { "HE",     ".FI"  },  // Гельсінкі
-    { "CO",     ".CO"  },  // Копенгаген
-    { "OL",     ".OL"  },  // Осло
-    { "ST",     ".ST"  },  // Стокгольм
-    { "SW",     ".SW"  },  // Швейцарія
-    { "AU",     ".AU"  }, // Australia
-    { "TW",     ".TW"  }, // Taiwan
-};
 
 void api::Eod::get_all_exchange_tag()
 {
     Eod* data = Eod::instance();
-    data->_exchange_list_queue = exchange_map.keys();
-    data->_next_get_all_exchange_tag();
+    QStringList list = data::ticker::Symbol::all_exchange_short();
+    for (const auto& it : std::as_const(list))
+        data->_send(Request::Exchange, it);
 }
 
 void api::Eod::historical_year(data::ticker::Symbol tag, int8_t year, char period)
@@ -80,68 +47,8 @@ void api::Eod::historical_year(data::ticker::Symbol tag, int8_t year, char perio
         { "from", QDate(date.year() - year, date.month(), date.day()).toString("yyyy-MM-dd") },
         { "to", date.toString("yyyy-MM-dd") }
     };
-    Eod::instance()->_request(Request::Candle, tag, params);
+    Eod::instance()->_send(Request::Candle, tag, params);
 }
-
-void api::Eod::_next_get_all_exchange_tag()
-{
-    qDebug() << "Next" << _exchange_list_queue;
-    if (_exchange_list_queue.empty()){
-        Loader::instance()->market()->save_ticker_meta();
-        Loader::instance()->market()->clusterise_ticker_meta();
-        return;
-    }
-
-    get_all_tag(_exchange_list_queue[0]);
-}
-
-// void api::Eod::fetch_ticker_data(const QString& ticker) {
-//     QUrl url("https://eodhd.com/api/eod/" + ticker);
-//     QUrlQuery query;
-//     query.addQueryItem("api_token", _api_key);
-//     query.addQueryItem("fmt", "json");
-//     query.addQueryItem("from", "2025-03-12");
-//     query.addQueryItem("to", "2025-04-24");
-//     url.setQuery(query);
-//     // QUrl url("https://eodhd.com/api/fundamentals/" + ticker);
-//     // QUrlQuery query;
-//     // query.addQueryItem("api_token", m_api_key);
-//     // query.addQueryItem("fmt", "json");
-//     // url.setQuery(query);
-//     qDebug() << url;
-
-//     QNetworkRequest request(url);
-
-//     QNetworkReply* reply = _netmanager.get(request);
-//     connect(reply, &QNetworkReply::finished, this, [=, this]() {
-//         if (reply->error() != QNetworkReply::NoError) {
-//             emit error_occurred(reply->errorString());
-//             reply->deleteLater();
-//             return;
-//         }
-
-//         QByteArray response = reply->readAll();
-//         qDebug() << response;
-
-//         QJsonDocument doc = QJsonDocument::fromJson(response);
-//         qDebug() << response;
-//         if (!doc.isObject()) {
-//             emit error_occurred("Invalid JSON received");
-//             qDebug() << "error" << reply->readAll();
-//             reply->deleteLater();
-//             return;
-//         }
-
-//         emit data_ready(doc.object());
-//         reply->deleteLater();
-//     });
-
-//     connect(reply, &QNetworkReply::readyRead, this, [=, this]() {
-//         QByteArray response = reply->readAll();
-//         qDebug() << response;
-//     });
-// }
-
 
 bool api::Eod::_request(Request type, QString name, StringMap keys)
 {
@@ -240,9 +147,9 @@ void api::Eod::_handle_exchange(const QJsonDocument& json, QString name)
     }
     market->save_ticker_meta();
 
-    // remove echange queue list
-    _exchange_list_queue.removeOne(name);
-    QTimer::singleShot(0, this, [this](){ _next_get_all_exchange_tag(); });
+    // handle exchange queue list
+    if (not _queue_contains(Request::Exchange))
+        Nexus.market()->clusterise_ticker_meta();
 }
 
 void api::Eod::_handle_candle(const QJsonDocument& json, QString name)
@@ -261,17 +168,17 @@ void api::Eod::_handle_candle(const QJsonDocument& json, QString name)
     for (const QJsonValue& v : std::as_const(array)){
         QJsonObject obj = v.toObject();
         QString dtime   = obj[  "date"].toString();
-        float open      = obj[  "open"].toString().toFloat();
-        float close     = obj[ "close"].toString().toFloat();
-        float high      = obj[  "high"].toString().toFloat();
-        float low       = obj[   "low"].toString().toFloat();
-        uint64_t volume = obj["volume"].toString().toULongLong();
+        float open      = obj[  "open"].toDouble();
+        float close     = obj[ "close"].toDouble();
+        float high      = obj[  "high"].toDouble();
+        float low       = obj[   "low"].toDouble();
+        uint64_t volume = obj["volume"].toDouble();
 
         QDate date = QDate::fromString(dtime, "yyyy-MM-dd");
-        ticker->quotes()->set_data(date, open, close,high, low, volume);
+        ticker->quotes()->set_data(date, open, close, high, low, volume);
     }
 
     ticker->quotes()->recalculate();
-    emit ticker->update_data();
     ticker->save();
+    emit ticker->update_data();
 }

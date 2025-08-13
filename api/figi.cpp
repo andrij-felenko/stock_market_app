@@ -36,7 +36,7 @@ api::Figi* api::Figi::instance()
 void api::Figi::update_info_by_tag(QString tag)
 {
     Figi* data = Figi::instance();
-    data->_request(Request::Info, tag);
+    data->_send(Request::Info, tag);
 }
 
 bool api::Figi::_request(Request type, QString name, StringMap keys)

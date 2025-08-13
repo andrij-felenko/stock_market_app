@@ -8,6 +8,7 @@
 #include <QJsonObject>
 #include "api/api.h"
 #include "reply.h"
+#include "data/instrument/ticker.h"
 
 namespace api { class AlphaVantage; }
 
@@ -21,9 +22,6 @@ public:
     static void today_candle_by_tag(QString tag);
     static void find_tag(QString str);
 
-signals:
-    void error_occurred(const QString& message);
-
 public slots:
     void find_symbol(QString str);
 
@@ -33,6 +31,11 @@ private:
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
     virtual void _handler_answer(Request type, QByteArray data,
                                  QString name, bool stream = false) override;
+
+    void _handle_info    (const QJsonObject& root, QString name, data::Ticker* t);
+    void _handle_candle  (const QJsonObject& root, data::Ticker* t);
+    void _handle_tag     (const QJsonObject& root);
+    void _handle_dividend(const QJsonObject& root, data::Ticker* t);
 };
 
 #endif

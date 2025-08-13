@@ -12,12 +12,9 @@
 #include "model/search_tag.h"
 #include "data/instrument.h"
 
-// https://www.alphavantage.co/documentation/
-
 api::AlphaVantage::AlphaVantage(QObject* parent) : API(parent)
 {
-    // set_api_key("539EYFYAYCXFMWIL");
-    // set_api_key("T6H9IGZ3PJA7PSYV");
+    shift_ms = 15'100;
 }
 
 api::AlphaVantage* api::AlphaVantage::instance()
@@ -29,12 +26,10 @@ api::AlphaVantage* api::AlphaVantage::instance()
     return _instance;
 }
 
-// void api::AlphaVantage::set_api_key(const QString& key) { _api_key = key; }
-
 void api::AlphaVantage::update_info_by_tag(QString tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
-    data->_request(Request::Info, tag);
+    data->_send(Request::Info, tag);
 }
 
 void api::AlphaVantage::daily_candle_by_tag(QString tag)
@@ -42,7 +37,7 @@ void api::AlphaVantage::daily_candle_by_tag(QString tag)
     AlphaVantage* data = AlphaVantage::instance();
     api::StringMap params;
     params["func"] = "TIME_SERIES_DAILY";
-    data->_request(Request::Candle, tag, params);
+    data->_send(Request::Candle, tag, params);
 }
 
 void api::AlphaVantage::today_candle_by_tag(QString tag)
@@ -50,19 +45,19 @@ void api::AlphaVantage::today_candle_by_tag(QString tag)
     AlphaVantage* data = AlphaVantage::instance();
     api::StringMap params;
     params["func"] = "TIME_SERIES_INTRADAY";
-    data->_request(Request::Candle, tag, params);
+    data->_send(Request::Candle, tag, params);
 }
 
 void api::AlphaVantage::find_symbol(QString str) { find_tag(str); }
 void api::AlphaVantage::find_tag   (QString str)
 {
     AlphaVantage* data = AlphaVantage::instance();
-    data->_request(Request::Tag, str);
+    data->_send(Request::Tag, str);
 }
 
 bool api::AlphaVantage::_request(Request type, QString name, StringMap keys)
 {
-    QString base("https://www.alphavantage.co/query");
+    QString base("https://www.alphavantage.co/query/");
     // as we work only with US marker, we nee to cut .US domen from tag
     QString subname = name;
     if (subname.right(3).toUpper() == ".US")
@@ -85,6 +80,8 @@ bool api::AlphaVantage::_request(Request type, QString name, StringMap keys)
         case api::Request::Dividend: url = base + "stock/dividend"; break;
         case api::Request::Earnings: url = base + "calendar/earnings";         break;
         case api::Request::Reported: url = base + "stock/financials-reported"; break;
+        case Request::Exchange:
+            break;
     }
 
     QUrlQuery query;
@@ -142,129 +139,132 @@ bool api::AlphaVantage::_request(Request type, QString name, StringMap keys)
 void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString name, bool stream)
 {
     qDebug() << "handler answer";
-    // qDebug() << data;
-    // QByteArray response = m_reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    // qDebug() << name << "return data" << doc;
-    // qDebug() << response;
 
     auto finded = Nexus.market()->find(name);
     if (!finded.has_value()){
-        // Nexus.market()->add(name);
         finded = Nexus.market()->find(name);
         if (!finded.has_value())
             return;
     }
 
     data::Ticker* t = finded.value();
-    data::Instrument* in = t->instrument();
-    QJsonObject obj = doc.object();
+    QJsonObject obj = QJsonDocument::fromJson(data).object();
     switch (type){
-    case api::Request::Info: {
-        t->setExchange(obj.value("Exchange").toString());
-        t->setCurrency(currency::Name::to_enum(obj.value("Currency").toString()));
-
-        in->identity()->set_title(obj.value("Name").toString());
-        in->identity()->set_descrip(obj.value("Description").toString());
-
-        in->identity()->set_country(obj.value("Country").toString());
-        in->identity()->set_sector(obj.value("Sector").toString());
-        in->identity()->set_industry(obj.value("Industry").toString());
-        in->identity()->set_headquart(obj.value("Address").toString());
-        in->identity()->set_url(obj.value("OfficialSite").toString());
-        in->identity()->set_ipo(QDate::fromString(obj.value("LatestQuarter").toString(), "yyyy-MM-dd"));
-
-        in->valuation()->set_market_cap(obj.value("MarketCapitalization").toDouble());
-        in->valuation()->set_eps(obj.value("EPS").toDouble());
-        in->valuation()->set_pe_ratio(obj.value("PERatio").toDouble());
-        in->valuation()->set_pb_ratio(obj.value("PriceToBookRatio").toDouble());
-        in->valuation()->set_book_value(obj.value("BookValue").toDouble());
-        in->valuation()->set_share_count(obj.value("SharesOutstanding").toDouble());
-
-        in->profitability()->set_roa(obj.value("ReturnOnAssetsTTM").toDouble());
-        in->profitability()->set_roe(obj.value("ReturnOnEquityTTM").toDouble());
-        in->profitability()->set_margin_gros(obj.value("GrossProfitTTM").toDouble() / obj.value("RevenueTTM").toDouble());
-        in->profitability()->set_margin_oper(obj.value("OperatingMarginTTM").toDouble());
-        in->profitability()->set_netincome(obj.value("ProfitMargin").toDouble());
-
-        in->dividend()->set_yield(obj.value("DividendYield").toDouble());
-        in->dividend()->set_per_share(obj.value("DividendPerShare").toDouble());
-        in->dividend()->set_next_date(QDate::fromString(obj.value("DividendDate").toString(), "yyyy-MM-dd"));
-        in->dividend()->set_prev_date(QDate::fromString(obj.value("ExDividendDate").toString(), "yyyy-MM-dd"));
-
-        in->stability()->set_beta(obj.value("Beta").toDouble());
-        in->stability()->set_revenue(obj.value("RevenueTTM").toDouble());
-
-        t->save();
-        break;
+        case api::Request::Info:     _handle_info(obj, name, t); break;
+        case api::Request::Candle:   _handle_candle(obj, t);     break;
+        case api::Request::Tag:      _handle_tag(obj);           break;
+        case api::Request::Dividend: _handle_dividend(obj, t);   break;
+        default:;
     }
-    case api::Request::Candle: {
-        QJsonObject root = doc.object();
+}
 
-        QJsonObject time_daily = root.value("Time Series (Daily)").toObject();
-        for (auto it = time_daily.begin(); it != time_daily.end(); ++it) {
-            QString dateStr = it.key();
-            QJsonObject candle = it.value().toObject();
+void api::AlphaVantage::_handle_info(const QJsonObject& root, QString name, data::Ticker* t)
+{
+    data::Instrument* in = t->instrument();
+    t->setExchange(root.value("Exchange").toString());
+    t->setCurrency(currency::Name::to_enum(root.value("Currency").toString()));
 
-            QDate date = QDate::fromString(dateStr, "yyyy-MM-dd");
-            float open  = candle.value("1. open"  ).toString().toFloat();
-            float high  = candle.value("2. high"  ).toString().toFloat();
-            float low   = candle.value("3. low"   ).toString().toFloat();
-            float close = candle.value("4. close" ).toString().toFloat();
-            quint64 vol = candle.value("5. volume").toString().toULongLong();
+    in->identity()->set_title(root.value("Name").toString());
+    in->identity()->set_descrip(root.value("Description").toString());
 
-            t->quotes()->set_data(date, open, close, high, low, vol);
-        }
+    in->identity()->set_country(root.value("Country").toString());
+    in->identity()->set_sector(root.value("Sector").toString());
+    in->identity()->set_industry(root.value("Industry").toString());
+    in->identity()->set_headquart(root.value("Address").toString());
+    in->identity()->set_url(root.value("OfficialSite").toString());
+    in->identity()->set_ipo(QDate::fromString(root.value("LatestQuarter").toString(),
+                                              "yyyy-MM-dd"));
 
-        QJsonObject time_minute = root.value("Time Series (1min)").toObject();
-        if (! time_minute.isEmpty()){
-            QJsonObject meta = root.value("Meta Data").toObject();
-            QString str = meta.value("Last Refreshed").toString().first(10);
-            t->quotes()->set_intraday(QDate::fromString(str, "yyyy-MM-dd"));
-        }
-        for (auto it = time_minute.begin(); it != time_minute.end(); ++it) {
-            QString dateStr = it.key();
-            QJsonObject candle = it.value().toObject();
+    in->valuation()->set_market_cap(root.value("MarketCapitalization").toDouble());
+    in->valuation()->set_eps(root.value("EPS").toDouble());
+    in->valuation()->set_pe_ratio(root.value("PERatio").toDouble());
+    in->valuation()->set_pb_ratio(root.value("PriceToBookRatio").toDouble());
+    in->valuation()->set_book_value(root.value("BookValue").toDouble());
+    in->valuation()->set_share_count(root.value("SharesOutstanding").toDouble());
 
-            QTime time = QTime::fromString(dateStr.last(8), "hh:mm:ss");
-            float open  = candle.value("1. open"  ).toString().toFloat();
-            float high  = candle.value("2. high"  ).toString().toFloat();
-            float low   = candle.value("3. low"   ).toString().toFloat();
-            float close = candle.value("4. close" ).toString().toFloat();
-            quint64 vol = candle.value("5. volume").toString().toULongLong();
+    in->profitability()->set_roa(root.value("ReturnOnAssetsTTM").toDouble());
+    in->profitability()->set_roe(root.value("ReturnOnEquityTTM").toDouble());
+    in->profitability()->set_margin_oper(root.value("OperatingMarginTTM").toDouble());
+    in->profitability()->set_netincome(root.value("ProfitMargin").toDouble());
+    in->profitability()->set_margin_gros(root.value("GrossProfitTTM").toDouble() /
+                                         root.value("RevenueTTM").toDouble());
 
-            t->quotes()->set_data(time, open, close, high, low, vol);
-        }
 
-        t->quotes()->recalculate();
-        t->save();
-        break;
+    in->dividend()->set_yield(root.value("DividendYield").toDouble());
+    in->dividend()->set_per_share(root.value("DividendPerShare").toDouble());
+    in->dividend()->set_next_date(QDate::fromString(root.value("DividendDate").toString(),
+                                                    "yyyy-MM-dd"));
+    in->dividend()->set_prev_date(QDate::fromString(root.value("ExDividendDate").toString(),
+                                                    "yyyy-MM-dd"));
+
+    in->stability()->set_beta(root.value("Beta").toDouble());
+    in->stability()->set_revenue(root.value("RevenueTTM").toDouble());
+
+    t->save();
+}
+
+void api::AlphaVantage::_handle_candle(const QJsonObject& root, data::Ticker* t)
+{
+    QJsonObject time_daily = root.value("Time Series (Daily)").toObject();
+    for (auto it = time_daily.begin(); it != time_daily.end(); ++it) {
+        QString dateStr = it.key();
+        QJsonObject candle = it.value().toObject();
+
+        QDate date = QDate::fromString(dateStr, "yyyy-MM-dd");
+        float open  = candle.value("1. open"  ).toString().toFloat();
+        float high  = candle.value("2. high"  ).toString().toFloat();
+        float low   = candle.value("3. low"   ).toString().toFloat();
+        float close = candle.value("4. close" ).toString().toFloat();
+        quint64 vol = candle.value("5. volume").toString().toULongLong();
+
+        t->quotes()->set_data(date, open, close, high, low, vol);
     }
-    case api::Request::Tag: {
-        QJsonObject root = doc.object();
-        QJsonArray list = root.value("bestMatches").toArray();
-        Loader::instance()->search_tag()->clear();
-        for (const auto& it : std::as_const(list)){
-            QJsonObject obj = it.toObject();
-            Loader::instance()->search_tag()->add(obj.value("1. symbol"  ).toString(),
-                                    obj.value("2. name"    ).toString(),
-                                    obj.value("3. type"    ).toString(),
-                                    obj.value("4. region"  ).toString(),
-                                    obj.value("8. currency").toString());
-        }
-        break;
+
+    QJsonObject time_minute = root.value("Time Series (1min)").toObject();
+    if (! time_minute.isEmpty()){
+        QJsonObject meta = root.value("Meta Data").toObject();
+        QString str = meta.value("Last Refreshed").toString().first(10);
+        t->quotes()->set_intraday(QDate::fromString(str, "yyyy-MM-dd"));
     }
-    case api::Request::Dividend: {
-        QJsonObject root = doc.object();
-        QJsonArray array = root.value("data").toArray();
-        for (const auto& it : std::as_const(array)){
-            QJsonObject obj = it.toObject();
-            in->dividend()->set_history(QDate::fromString(obj.value("ex_dividend_date").toString(),
-                                                          "yyy-MM-dd"),
-                                        obj.value("amount").toDouble());
-        }
-        break;
+    for (auto it = time_minute.begin(); it != time_minute.end(); ++it) {
+        QString dateStr = it.key();
+        QJsonObject candle = it.value().toObject();
+
+        QTime time = QTime::fromString(dateStr.last(8), "hh:mm:ss");
+        float open  = candle.value("1. open"  ).toString().toFloat();
+        float high  = candle.value("2. high"  ).toString().toFloat();
+        float low   = candle.value("3. low"   ).toString().toFloat();
+        float close = candle.value("4. close" ).toString().toFloat();
+        quint64 vol = candle.value("5. volume").toString().toULongLong();
+
+        t->quotes()->set_data(time, open, close, high, low, vol);
     }
-    default:;
+
+    t->quotes()->recalculate();
+    t->save();
+}
+
+void api::AlphaVantage::_handle_tag(const QJsonObject& root)
+{
+    QJsonArray list = root.value("bestMatches").toArray();
+    Nexus.search_tag()->clear();
+    for (const auto& it : std::as_const(list)){
+        QJsonObject obj = it.toObject();
+        Nexus.search_tag()->add(obj.value("1. symbol"  ).toString(),
+                                obj.value("2. name"    ).toString(),
+                                obj.value("3. type"    ).toString(),
+                                obj.value("4. region"  ).toString(),
+                                obj.value("8. currency").toString());
+    }
+}
+
+void api::AlphaVantage::_handle_dividend(const QJsonObject& root, data::Ticker* t)
+{
+    QJsonArray array = root.value("data").toArray();
+    for (const auto& it : std::as_const(array)){
+        QJsonObject obj = it.toObject();
+        t->instrument()->dividend()->set_history(QDate::fromString(obj.value("ex_dividend_date")
+                                                                   .toString(), "yyyy-MM-dd"),
+                                                 obj.value("amount").toDouble());
     }
 }
