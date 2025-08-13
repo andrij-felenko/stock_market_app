@@ -111,6 +111,15 @@ void Identity::cache_logo()
         return;
     }
 
+    // Масштабуємо до 64×64 зберігаючи пропорції
+    img = img.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    // Кодуємо в потрібний формат
+    QByteArray scaledData;
+    QBuffer outBuffer(&scaledData);
+    outBuffer.open(QIODevice::WriteOnly);
+    img.save(&outBuffer, fmt.isEmpty() ? "PNG" : fmt.constData());
+
     const QString mime = fmt.isEmpty() ? QStringLiteral("png") : QString::fromLatin1(fmt);
     const QString base64 = QString::fromLatin1(_logo_bytes.toBase64());
 

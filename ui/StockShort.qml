@@ -72,6 +72,13 @@ Rectangle {
         clip: true
         cache: true
         asynchronous: true
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            ToolTip.visible: containsMouse
+            ToolTip.text: logo_url
+        }
     }
 
     Item {
@@ -122,13 +129,6 @@ Rectangle {
         source: country == "" ? "" : "https://flagsapi.com/" + to_tag(country) + "/flat/64.png"
         width: 24
         height: 24
-
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            ToolTip.visible: containsMouse
-            ToolTip.text: logo_url
-        }
     }
 
     Item {

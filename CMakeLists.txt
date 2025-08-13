@@ -174,11 +174,11 @@ qt_add_resources(stock_manager "rc_images"
         rc/images/person.png
 )
 
-file(GLOB tags_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} rc/tags/*.edsm)
-qt_add_resources(stock_manager "rc_tags"
+file(GLOB tickers_meta_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} rc/tickers_meta/*.edsm)
+qt_add_resources(stock_manager "rc_tickers_meta"
     PREFIX "/"
     FILES
-        ${tags_files}
+        ${tickers_meta_files}
 )
 
 file(GLOB stock_files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} rc/stocks/*.tdsm)
