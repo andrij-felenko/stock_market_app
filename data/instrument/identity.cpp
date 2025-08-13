@@ -119,9 +119,10 @@ void Identity::cache_logo()
     QBuffer outBuffer(&scaledData);
     outBuffer.open(QIODevice::WriteOnly);
     img.save(&outBuffer, fmt.isEmpty() ? "PNG" : fmt.constData());
+    outBuffer.close();
 
     const QString mime = fmt.isEmpty() ? QStringLiteral("png") : QString::fromLatin1(fmt);
-    const QString base64 = QString::fromLatin1(_logo_bytes.toBase64());
+    const QString base64 = QString::fromLatin1(scaledData.toBase64());
 
     // QML Image чудово розуміє data: URL
     QUrl temp = QStringLiteral("data:image/") + mime + QStringLiteral(";base64,") + base64;
