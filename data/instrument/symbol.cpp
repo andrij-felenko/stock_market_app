@@ -182,17 +182,20 @@ namespace data::ticker {
 
 ExchangeEnumList data::ticker::Symbol::major_europe_sufix()
 {
-    return { BE, PA, AM, XETRA };
+    return { PA, AM, XETRA, BE, LU };
 }
 
 ExchangeEnumList data::ticker::Symbol::minor_europe_sufix()
 {
-    return { SW, MC, BR, OL, HE, CO, ST, XSTO };
+    return {
+        SW, MC, BR, OL, HE, CO, ST, XSTO, VI, LS,
+        DUSEL, HANOV, MUNIC, STUTG, FRANK, HUMBR, PRAGA, WARSH, ATHENS
+    };
 }
 
 ExchangeEnumList data::ticker::Symbol::other_worlds_sufix()
 {
-    return { Taiwan, Korea, Australia, Toronto };
+    return { Taiwan, Korea, Australia, Toronto, NEO, TSX, TEL_AVIV };
 }
 
 ExchangeEnumList data::ticker::Symbol::us_sufix()
@@ -239,6 +242,9 @@ const std::vector <data::ticker::Symbol::ExchangeEnumStruct>& data::ticker::Symb
         add(list, Exchange::Toronto, "TO", "TW", "Toronto Stock Exchange");
         add(list, Exchange::Taiwan, "TW", "TW", "Taipei / Taiwan Stock Exchange");
         add(list, Exchange::Korea, "KO", "KO", "Korea Stock Exchange");
+        add(list, Exchange::NEO, "NEO", "NEO", "NEO Exchange");
+        add(list, Exchange::TSX, "V", "V", "TSX Venture Exchange");
+        add(list, Exchange::TEL_AVIV, "TA", "TA", "Tel Aviv Stock Exchange");
 
         add(list, Exchange::AM, "AS", "AS", "Euronext Amsterdam");
         add(list, Exchange::BE, "BE", "BE", "Börse Berlin");
@@ -253,6 +259,18 @@ const std::vector <data::ticker::Symbol::ExchangeEnumStruct>& data::ticker::Symb
         add(list, Exchange::ST, "ST", "ST", "Stockholm Stock Exchange");
         add(list, Exchange::XSTO, "ST", "XSTO", "");
         add(list, Exchange::SW, "SW", "SW", "Switzerland");
+        add(list, Exchange::LU, "LU", "LU", "Luxembourg Stock Exchange");
+        add(list, Exchange::HUMBR, "HM", "HM", "Hamburg Exchange");
+        add(list, Exchange::DUSEL, "DU", "DU", "Dusseldorf Exchange");
+        add(list, Exchange::HANOV, "HA", "HA", "Hanover Exchange");
+        add(list, Exchange::MUNIC, "MU", "MU", "Munich Exchange");
+        add(list, Exchange::STUTG, "STU", "STU", "Stuttgart Exchange");
+        add(list, Exchange::FRANK, "F", "F", "Frankfurt Exchange");
+        add(list, Exchange::VI, "VI", "VI", "Vienna Exchange");
+        add(list, Exchange::LS, "LS", "LS", "Euronext Lisbon");
+        add(list, Exchange::PRAGA, "PR", "PR", "Prague Stock Exchange");
+        add(list, Exchange::WARSH, "WAR", "WAR", "Warsaw Stock Exchange");
+        add(list, Exchange::ATHENS, "AT", "AT", "Athens Exchange");
 
         add(list, Exchange::US, "US", "US", "");
         add(list, Exchange::NYSE, "US", "NYSE",

@@ -37,12 +37,15 @@ public:
 
         America = World | 0b00'0000, // 0100'.... america
         Toronto  = America | 0b0001,
+        NEO      = America | 0b0010,
+        TSX      = America | 0b0011,
 
         Africa  = World | 0b01'0000, // 0101'.... africa
 
         Asia = World | 0b10'0000, // 011.'.... asia
         Taiwan   = Asia | 0b0001,
         Korea    = Asia | 0b0010,
+        TEL_AVIV = Asia | 0b0011,
 
         Oceania  = World | 0b11'1000, // 0111'1... oceania
         Australia = Oceania |  0b001,
@@ -54,15 +57,28 @@ public:
         LSE   = EU1 | 0b00'0001,
         PA    = EU1 | 0b00'0010,
         AM    = EU1 | 0b00'0011,
+        LU    = EU1 | 0b00'0100,
         DE    = EU1 | 0b01'0000, // 1001'.... // Germany
-        BE    = EU1 | DE | 0b01,
-        XETRA = EU1 | DE | 0b10,
+        BE    = EU1 | DE|0b0001,
+        XETRA = EU1 | DE|0b0010,
 
         EU2  = EU | 0b100'0000, // 11..'....
         EU2C = EU2 | 0b01'0000, // 1101'.... // central europe sub echanges
         SW     = EU2C | 0b0001,
         MC     = EU2C | 0b0010,
         BR     = EU2C | 0b0011,
+        VI     = EU2C | 0b0101,
+        LS     = EU2C | 0b0110,
+        PRAGA  = EU2C | 0b0111,
+        WARSH  = EU2C | 0b1000,
+        ATHENS = EU2C | 0b1001,
+        DE2   = EU2| 0b10'0000, // 1110'.... // Germany 2
+        DUSEL = EU2|DE2|0b0011,
+        HANOV = EU2|DE2|0b0100,
+        MUNIC = EU2|DE2|0b0101,
+        STUTG = EU2|DE2|0b0110,
+        FRANK = EU2|DE2|0b0111,
+        HUMBR = EU2|DE2|0b1000,
 
         Scand = EU2 | 0b10'0000, // 1110'.... // Scandinavia
         OL     = Scand | 0b0001,

@@ -65,10 +65,11 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
 
         // деякі символи мають тільки малоліквідні данні, і навпряд чи будуть колись корисні
         // видаляємо їх з списку взагалі і йдемо далі
-        if (list.size() == 1 && list[0].symbol.trash()){
-            erase_list(list);
-            continue;
-        }
+        // TODO for now we need to have this
+        // if (list.size() == 1 && list[0].symbol.trash()){
+        //     erase_list(list);
+        //     continue;
+        // }
 
         // пошук головного символа серед всіх
         // ADR - позначка що тікер на біржі США але походження не з США
