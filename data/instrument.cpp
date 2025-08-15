@@ -13,7 +13,8 @@ enum InstRole {
     Region
 };
 
-data::Instrument::Instrument(const ticker::Symbol& tag, QObject* parent) : QObject(parent)
+data::Instrument::Instrument(const ticker::Symbol& tag, QObject* parent)
+    : QObject(parent), _save_locker(false)
 {
     _dividend = new Dividend(this);
     _identity = new Identity(this);
@@ -84,6 +85,9 @@ data::Profitability* data::Instrument::profitability() const { return _profitabi
 // tdsm - ticker data stock manager
 void data::Instrument::save() const
 {
+    if (_save_locker)
+        return;
+
     qDebug() << Q_FUNC_INFO;
     QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     path += "/stocks";
@@ -106,6 +110,7 @@ void data::Instrument::save() const
 
 void data::Instrument::load()
 {
+    _save_locker = true;
     std::function load_data = [this](QString path){
         QFile file(path + "/stocks/" + primary_symbol(true).full() + ".tdsm");
         if (!file.open(QIODevice::ReadOnly))
@@ -122,6 +127,7 @@ void data::Instrument::load()
 
     load_data(":/rc");
     load_data(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    _save_locker = false;
 }
 
 data::Ticker* const data::Instrument::operator[](ticker::Symbol symbol) const

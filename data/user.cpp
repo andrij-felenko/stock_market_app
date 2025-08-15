@@ -72,13 +72,13 @@ void data::User::addToFavorite(const ticker::Symbol& symbol)
     if (ticker.value()->quotes()->empty())
         api::Eod::historical_year(symbol, 1);
 
-    if (not ticker.value()->instrument()->have_fundamental()){
+    // if (not ticker.value()->instrument()->have_fundamental()){
         auto list = ticker.value()->instrument()->tickers();
         for (const auto& it : list)
             if (it.us())
                 api::FinnHub::update_info_by_tag(it.code());
                 // api::AlphaVantage::update_info_by_tag(it.code());
-    }
+    // }
 }
 
 void data::User::excludeFromFavorite(const QString& symbol)

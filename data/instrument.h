@@ -72,6 +72,7 @@ private:
     Profitability* _profitability = nullptr;
 
     std::vector <Ticker*> _tickers;
+    bool _save_locker;
 
     friend class data::Market;
 
