@@ -155,9 +155,6 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
     QJsonObject obj = doc.object();
     switch (type){
     case api::Request::Info: {
-        t->setExchange(obj.value("Exchange").toString());
-        t->setCurrency(currency::Name::to_enum(obj.value("Currency").toString()));
-
         in->identity()->set_title(obj.value("Name").toString());
         in->identity()->set_descrip(obj.value("Description").toString());
         in->identity()->set_country(obj.value("Country").toString());
@@ -242,9 +239,7 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
             QJsonObject obj = it.toObject();
             st->add(obj.value("1. symbol"  ).toString(),
                     obj.value("2. name"    ).toString(),
-                    obj.value("3. type"    ).toString(),
-                    obj.value("4. region"  ).toString(),
-                    obj.value("8. currency").toString());
+                    obj.value("3. type"    ).toString());
         }
         break;
     }

@@ -37,9 +37,6 @@ class data::Instrument : public QObject
     Q_PROPERTY(Valuation*     valuation     READ valuation     CONSTANT)
     Q_PROPERTY(Profitability* profitability READ profitability CONSTANT)
 public:
-    Instrument(const ticker::Symbol& tag,  QObject* parent = nullptr);
-    Instrument(const meta  ::Ticker& meta, QObject* parent = nullptr);
-
     Dividend* dividend() const;
     Identity* identity() const;
     Stability* stability() const;
@@ -49,8 +46,10 @@ public:
     Ticker* primary_ticker(bool absolute = false) const;
 
     ticker::SymbolList tickers() const;
+    std::vector <Ticker*> tickers_ptr();
     ticker::Symbol primary_symbol(bool absolute = false) const;
     bool contains(const ticker::Symbol& symbol) const;
+    bool was_loaded() const;
 
     bool have_fundamental() const;
 
@@ -63,6 +62,9 @@ public:
     // void set_meta_ticker(const meta::Ticker& meta);
 
 private:
+    Instrument(const ticker::Symbol& tag,  QObject* parent = nullptr);
+    Instrument(const meta  ::Ticker& meta, QObject* parent = nullptr);
+
     Ticker* const ensure(ticker::Symbol symbol);
 
     Dividend* _dividend = nullptr;
@@ -73,6 +75,8 @@ private:
 
     std::vector <Ticker*> _tickers;
     bool _save_locker;
+    bool _was_loaded;
+    void fix_tickers_load();
 
     friend class data::Market;
 

@@ -16,6 +16,10 @@ void api::API::_add_reply(Request type, QNetworkReply* reply, const QString& sym
 
 void api::API::_send(Request type, QString name, StringMap keys)
 {
+    for (const auto& it : _queue)
+        if (it.type == type && it.name == name && it.keys == keys)
+            return;
+
     _queue.emplace_back(type, name, keys);
     _next();
 }

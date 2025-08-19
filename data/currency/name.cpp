@@ -164,6 +164,7 @@ void Name::_add_east_asia(){
     _add(Tag::Taiwan_New_Dollar, "Taiwan New Dollar",  "TWD", cont);
     _add(Tag::Thai_Baht,         "Thai Baht",          "THB", cont);
     _add(Tag::Vietnamese_Dong,   "Vietnamese Dong",    "VND", cont);
+    _add(Tag::Korean_Won,        "Korean Won",         "KRW", cont);
 }
 
 void Name::_add_west_asia(){

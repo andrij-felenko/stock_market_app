@@ -7,6 +7,7 @@
 
 #include "../instrument/quotes.h"
 #include "../currency/name.h"
+#include "utilities/features.h"
 #include "symbol.h"
 
 namespace data {
@@ -19,14 +20,12 @@ class data::Ticker : public QObject
     Q_OBJECT
     Q_PROPERTY(Quotes* quotes  READ quotes CONSTANT)
     Q_PROPERTY(bool    primary READ is_primary NOTIFY primaryChanged)
-    Q_PROPERTY(currency::Tag currency READ currency WRITE setCurrency NOTIFY currencyChanged)
-    Q_PROPERTY(QString   currency_str READ currency_str                NOTIFY currencyChanged)
-    Q_PROPERTY(QString exchange   READ exchange   WRITE setExchange   NOTIFY exchangeChanged)
-    Q_PROPERTY(QString country    READ country    WRITE setCountry    NOTIFY  countryChanged)
-    Q_PROPERTY(QString symbol     READ symbol_str WRITE setSymbol     NOTIFY   symbolChanged)
+    Q_PROPERTY(currency::Tag currency READ currency               NOTIFY currencyChanged)
+    Q_PROPERTY(QString   currency_str READ currency_str           NOTIFY currencyChanged)
+    Q_PROPERTY(QString exchange   READ exchange                   NOTIFY exchangeChanged)
+    Q_PROPERTY(QString country    READ country                    NOTIFY  countryChanged)
+    Q_PROPERTY(QString symbol     READ symbol_str WRITE setSymbol NOTIFY   symbolChanged)
 public:
-    Ticker(bool primary = false, Instrument* parent = nullptr);
-
     Quotes* quotes() const;
     currency::Tag currency() const;
     QString currency_str() const;
@@ -42,9 +41,6 @@ public:
     void save();
 
 public slots:
-    void setCurrency(const currency::Tag& new_currency);
-    void setExchange(const QString& new_exchange);
-    void setCountry(const QString& new_country);
     void setSymbol(QString new_symbol);
 
     void set_symbol(QString new_symbol);
@@ -58,18 +54,26 @@ signals:
     void symbolChanged(QString symbol);
     void primaryChanged(bool is_primary);
 
-    void update_data();
+    void signal_update();
+    void signal_save();
 
 private:
+    Ticker(Instrument* parent = nullptr);
+
     Quotes* _quotes = nullptr;
-    currency::Tag _currency;
-    QString _exchange;
-    QString _country;
     ticker::Symbol _symbol;
-    bool _primary;
 
     friend class Instrument;
-    friend class Market;
+    // friend class Market;
+
+    template <typename T, typename... Args>
+    requires (std::is_pointer_v <T> ? util::DataStreamReadable <std::remove_pointer_t <T>>
+                                    : util::DataStreamReadable <T>)
+    friend QDataStream& util::list_from_stream(QDataStream& s, std::vector <T>& d, Args&&...args);
+
+    Ticker(const Ticker&) = delete;        // still disallow copy-construct
+    Ticker& operator = (Ticker&&) = delete;  // and moving, if you prefer
+    Ticker& operator = (const Ticker& other);
 
     friend QDataStream& operator << (QDataStream& s, const Ticker& d);
     friend QDataStream& operator >> (QDataStream& s,       Ticker& d);

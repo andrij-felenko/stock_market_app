@@ -1,6 +1,7 @@
 #ifndef DATA_INSTRUMENT_SYMBOL_H
 #define DATA_INSTRUMENT_SYMBOL_H
 
+#include "data/currency/name.h"
 #include <QDataStream>
 #include <QString>
 
@@ -112,6 +113,8 @@ public:
     static QString  exchange_str(Exchange e);
     static Exchange from_exchange(QString str);
 
+    static currency::Tag currency(Exchange e);
+
     static QList <Exchange> major_europe_sufix();
     static QList <Exchange> minor_europe_sufix();
     static QList <Exchange> other_worlds_sufix();
@@ -142,6 +145,7 @@ public:
     QString decription() const;
     QString to_short() const;
     QString exchange_str() const;
+    currency::Tag currency() const;
 
     void set_short   (QString str);
     void set_exchange(QString str);
@@ -173,6 +177,7 @@ private:
         QString exchange;
         QString fullname;
         int8_t priority;
+        currency::Tag currency;
     };
 
     static const std::vector <ExchangeEnumStruct>& ex_map_list();

@@ -61,6 +61,15 @@ QString dtS::exchange_str(Exchange e)
     return "Unknown";
 }
 
+currency::Tag data::ticker::Symbol::currency(Exchange e)
+{
+    if (exist(e))
+        for (const auto& it : ex_map_list())
+            if (it.enum_ == e)
+                return it.currency;
+    return currency::Tag::None;
+}
+
 dtS::Exchange dtS::from_exchange(QString str)
 {
     for (const auto& it : ex_map_list())
@@ -92,9 +101,10 @@ bool dtS::Symbol::operator == (const std::vector <dtS::Exchange> list) const
 }
 
 
-QString dtS::decription()   const { return decription  (_enum); }
-QString dtS::to_short()     const { return to_short    (_enum); }
-QString dtS::exchange_str() const { return exchange_str(_enum); }
+QString       dtS::decription()   const { return decription  (_enum); }
+QString       dtS::to_short()     const { return to_short    (_enum); }
+QString       dtS::exchange_str() const { return exchange_str(_enum); }
+currency::Tag dtS::currency()     const { return currency    (_enum); }
 
 void dtS::set_short   (QString str) { set_exchange(from_short   (str)); }
 void dtS::set_exchange(QString str) { set_exchange(from_exchange(str)); }
@@ -226,94 +236,98 @@ QStringList data::ticker::Symbol::all_exchange_short()
 
 const std::vector <data::ticker::Symbol::ExchangeEnumStruct>& data::ticker::Symbol::ex_map_list()
 {
-    std::function add = [](std::vector <data::ticker::Symbol::ExchangeEnumStruct>& list,
-                                Exchange enum_, QString sufix, QString exchange, QString name){
+    std::function add =
+            [](std::vector <data::ticker::Symbol::ExchangeEnumStruct>& list,
+            Exchange enum_, currency::Tag currency,
+            QString sufix, QString exchange, QString name){
         ExchangeEnumStruct add;
         add.exchange = exchange;
         add.enum_ = enum_;
         add.fullname = name;
         add.sufix = sufix;
+        add.currency = currency;
         list.push_back(add);
     };
 
     static std::vector <data::ticker::Symbol::ExchangeEnumStruct> list;
     if (list.empty()){
-        add(list, Exchange::Australia, "AU", "AU", "Australian Securities Exchange");
-        add(list, Exchange::Toronto, "TO", "TW", "Toronto Stock Exchange");
-        add(list, Exchange::Taiwan, "TW", "TW", "Taipei / Taiwan Stock Exchange");
-        add(list, Exchange::Korea, "KO", "KO", "Korea Stock Exchange");
-        add(list, Exchange::NEO, "NEO", "NEO", "NEO Exchange");
-        add(list, Exchange::TSX, "V", "V", "TSX Venture Exchange");
-        add(list, Exchange::TEL_AVIV, "TA", "TA", "Tel Aviv Stock Exchange");
+        using namespace currency;
+        add(list, Australia, Tag::US_Dollar, "AU", "AU", "Australian Securities Exchange");
+        add(list, Toronto, Tag::Canadian_Dollar, "TO", "TW", "Toronto Stock Exchange");
+        add(list, Taiwan, Tag::Taiwan_New_Dollar, "TW", "TW", "Taipei / Taiwan Stock Exchange");
+        add(list, Korea, Tag::Korean_Won, "KO", "KO", "Korea Stock Exchange");
+        add(list, NEO, Tag::Canadian_Dollar, "NEO", "NEO", "NEO Exchange");
+        add(list, TSX, Tag::Canadian_Dollar, "V", "V", "TSX Venture Exchange");
+        add(list, TEL_AVIV, Tag::Israeli_Shekel, "TA", "TA", "Tel Aviv Stock Exchange");
 
-        add(list, Exchange::AM, "AS", "AS", "Euronext Amsterdam");
-        add(list, Exchange::BE, "BE", "BE", "Börse Berlin");
-        add(list, Exchange::XETRA, "XETRA", "XETRA", "Deutsche Börse");
-        add(list, Exchange::BR, "BR", "BR", "Euronext Brussels");
-        add(list, Exchange::LSE, "L", "LSE", "London Stock Exchange");
-        add(list, Exchange::CO, "CO", "CO", "Copenhagen Stock Exchange");
-        add(list, Exchange::MC, "MC", "MC", "Bolsa de Madrid");
-        add(list, Exchange::HE, "FI", "HE", "Helsinki");
-        add(list, Exchange::OL, "OL", "OL", "Oslo Stock Exchange");
-        add(list, Exchange::PA, "PA", "PA", "Euronext Paris");
-        add(list, Exchange::ST, "ST", "ST", "Stockholm Stock Exchange");
-        add(list, Exchange::XSTO, "ST", "XSTO", "");
-        add(list, Exchange::SW, "SW", "SW", "Switzerland");
-        add(list, Exchange::LU, "LU", "LU", "Luxembourg Stock Exchange");
-        add(list, Exchange::HUMBR, "HM", "HM", "Hamburg Exchange");
-        add(list, Exchange::DUSEL, "DU", "DU", "Dusseldorf Exchange");
-        add(list, Exchange::HANOV, "HA", "HA", "Hanover Exchange");
-        add(list, Exchange::MUNIC, "MU", "MU", "Munich Exchange");
-        add(list, Exchange::STUTG, "STU", "STU", "Stuttgart Exchange");
-        add(list, Exchange::FRANK, "F", "F", "Frankfurt Exchange");
-        add(list, Exchange::VI, "VI", "VI", "Vienna Exchange");
-        add(list, Exchange::LS, "LS", "LS", "Euronext Lisbon");
-        add(list, Exchange::PRAGA, "PR", "PR", "Prague Stock Exchange");
-        add(list, Exchange::WARSH, "WAR", "WAR", "Warsaw Stock Exchange");
-        add(list, Exchange::ATHENS, "AT", "AT", "Athens Exchange");
+        add(list, AM, Tag::Euro, "AS", "AS", "Euronext Amsterdam");
+        add(list, BE, Tag::Euro, "BE", "BE", "Börse Berlin");
+        add(list, XETRA, Tag::Euro, "XETRA", "XETRA", "Deutsche Börse");
+        add(list, BR, Tag::Euro, "BR", "BR", "Euronext Brussels");
+        add(list, LSE, Tag::GreatBritain_Pence, "L", "LSE", "London Stock Exchange");
+        add(list, CO, Tag::Danish_Krone, "CO", "CO", "Copenhagen Stock Exchange");
+        add(list, MC, Tag::Euro, "MC", "MC", "Bolsa de Madrid");
+        add(list, HE, Tag::Euro, "FI", "HE", "Helsinki");
+        add(list, OL, Tag::Norwegian_Krone, "OL", "OL", "Oslo Stock Exchange");
+        add(list, PA, Tag::Euro, "PA", "PA", "Euronext Paris");
+        add(list, ST, Tag::Swedish_Krona, "ST", "ST", "Stockholm Stock Exchange");
+        add(list, XSTO, Tag::Swedish_Krona, "ST", "XSTO", "");
+        add(list, SW, Tag::Swiss_Franc, "SW", "SW", "Switzerland");
+        add(list, LU, Tag::Euro, "LU", "LU", "Luxembourg Stock Exchange");
+        add(list, HUMBR, Tag::Euro, "HM", "HM", "Hamburg Exchange");
+        add(list, DUSEL, Tag::Euro, "DU", "DU", "Dusseldorf Exchange");
+        add(list, HANOV, Tag::Euro, "HA", "HA", "Hanover Exchange");
+        add(list, MUNIC, Tag::Euro, "MU", "MU", "Munich Exchange");
+        add(list, STUTG, Tag::Euro, "STU", "STU", "Stuttgart Exchange");
+        add(list, FRANK, Tag::Euro, "F", "F", "Frankfurt Exchange");
+        add(list, VI, Tag::Euro, "VI", "VI", "Vienna Exchange");
+        add(list, LS, Tag::Euro, "LS", "LS", "Euronext Lisbon");
+        add(list, PRAGA, Tag::Czech_Koruna, "PR", "PR", "Prague Stock Exchange");
+        add(list, WARSH, Tag::Polish_Zloty, "WAR", "WAR", "Warsaw Stock Exchange");
+        add(list, ATHENS, Tag::Euro, "AT", "AT", "Athens Exchange");
 
-        add(list, Exchange::US, "US", "US", "");
-        add(list, Exchange::NYSE, "US", "NYSE",
+        add(list, US, Tag::US_Dollar, "US", "US", "");
+        add(list, NYSE, Tag::US_Dollar, "US", "NYSE",
             "New York Stock Exchange, найстаріша та найбільша біржа у світі за капіталізацією");
-        add(list, Exchange::NYSE_ARCA, "US", "NYSE ARCA",
+        add(list, NYSE_ARCA, Tag::US_Dollar, "US", "NYSE ARCA",
             "електронна біржа, спадкоємець ArcaEx, спеціалізується на ETF та ETP продуктах");
-        add(list, Exchange::NASDAQ, "US", "NASDAQ",
+        add(list, NASDAQ, Tag::US_Dollar, "US", "NASDAQ",
             "повністю електронна біржа, орієнтована на технологічні компанії,"
             " друга за обсягами в США");
 
-        add(list, Exchange::BATS, "US", "BATS",
+        add(list, BATS, Tag::US_Dollar, "US", "BATS",
             "мультибіржа, що приймає торги NYSE, AMEX, Arca, Nasdaq;"
             " часто використовується як ECN");
-        add(list, Exchange::AMEX, "US", "AMEX", "");
-        add(list, Exchange::NYSE_MKT, "US", "NYSE MKT",
+        add(list, AMEX, Tag::US_Dollar, "US", "AMEX", "");
+        add(list, NYSE_MKT, Tag::US_Dollar, "US", "NYSE MKT",
             "NYSE American, раніше AMEX — фокус на малих і середніх компаніях,"
             " торгівля ETF, опціонами, bonds");
 
-        add(list, Exchange::OTC, "US", "OTC", "Позабіржовий ринок — umbrella для всіх нижче");
-        add(list, Exchange::OTC_QB, "US", "OTCQB",
+        add(list, OTC, Tag::US_Dollar, "US", "OTC", "Позабіржовий ринок — umbrella для всіх нижче");
+        add(list, OTC_QB, Tag::US_Dollar, "US", "OTCQB",
             "Другий рівень, призначений для молодих чи невеликих компаній."
             " Повинні мати SEC-реєстрацію або бути звітними. Мінімум $0.01/акція");
-        add(list, Exchange::OTC_QX, "US", "OTCQX",
+        add(list, OTC_QX, Tag::US_Dollar, "US", "OTCQX",
             "Найвищий рівень OTC. Прозорі компанії з міжнародною звітністю, без SEC-філінгів,"
             " але з фінансовим аудитом. Приклади: Heineken, Roche");
-        add(list, Exchange::NMFQA, "US", "NMFQS",
+        add(list, NMFQA, Tag::US_Dollar, "US", "NMFQS",
             "OTCQX (найвищий OTC-tier від OTC Markets Group),"
             " для якісних компаній з вимогами до фінзвітності");
-        add(list, Exchange::OTC_MKTS, "US", "OTCMKTS", "");
-        add(list, Exchange::OTC_MTKS, "US", "OTCMTKS",
+        add(list, OTC_MKTS, Tag::US_Dollar, "US", "OTCMKTS", "");
+        add(list, OTC_MTKS, Tag::US_Dollar, "US", "OTCMTKS",
             "Іноді використовується як синонім до OTC Group /"
             " OTC Link ATS (Alternative Trading System)");
 
-        add(list, Exchange::PINK, "US", "PINK",
+        add(list, PINK, Tag::US_Dollar, "US", "PINK",
             "ринок Pink Sheets (OTC), менші компанії без обов’язкового звітування SEC,"
             " високий ризик");
-        add(list, Exchange::OTC_GREY, "US", "OTCGREY",
+        add(list, OTC_GREY, Tag::US_Dollar, "US", "OTCGREY",
             "Взагалі не мають публічної інформації чи маркет-мейкерів. Найменш прозорий ринок."
             " Немає котирувань, тільки ручні транзакції");
-        add(list, Exchange::OTC_BB, "US", "OTCBB",
+        add(list, OTC_BB, Tag::US_Dollar, "US", "OTCBB",
             "Раніше регульований майданчик від FINRA (OTCBB). Більше не функціонує (закритий 2021)."
             " Колись був більш прозорий, ніж Pink Sheets");
-        add(list, Exchange::OTC_CE, "US", "OTCCE",
+        add(list, OTC_CE, Tag::US_Dollar, "US", "OTCCE",
             "\"Обережно, покупцю\" — маркування від OTC для компаній із підозрілою діяльністю,"
             " маніпуляціями або браком інформації");
     }

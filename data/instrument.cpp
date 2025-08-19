@@ -14,7 +14,7 @@ enum InstRole {
 };
 
 data::Instrument::Instrument(const ticker::Symbol& tag, QObject* parent)
-    : QObject(parent), _save_locker(false)
+    : QObject(parent), _save_locker(false), _was_loaded(false)
 {
     _dividend = new Dividend(this);
     _identity = new Identity(this);
@@ -30,9 +30,6 @@ data::Instrument::Instrument(const meta::Ticker& meta, QObject* parent)
     : Instrument(meta.symbol, parent)
 {
     _identity->set_title(meta.name);
-    _identity->set_country(meta.region);
-
-    primary_ticker(true)->setCurrency(currency::Name::from_short(meta.currency));
 }
 
 data::ticker::Symbol data::Instrument::primary_symbol(bool absolute) const
@@ -63,6 +60,11 @@ data::ticker::SymbolList data::Instrument::tickers() const
     return ret;
 }
 
+std::vector <data::Ticker*> data::Instrument::tickers_ptr()
+{
+    return _tickers;
+}
+
 bool data::Instrument::contains(const ticker::Symbol& symbol) const
 {
     for (const auto& it : _tickers)
@@ -71,9 +73,11 @@ bool data::Instrument::contains(const ticker::Symbol& symbol) const
     return false;
 }
 
+bool data::Instrument::was_loaded() const { return _was_loaded; }
 bool data::Instrument::have_fundamental() const
 {
-    return _identity->filled_capacity() > 50;
+    qDebug() << Q_FUNC_INFO << _identity->filled_capacity() << primary_symbol(true);
+    return _identity->filled_capacity() > 30;
 }
 
 data::Dividend*      data::Instrument::dividend()      const { return _dividend; }
@@ -102,10 +106,11 @@ void data::Instrument::save() const
     }
 
     QDataStream out(&file);
-    out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_6_10);
     out << *this;
     file.close();
-    qDebug() << "data::Instrument::save() to: " << file.fileName();
+    qDebug() << "data::Instrument::save() to: " << file.fileName()
+             << primary_ticker()->quotes()->raw_points().size();
 }
 
 void data::Instrument::load()
@@ -117,12 +122,13 @@ void data::Instrument::load()
             return;
 
         QDataStream in(&file);
-        in.setVersion(QDataStream::Qt_6_0);
+        in.setVersion(QDataStream::Qt_6_10);
         in >> *this;
         file.close();
+        _was_loaded = true;
 
         for (const auto& it : _tickers)
-            emit it->update_data();
+            emit it->signal_update();
     };
 
     load_data(":/rc");
@@ -143,10 +149,12 @@ data::Ticker* const data::Instrument::ensure(ticker::Symbol symbol)
 {
     Ticker* t = operator[](symbol);
     if (t == nullptr){
-        t = new Ticker(_tickers.empty(), this);
+        t = new Ticker(this);
         t->set_symbol(symbol);
         _tickers.push_back(t);
-        connect(t, &Ticker::update_data, this, &Instrument::save);
+        connect(t, &Ticker::signal_save, this, &Instrument::save);
+        if (symbol == ticker::Symbol("DTREF.US"))
+            qDebug() << "CREATE DTREF.US" << this << t << &t;
     }
     return t;
 }
@@ -155,10 +163,26 @@ data::Instrument::operator meta::Ticker() const
 {
     meta::Ticker meta;
     meta.name    = _identity->title();
-    meta.region  = _identity->country();
     meta.symbol  = _tickers[0]->symbol();
-    meta.currency = primary_ticker(true)->currency_str();
     return meta;
+}
+
+void data::Instrument::fix_tickers_load()
+{
+    std::unordered_map<std::string, data::Ticker*> firstBySymbol;
+
+    std::erase_if(_tickers, [&](data::Ticker* t){
+        const std::string key = t->symbol_str().toStdString();
+
+        auto [it, inserted] = firstBySymbol.emplace(key, t);
+        if (inserted)
+            return false;               // перший раз бачимо цей символ — залишаємо
+
+        // дубль: зливаємо стан у перший і видаляємо дубль
+        *it->second = *t;               // потребує Ticker::operator= і Quotes::operator=
+        delete t;                       // чистий C++
+        return true;                    // прибрати з вектора
+    });
 }
 
 namespace data {
@@ -166,13 +190,17 @@ namespace data {
         s << *d._dividend  << *d._identity  << *d._profitability
           << *d._stability << *d._valuation;
         util::list_to_stream(s, d._tickers);
+        qDebug() << Q_FUNC_INFO << "POPIPOPI" << d.identity()->country() << d.identity()->logo_url();
         return s;
     }
 
     QDataStream& operator >> (QDataStream& s, Instrument& d) {
+        qDebug() << Q_FUNC_INFO << "POPIPOPI" << d.identity()->country() << d.identity()->logo_url();
         s >> *d._dividend  >> *d._identity  >> *d._profitability
           >> *d._stability >> *d._valuation;
-        util::list_from_stream(s, d._tickers, false, &d);
+        util::list_from_stream(s, d._tickers, &d);
+        d.fix_tickers_load();
+        qDebug() << Q_FUNC_INFO << "LOPILOPI" << d.identity()->country() << d.identity()->logo_url();
         return s;
     }
 }

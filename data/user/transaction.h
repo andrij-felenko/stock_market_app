@@ -25,7 +25,7 @@ public:
     QDateTime dtime() const;
 
 signals:
-    void update_data();
+    void signal_update();
 
 private:
     bool  _buy;

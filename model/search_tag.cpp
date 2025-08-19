@@ -35,8 +35,6 @@ QVariant model::SearchTag::data(const QModelIndex& index, int role) const
         case TagRole:      return _list[index.row()].symbol.full();
         case NameRole:     return _list[index.row()].name;
         case TypeRole:     return _list[index.row()].type;
-        case RegionRole:   return _list[index.row()].region;
-        case CurrencyRole: return _list[index.row()].currency;
         case ExchangeRole: return _list[index.row()].symbol.to_short();
         case TickerSize: {
             // TODO make list of values of symbols
@@ -72,17 +70,13 @@ void model::SearchTag::clear()
     endRemoveRows();
 }
 
-void model::SearchTag::add(QString symbol, QString name,
-                           QString type, QString region,
-                           QString currency)
+void model::SearchTag::add(QString symbol, QString name, QString type)
 {
     beginInsertRows(QModelIndex(), rowCount(), rowCount());
     meta::Ticker m;
     m.symbol = symbol;
     m.name = name;
     m.type = type;
-    m.region = region;
-    m.currency = currency;
     _list.push_back(m);
     endInsertRows();
 }

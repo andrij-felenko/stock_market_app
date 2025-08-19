@@ -56,7 +56,7 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
         qDebug() << "clusterise_ticker_meta" << metalist.size() << "--------------------------"
                  << list.size() << metalist[0].name;
         for (const auto& it : list)
-            qDebug() << it.name << it.symbol << it.currency << it.region << it.type;
+            qDebug() << it.name << it.symbol << it.type;
 
         // завжди список має бути хоча б з одного елемента
         // (насправді якщо це правда то це значить find погано працює)
@@ -198,15 +198,9 @@ void data::Market::add_sorted_instrument(const ticker::Symbol main, const Ticker
     Instrument* const in = ensure(main);
     for (const auto& it : list){
         auto ticker = in->ensure(it.symbol);
-        if (it.symbol == main){
-            in->identity()->set_country(it.region);
-            in->identity()->set_title  (it.name);
-        }
-        else {
-            ticker->setCountry(it.region);
-        }
+        if (it.symbol == main)
+            in->identity()->set_title(it.name);
 
-        ticker->setCurrency(it.currency_tag());
         ticker->setSymbol(it.symbol);
     }
 }
@@ -238,22 +232,30 @@ TickerMetaList market::meta::find(const TickerMetaList& list, QString str, Excha
                 continue;
         }
 
-        // якщо str пустий, можливо коли ми перевіряємо тільки тікери
+        // якщо str пустий, можливо коли ми перевіряємо тільки тікери за біржею
         if (str.isEmpty()){
             try_add(it);
             continue;
         }
 
-        bool same_len = it.name.length() == str.length();
+        // QString fix_str(str);
+        // QString it_fix_name(it.name);
+
+        // std::function normalize = [](QString str){
+        //     QStringList
+        // };
+        auto fixed_name = it.name_normalize();
+
+        bool same_len = fixed_name.length() == str.length();
         // перевіряємо тепер назву на співпадіння
         if (same_len){
-            if (it.name.startsWith(str, Qt::CaseInsensitive)){
+            if (fixed_name.startsWith(str, Qt::CaseInsensitive)){
                 try_add(it);
                 continue;
             }
         }
-        else if (it.name.startsWith(str + " ", Qt::CaseInsensitive)){
-            if (it.name.length() )
+        else if (fixed_name.startsWith(str + " ", Qt::CaseInsensitive)){
+            if (fixed_name.length() )
             try_add(it);
             continue;
         }
@@ -261,12 +263,14 @@ TickerMetaList market::meta::find(const TickerMetaList& list, QString str, Excha
         // перевіряємо відмінності окремих літер в кінці назви
         // але ми маємо бути впевнені що це самостійне слово
         // якщо перевіряємо і це має різну довжину то крешу не буде, && відсіє
-        bool is_cut_word = not same_len && it.name[str.size()] != ' ';
-        if (same_len && not is_cut_word)
-            if (it.name.startsWith(str.left(str.length() - 1))){
-                try_add(it);
-                continue;
-            }
+        if (fixed_name.length() > str.size()){
+            bool is_cut_word = not same_len && fixed_name[str.size()] != ' ';
+            if (same_len && not is_cut_word)
+                if (it.name_normalize().startsWith(str.left(str.length() - 1))){
+                    try_add(it);
+                    continue;
+                }
+        }
     }
 
     return ret;
@@ -279,7 +283,10 @@ TickerMetaList market::meta::find(const TickerMetaList& list, ::meta::Ticker m)
 
     // шукаємо слово яке є ключовим спочатку ------------------------------------------------------
     int index = 0;
-    QStringList names = m.name.split(" ");
+    QStringList names = m.name_normalize().split(" ");
+    if (names.isEmpty())
+        return { m };
+
     qDebug() << "\n+++" << m.name << names;
     QString current;
     while (names.length() > index){
@@ -289,12 +296,8 @@ TickerMetaList market::meta::find(const TickerMetaList& list, ::meta::Ticker m)
         index++;
 
         // якщо це перше слово, то беремо тільки якщо воно більше ніж 3 символа, чи разом
-        if (current.length() < 5)
+        if (current.length() < 3)
             continue;
-
-        if (current.startsWith("Renault")){
-            qDebug() << "Renault";
-        }
 
         // шукаємо можливі варіанти, краще зробити запит тут на все,
         // а вже потім зменшувати поки не повернемо результат готовий
@@ -355,6 +358,10 @@ QMap <QString, QString> edsm_map = {
     { "bond", "BOND" },
     { "etc", "ETC" },
     { "index", "INDEX" },
+    { "fund", "Fund" },
+    { "capital_notes", "Capital Notes" },
+    { "other", "" },
+    { "note", "Note" }
 };
 
 void data::Market::load_ticker_meta()
@@ -397,7 +404,7 @@ void data::Market::load_ticker_meta()
     };
 
     for (auto it = edsm_map.begin(); it != edsm_map.end(); ++it){
-        load_as(it.key(), it.value(), ":/rc");
+        // load_as(it.key(), it.value(), ":/rc");
         load_as(it.key(), it.value(),
                 QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     }
@@ -440,14 +447,18 @@ void data::Market::save_ticker_meta()
         qDebug() << "Save to: " << filename << size;
     };
 
-    for (const auto& it : std::as_const(_ticker_meta))
-        if (it.type != "Common Stock" && it.type != "ETF" &&
-            it.type != "FUND" && it.type != "Mutual Fund" &&
-            it.type != "Preferred Stock" && it.type != "Unit" &&
-            it.type != "Notes" && it.type != "ETC" &&
-            it.type != "BOND" && it.type != "INDEX"){
+    for (const auto& it : std::as_const(_ticker_meta)){
+        bool edsm_found = false;
+        for (auto type = edsm_map.begin(); type != edsm_map.end(); type++)
+            if (type.value().compare(it.type, Qt::CaseInsensitive) == 0){
+                edsm_found = true;
+                break;
+            }
+
+        if (! edsm_found){
             qDebug() << it.type << "ffffffffffffffffffffffffffffffffff";
         }
+    }
 
     for (auto it = edsm_map.begin(); it != edsm_map.end(); ++it)
         save_as(it.key(), it.value());

@@ -60,25 +60,28 @@ bool data::User::isInAssetList(const QString& symbol)
 
 void data::User::addToFavorite(const ticker::Symbol& symbol)
 {
-    auto ticker = Loader::instance()->market()->find(symbol);
-    if (not ticker.has_value())
+    auto t = Nexus.market()->find(symbol);
+    if (not t.has_value())
         return;
 
-    connect(ticker.value(), &Ticker::update_data, this, &User::favoriteListUpdated);
-    _favorite_list.push_back(ticker.value());
+    Ticker* ticker = t.value();
+
+    connect(ticker, &Ticker::signal_update, this, &User::favoriteListUpdated);
+    _favorite_list.push_back(ticker);
     emit favoriteListUpdated();
     save();
 
-    if (ticker.value()->quotes()->empty())
+    qDebug() << Q_FUNC_INFO << ticker->quotes()->raw_points().size() << symbol << ticker;
+    if (ticker->quotes()->empty())
         api::Eod::historical_year(symbol, 1);
 
-    // if (not ticker.value()->instrument()->have_fundamental()){
-        auto list = ticker.value()->instrument()->tickers();
+    if (not ticker->instrument()->have_fundamental()){
+        auto list = ticker->instrument()->tickers();
         for (const auto& it : list)
             if (it.us())
                 api::FinnHub::update_info_by_tag(it.code());
                 // api::AlphaVantage::update_info_by_tag(it.code());
-    // }
+    }
 }
 
 void data::User::excludeFromFavorite(const QString& symbol)

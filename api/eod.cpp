@@ -109,7 +109,7 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
 void api::Eod::_handler_answer(Request type, QByteArray data, QString name, bool stream)
 {
     qDebug() << "handler answer eod";
-    qDebug() << data;
+    // qDebug() << data;
     // QByteArray response = m_reply->readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     // qDebug() << name << "return data" << doc;
@@ -137,11 +137,8 @@ void api::Eod::_handle_exchange(const QJsonDocument& json, QString name)
         meta::Ticker meta;
         meta.symbol.set_code    (obj.value("Code")    .toString());
         meta.symbol.set_exchange(obj.value("Exchange").toString());
-
-        meta.name     = obj.value("Name")    .toString();
-        meta.region   = obj.value("Country") .toString();
-        meta.currency = obj.value("Currency").toString();
-        meta.type     = obj.value("Type")    .toString();
+        meta.name = obj.value("Name").toString();
+        meta.type = obj.value("Type").toString();
 
         market->add_meta(meta);
     }
@@ -179,6 +176,7 @@ void api::Eod::_handle_candle(const QJsonDocument& json, QString name)
     }
 
     ticker->quotes()->recalculate();
+    qDebug() << "save 1" << Q_FUNC_INFO << ticker->quotes()->raw_points().size() << ticker << name;
     ticker->save();
-    emit ticker->update_data();
+    qDebug() << "save 2" << Q_FUNC_INFO << ticker->quotes()->raw_points().size() << ticker << name;
 }

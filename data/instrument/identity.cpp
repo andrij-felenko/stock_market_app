@@ -185,16 +185,19 @@ namespace data {
     QDataStream& operator << (QDataStream& s, const Identity& i) {
         s << i._title    << i._descript  << i._sector
           << i._industry << i._headquart << i._isin
-          << i._ipo      << i._logo      << i._url;
-        return s << i._logo_bytes;
+          << i._ipo      << i._logo      << i._url
+          << i._country  << i._logo_bytes;
+        qDebug() << i._country << Q_FUNC_INFO;
+        return s;
     }
 
     QDataStream& operator >> (QDataStream& s, Identity& i) {
         s >> i._title    >> i._descript  >> i._sector
           >> i._industry >> i._headquart >> i._isin
           >> i._ipo      >> i._logo      >> i._url
-          >> i._logo_bytes;
+          >> i._country  >> i._logo_bytes;
         i.cache_logo();
+        qDebug() << i._country << Q_FUNC_INFO;
         return s;
     }
 }

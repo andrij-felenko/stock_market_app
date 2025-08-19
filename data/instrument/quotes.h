@@ -18,6 +18,9 @@ struct data::QuotesDate {
     float high;
     float low;
     quint64  volume;
+
+    friend QDataStream& operator << (QDataStream& s, const QuotesDate& q);
+    friend QDataStream& operator >> (QDataStream& s,       QuotesDate& q);
 };
 
 struct data::QuotesTime {
@@ -27,6 +30,9 @@ struct data::QuotesTime {
     float high;
     float low;
     quint64  volume;
+
+    friend QDataStream& operator << (QDataStream& s, const QuotesTime& q);
+    friend QDataStream& operator >> (QDataStream& s,       QuotesTime& q);
 };
 
 class data::Quotes : public QObject
@@ -35,8 +41,9 @@ class data::Quotes : public QObject
     Q_PROPERTY(QVector <QObject*> points READ points NOTIFY pointsChanged)
 public:
     Quotes(QObject* parent = nullptr);
+    Quotes& operator = (const Quotes& other);
 
-    const QVector <QuotesDate>& raw_points() const;
+    const std::vector <QuotesDate>& raw_points() const;
     QVector <QObject*> points();
 
     void recalculate();
@@ -44,21 +51,20 @@ public:
     void set_data(QTime t, float open, float close, float high, float low, quint64  v);
     void set_intraday(QDate date);
 
-public slots:
-    float year_max() const;
-    float year_min() const;
+    Q_INVOKABLE float year_max() const;
+    Q_INVOKABLE float year_min() const;
 
-    float current() const;
-
-    bool empty() const;
+    Q_INVOKABLE float current() const;
+    Q_INVOKABLE bool  empty();
 
 signals:
     void pointsChanged();
 
 private:
     QDate _last_intraday;
-    QVector <QuotesTime> _intraday;
-    QVector <QuotesDate> _points;
+    std::vector <QuotesTime> _intraday;
+    std::vector <QuotesDate> _points;
+
     QVector <QObject*> _result;
 
     friend QDataStream& operator << (QDataStream& s, const Quotes& q);

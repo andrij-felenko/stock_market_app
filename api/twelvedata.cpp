@@ -130,7 +130,7 @@ void api::TwelveData::_handler_answer(Request type, QByteArray data, QString nam
         qDebug() << 6;
 
         t->quotes()->recalculate();
-        emit t->update_data();
+        emit t->save();
         qDebug() << 7;
         t->save();
         qDebug() << 8;

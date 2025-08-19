@@ -31,7 +31,7 @@ public:
     data::Instrument* instrument() const;
 
 signals:
-    void update_data();
+    void signal_update();
 
 private:
     data::Ticker* _ticker;

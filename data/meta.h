@@ -25,7 +25,6 @@ struct meta::Instrument
     struct Ticker {
         currency::Tag currency;
         data::ticker::Symbol symbol;
-        QString country;
 
         friend QDataStream& operator << (QDataStream& s, const Ticker& d);
         friend QDataStream& operator >> (QDataStream& s,       Ticker& d);
@@ -40,8 +39,9 @@ struct meta::Instrument
     friend QDataStream& operator >> (QDataStream& s,       Instrument& d);
 };
 
-struct meta::Ticker
+class meta::Ticker
 {
+public:
     Ticker(data::ticker::Symbol symbol = data::ticker::Symbol());
     Ticker(const QByteArray& data);
     QByteArray data() const;
@@ -49,10 +49,13 @@ struct meta::Ticker
     data::ticker::Symbol symbol;
     QString name;
     QString type;
-    QString region;
-    QString currency;
+    const QString& name_normalize() const;
 
-    currency::Tag currency_tag() const;
+private:
+    mutable QString _name_normalize;
+
+    void normalize() const;
+    void clear_cache();
 
     friend QDataStream& operator << (QDataStream& s, const Ticker& d);
     friend QDataStream& operator >> (QDataStream& s,       Ticker& d);

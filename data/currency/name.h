@@ -114,6 +114,7 @@ namespace currency {
         Cambodian_Riel,        // KHR
         Bhutanese_Ngultrum,    // BTN
         Turkmenistani_Manat,   // TMT
+        Korean_Won,            // KRW
 
         // Europe
         Euro = 0xC00,      // EUR

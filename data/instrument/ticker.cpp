@@ -4,44 +4,29 @@
 
 using namespace data;
 
-data::Ticker::Ticker(bool primary, Instrument* parent) : QObject(parent), _primary(primary)
+data::Ticker::Ticker(Instrument* parent) : QObject(parent)
 {
     _quotes = new Quotes(this);
-    connect(this, &Ticker::update_data, parent, &Instrument::save);
+    connect(this, &Ticker::signal_save, parent, &Instrument::save);
+    connect(this, &Ticker::signal_save, this,   &Ticker::signal_update);
 }
 
-bool        Ticker::is_primary() const { return _primary; }
-void        Ticker::save()             { emit update_data(); }
+data::Ticker& Ticker::operator =(const Ticker& other)
+{
+    *_quotes = *other._quotes;
+    set_symbol(other.symbol());
+    return *this;
+}
+
+bool        Ticker::is_primary() const { return instrument()->primary_ticker() == this; }
+void        Ticker::save()             { emit signal_save(); }
 Quotes*     Ticker::quotes()     const { return _quotes; }
 Instrument* Ticker::instrument() const { return static_cast <Instrument*> (parent()); }
 
-QString       Ticker::currency_str() const {return currency::Name::to_full(currency()); }
-currency::Tag Ticker::    currency() const { return _currency; }
-void          Ticker:: setCurrency(const currency::Tag& new_currency)
-{
-    if (_currency == new_currency)
-        return;
-    _currency = new_currency;
-    emit currencyChanged(_currency);
-}
-
-QString Ticker::   country() const { return _country; }
-void    Ticker::setCountry(const QString& new_country)
-{
-    if (_country == new_country)
-        return;
-    _country = new_country;
-    emit countryChanged(_country);
-}
-
-QString Ticker::   exchange() const { return _exchange; }
-void    Ticker::setExchange(const QString& new_exchange)
-{
-    if (_exchange == new_exchange)
-        return;
-    _exchange = new_exchange;
-    emit exchangeChanged(_exchange);
-}
+QString       Ticker::currency_str() const { return currency::Name::to_full(currency()); }
+currency::Tag Ticker::    currency() const { return _symbol.currency(); }
+QString Ticker::   country() const { return instrument()->identity()->country(); }
+QString Ticker::   exchange() const { return _symbol.exchange_str(); }
 
 ticker::Symbol Ticker::   symbol()     const { return _symbol; }
 QString        Ticker::   symbol_str() const { return _symbol.full(); }
@@ -61,11 +46,9 @@ void Ticker::set_symbol(ticker::Symbol symbol)
 }
 
 namespace data {
-    QDataStream& operator << (QDataStream& s, const Ticker& d) {
-        return s << *d._quotes << d._currency << d._country << d._exchange << d._symbol;
-    }
+    QDataStream& operator << (QDataStream& s, const Ticker& d)
+    { return s << *d._quotes << d._symbol; }
 
-    QDataStream& operator >> (QDataStream& s, Ticker& d) {
-        return s >> *d._quotes >> d._currency >> d._country >> d._exchange >> d._symbol;
-    }
+    QDataStream& operator >> (QDataStream& s, Ticker& d)
+    { return s >> *d._quotes >> d._symbol; }
 }

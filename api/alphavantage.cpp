@@ -161,9 +161,6 @@ void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString n
 void api::AlphaVantage::_handle_info(const QJsonObject& root, QString name, data::Ticker* t)
 {
     data::Instrument* in = t->instrument();
-    t->setExchange(root.value("Exchange").toString());
-    t->setCurrency(currency::Name::to_enum(root.value("Currency").toString()));
-
     in->identity()->set_title(root.value("Name").toString());
     in->identity()->set_descrip(root.value("Description").toString());
 
@@ -252,9 +249,7 @@ void api::AlphaVantage::_handle_tag(const QJsonObject& root)
         QJsonObject obj = it.toObject();
         Nexus.search_tag()->add(obj.value("1. symbol"  ).toString(),
                                 obj.value("2. name"    ).toString(),
-                                obj.value("3. type"    ).toString(),
-                                obj.value("4. region"  ).toString(),
-                                obj.value("8. currency").toString());
+                                obj.value("3. type"    ).toString());
     }
 }
 

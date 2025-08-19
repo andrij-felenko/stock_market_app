@@ -47,7 +47,7 @@ void api::FileFetch::_handler_answer(Request type, QByteArray data, QString name
     // save_cache(name, data);
 
     t->instrument()->save();
-    emit t->update_data();
+    emit t->save();
 }
 
 void api::FileFetch::save_cache(const QString& tag, const QByteArray& bytes, const QString& ext) {

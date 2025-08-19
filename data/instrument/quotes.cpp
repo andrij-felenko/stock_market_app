@@ -1,4 +1,5 @@
 #include "quotes.h"
+#include "utilities/features.h"
 
 using namespace data;
 
@@ -7,7 +8,23 @@ data::Quotes::Quotes(QObject* parent) : QObject(parent)
     //
 }
 
-const QVector<QuotesDate>& Quotes::raw_points() const
+data::Quotes& Quotes::operator =(const Quotes& other)
+{
+    if (this == &other) return *this;
+
+    _last_intraday = other._last_intraday;
+    _intraday      = other._intraday;
+    _points        = other._points;
+
+    for (QObject* obj : std::as_const(_result))
+        obj->deleteLater();
+    _result.clear();
+
+    recalculate();
+    return *this;
+}
+
+const std::vector <QuotesDate>& Quotes::raw_points() const
 {
     return _points;
 }
@@ -57,7 +74,7 @@ void Quotes::set_data(QDate d, float open, float close, float high, float low, q
     p.low = low;
     p.volume = v;
 
-    _points.emplaceBack(p);
+    _points.push_back(p);
 }
 
 void Quotes::set_data(QTime t, float open, float close, float high, float low, quint64 v)
@@ -81,7 +98,7 @@ void Quotes::set_data(QTime t, float open, float close, float high, float low, q
     p.low = low;
     p.volume = v;
 
-    _intraday.emplaceBack(p);
+    _intraday.push_back(p);
 }
 
 void Quotes::set_intraday(QDate date)
@@ -127,7 +144,7 @@ float Quotes::current() const
             ret = it.close;
             date = it.date;
         }
-    if (! _intraday.isEmpty() && _last_intraday > date){
+    if (! _intraday.empty() && _last_intraday > date){
         QTime time = QTime(0, 0);
         for (auto& it : _intraday){
             if (it.time > time){
@@ -140,33 +157,37 @@ float Quotes::current() const
     return ret;
 }
 
-bool Quotes::empty() const
+bool Quotes::empty()
 {
     return _points.empty();
 }
 
 namespace data {
-    QDataStream& operator << (QDataStream& s, const Quotes& q) {
-        s << quint32(q._points.size());
-        for (const auto& it : q._points)
-            s << it.date << it.open << it.close << it.high << it.low << it.volume;
+// --------------------------------------------------------------------------------------
+    QDataStream& operator << (QDataStream& s, const QuotesDate& q)
+    { return s << q.date << q.open << q.close << q.high << q.low << q.volume; }
 
-        return s;
+    QDataStream& operator >> (QDataStream& s,       QuotesDate& q)
+    { return s >> q.date >> q.open >> q.close >> q.high >> q.low >> q.volume; }
+// --------------------------------------------------------------------------------------
+    QDataStream& operator << (QDataStream& s, const QuotesTime& q)
+    { return s << q.time << q.open << q.close << q.high << q.low << q.volume; }
+
+    QDataStream& operator >> (QDataStream& s,       QuotesTime& q)
+    { return s >> q.time >> q.open >> q.close >> q.high >> q.low >> q.volume; }
+// --------------------------------------------------------------------------------------
+    QDataStream& operator << (QDataStream& s, const Quotes& q) {
+        util::list_to_stream(s, q._points);
+        util::list_to_stream(s, q._intraday);
+        return s << q._last_intraday;
     }
 
     QDataStream& operator >> (QDataStream& s, Quotes& q) {
-        quint32 size = 0;
-        s >> size;
-
         q._points.clear();
-        q._points.reserve(size);
-        for (quint32 i = 0; i < size; ++i) {
-            QuotesDate qd;
-            s >> qd.date >> qd.open >> qd.close >> qd.high >> qd.low >> qd.volume;
-            q._points.emplaceBack(qd);
-        }
-
+        util::list_from_stream(s, q._points);
+        util::list_from_stream(s, q._intraday);
         q.recalculate();
-        return s;
+        return s >> q._last_intraday;
     }
+// --------------------------------------------------------------------------------------
 }

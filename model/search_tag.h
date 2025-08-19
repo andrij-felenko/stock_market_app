@@ -19,7 +19,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     void clear();
-    void add(QString symbol, QString name, QString type, QString region, QString currency);
+    void add(QString symbol, QString name, QString type);
 
 public slots:
     void find_by_part(QString str);
