@@ -2,7 +2,7 @@
 #define DATA_META_H
 
 #include <vector>
-#include "data/currency/name.h"
+#include "geo/geo.h"
 #include "data/instrument/symbol.h"
 #include <QtCore/QObject>
 #include <QtCore/QDate>
@@ -23,7 +23,7 @@ struct meta::Instrument
     QString title;
 
     struct Ticker {
-        currency::Tag currency;
+        geo::Currency currency;
         data::ticker::Symbol symbol;
 
         friend QDataStream& operator << (QDataStream& s, const Ticker& d);

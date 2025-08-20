@@ -87,19 +87,24 @@ set (src_cpp
     data/user/transaction.cpp
     data/user/transaction.h
 
-    data/currency.cpp
-    data/currency.h
-    data/currency/data.cpp
-    data/currency/data.h
-    data/currency/exchange.cpp
-    data/currency/exchange.h
-    data/currency/name.cpp
-    data/currency/name.h
+    # data/currency.cpp
+    # data/currency.h
+    # data/currency/data.cpp
+    # data/currency/data.h
+    # data/currency/exchange.cpp
+    # data/currency/exchange.h
+    # data/currency/name.cpp
+    # data/currency/name.h
 
-    data/geo/continent.h
-    data/geo/country.cpp
-    data/geo/country.h
+    data/geo/geo.h
+    # data/geo/continent.h
     data/geo/continent.cpp
+    data/geo/country.cpp
+    # data/geo/country.h
+    data/geo/currency.cpp
+    data/geo/exchange.cpp
+    # data/geo/exchange.h
+    data/geo/region.cpp
 
     model/search_tag.h
     model/search_tag.cpp

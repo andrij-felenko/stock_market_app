@@ -29,7 +29,7 @@ void api::Eod::get_all_tag(QString exchange)
 void api::Eod::get_all_exchange_tag()
 {
     Eod* data = Eod::instance();
-    QStringList list = data::ticker::Symbol::all_exchange_short();
+    QStringList list = geo::exchange::all_exchange_short();
     for (const auto& it : std::as_const(list))
         data->_send(Request::Exchange, it);
 }

@@ -2,15 +2,9 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
-// #include "api/finnhub.h"
-// #include "api/alphavantage.h"
-// #include "api/marketstack.h"
 #include <QTimer>
-#include <thread>
 #include "data/instrument.h"
-#include "api/eod.h"
 #include <QThread>
-#include "loader.h"
 
 using dtS = data::ticker::Symbol;
 
@@ -18,7 +12,7 @@ using dtS = data::ticker::Symbol;
 namespace market::meta {
     // можна відправити тікер або початок назви компанії як str
     // exch змінна відповідає або за повну назву Біржі (etc NASDAQ) або останні цифри тегу типу US
-    TickerMetaList find(const TickerMetaList& list, QString str, ExchangeEnumList exch = {});
+    TickerMetaList find(const TickerMetaList& list, QString str, geo::ExchangeList exch = {});
     TickerMetaList find(const TickerMetaList& list, ::meta::Ticker m);
 }
 
@@ -81,7 +75,7 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
 
         // спочатку перевіряємо США, але тікер не має бути ADR або PINK
         {
-            TickerMetaList sorted = market::meta::find(list, "", dtS::us_sufix());
+            TickerMetaList sorted = market::meta::find(list, "", geo::exchange::us_sufix());
             bool adr = false;
             for (const auto& it : sorted)
                 if (it.name.endsWith(" adr",  Qt::CaseInsensitive) ||
@@ -105,7 +99,7 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
 
         // якщо немає США то перевіряємо біржу LSE
         if (main_symbol.empty()){
-            TickerMetaList sorted = market::meta::find(list, "", { dtS::LSE });
+            TickerMetaList sorted = market::meta::find(list, "", { geo::Exchange::LSE });
             for (const auto& it : sorted){
                 if (it.symbol    .empty()) continue;
                 if (it.symbol.lse_outer()) continue;
@@ -131,20 +125,20 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
         // після США та Лондону надаємо перевавгу біржам локальним
         // немає сенсу великим компаніям там бути якщо це не їх батьківщина
         if (main_symbol.empty()){
-            TickerMetaList sorted = market::meta::find(list, "", dtS::minor_europe_sufix());
+            TickerMetaList sorted = market::meta::find(list, "", geo::exchange::minor_europe_sufix());
             if (sorted.size() >= 1)
                 main_symbol = find_longer_name(sorted).symbol;
         }
 
         if (main_symbol.empty()){
-            TickerMetaList sorted = market::meta::find(list, "", dtS::other_worlds_sufix());
+            TickerMetaList sorted = market::meta::find(list, "", geo::exchange::other_worlds_sufix());
             if (sorted.size() >= 1)
                 main_symbol = find_longer_name(sorted).symbol;
         }
 
         // пріоритет великих національним біржам далі типу DE PA BE SA
         if (main_symbol.empty()){
-            const ExchangeEnumList& majoreurope = dtS::major_europe_sufix();
+            const std::vector <geo::Exchange>& majoreurope = geo::exchange::major_europe_sufix();
             for (const auto& exch : majoreurope){
                 TickerMetaList sorted = market::meta::find(list, "", { exch });
                 if (sorted.size() >= 1){
@@ -205,7 +199,8 @@ void data::Market::add_sorted_instrument(const ticker::Symbol main, const Ticker
     }
 }
 
-TickerMetaList market::meta::find(const TickerMetaList& list, QString str, ExchangeEnumList exch)
+TickerMetaList market::meta::find(const TickerMetaList& list, QString str,
+                                  std::vector <geo::Exchange> exch)
 {
     TickerMetaList ret;
     ret.reserve(20);
@@ -220,7 +215,7 @@ TickerMetaList market::meta::find(const TickerMetaList& list, QString str, Excha
 
     for (const auto& it : list){
         // якщо список не порожній, тоді не впливає, якщо є то відсіюємо зайве спочатку
-        if (not exch.isEmpty()){
+        if (not exch.empty()){
             bool found_exch = false;
             for (const auto& ex : std::as_const(exch)){
                 if (it.symbol.check_exchange(ex)){
@@ -304,7 +299,7 @@ TickerMetaList market::meta::find(const TickerMetaList& list, ::meta::Ticker m)
         ret = find(list, current);
 
         // фільтр назв по NYSE NASDAQ
-        auto us = find(ret, "", dtS::us_sufix());
+        auto us = find(ret, "", geo::exchange::us_sufix());
         // маємо одного, отже це акція з США, отже ми знайшли назву точно, або немає на США зовсім
         if (us.size() < 2)
             break;

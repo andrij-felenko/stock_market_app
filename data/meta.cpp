@@ -2,7 +2,6 @@
 #include "utilities/features.h"
 #include <QtCore/QIODevice>
 #include <qregularexpression.h>
-#include "currency/name.h"
 
 meta::Instrument::Instrument()
     : prime_ticker(""),

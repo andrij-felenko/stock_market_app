@@ -1,7 +1,7 @@
 #ifndef DATA_TICKER_IDENTIFY_H
 #define DATA_TICKER_IDENTIFY_H
 
-#include "data/currency/name.h"
+#include "data/geo/geo.h"
 #include <QtCore/QObject>
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
