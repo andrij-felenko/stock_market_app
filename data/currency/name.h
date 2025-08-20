@@ -3,25 +3,14 @@
 
 #include <QtCore/QString>
 #include <QtCore/QList>
+#include "data/geo/continent.h"
 
 namespace currency {
     class Name;
 
-    enum class Continent {
-        Europe = 0,
-        Africa,
-        North_America,
-        South_America,
-        Oceania,
-        East_Asia,
-        West_Asia,
-
-        None = 0xF
-    };
-
-    enum class Tag : uint32_t {
+    enum class Tag : uint16_t {
         // Africa
-        South_African_Rand = 0xA00, // ZAR
+        South_African_Rand = 0xCA00, // ZAR
         Kenyan_Shilling,      // KES
         Egyptian_Pound,       // EGP
         Moroccan_Dirham,      // MAD
@@ -65,7 +54,7 @@ namespace currency {
         Zambian_Kwacha,       // ZMW
 
         // Asia
-        Indian_Rupee = 0xB00,  // INR
+        Indian_Rupee = 0xCB00,  // INR
         Singapore_Dollar,      // SGD
         Malaysian_Ringgit,     // MYR
         Japanese_Yen,          // JPY
@@ -117,7 +106,7 @@ namespace currency {
         Korean_Won,            // KRW
 
         // Europe
-        Euro = 0xC00,      // EUR
+        Euro = 0xCC00,      // EUR
         British_Pound,     // GBP
         Swiss_Franc,       // CHF
         Hungarian_Forint,  // HUF
@@ -147,7 +136,7 @@ namespace currency {
         GreatBritain_Pence,// GBP
 
         // North America
-        US_Dollar = 0xD00,  // USD
+        US_Dollar = 0xCD00,  // USD
         Canadian_Dollar,    // CAD
         Mexican_Peso,       // MXN
         Dominican_Peso,     // DOP,
@@ -172,7 +161,7 @@ namespace currency {
         Aruban_or_Dutch_Guilder,    // AWG
 
         // Oceania
-        Australian_Dollar = 0xE00, // AUD
+        Australian_Dollar = 0xCE00, // AUD
         New_Zealand_Dollar,        // NZD
         Fijian_Dollar,             // FJD
         CFP_Franc,                 // XPF
@@ -184,7 +173,7 @@ namespace currency {
         Tuvaluan_Dollar,           // TVD
 
         // South America
-        Brazilian_Real = 0xF00, // BRL
+        Brazilian_Real = 0xCF00, // BRL
         Colombian_Peso,         // COP
         Chilean_Peso,           // CLP
         Argentine_Peso,         // ARS
@@ -197,7 +186,7 @@ namespace currency {
         Surinamese_Dollar,      // SRD
         Falkland_Island_Pound,  // FKP
 
-        None = 0xFF0,
+        None = 0xCFF0,
         Bitcoin,         // BTC
         Gold_Ounce,      // XAU
         Silver_Ounce,    // XAG
@@ -216,8 +205,8 @@ public:
     static QString to_full(QString m_short);
     static Tag to_enum(QString currency);
     static Tag from_short(QString currency);
-    static Continent continent(QString name);
-    static Continent continent(Tag type);
+    static geo::Continent continent(QString name);
+    static geo::Continent continent(Tag type);
     static QStringList allShort();
 
 private:
@@ -229,12 +218,13 @@ private:
         Tag       _enum;
         QString   _full;
         QString   _short;
-        Continent _continent;
+        geo::Continent _continent;
     };
 
     QList <TypeStruct> _list;
 
-    void _add(Tag type, QString full, QString short_, Continent continent = Continent::None);
+    void _add(Tag type, QString full, QString short_,
+              geo::Continent continent = geo::Continent::None);
     inline void _add_africa();
     inline void _add_east_asia();
     inline void _add_west_asia();

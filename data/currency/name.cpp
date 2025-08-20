@@ -3,6 +3,7 @@
 #include <qdebug.h>
 
 using namespace currency;
+using namespace geo;
 
 Name &Name::instance()
 {
@@ -65,22 +66,22 @@ Tag Name::from_short(QString currency)
     return to_enum(currency);
 }
 
-Continent Name::continent(QString name)
+geo::Continent Name::continent(QString name)
 {
     const auto &list = instance()._list;
     for (const auto &it : list)
         if (it._full == name || it._short == name)
             return it._continent;
-    return Continent::None;
+    return geo::Continent::None;
 }
 
-Continent Name::continent(Tag type)
+geo::Continent Name::continent(Tag type)
 {
     const auto &list = instance()._list;
     for (const auto &it : list)
         if (it._enum == type)
             return it._continent;
-    return Continent::None;
+    return geo::Continent::None;
 }
 
 QStringList Name::allShort()
@@ -93,7 +94,7 @@ QStringList Name::allShort()
 }
 
 void Name::_add_africa(){
-    Continent cont = Continent::Africa;
+    geo::Continent cont = geo::Continent::Africa;
     _add(Tag::Algerian_Dinar,       "Algerian Dinar",       "DZD", cont);
     _add(Tag::Angolan_Kwanza,       "Angolan Kwanza",       "AOA", cont);
     _add(Tag::Basotho_Loti,         "Basotho Loti",         "LSL", cont);
@@ -139,7 +140,7 @@ void Name::_add_africa(){
 }
 
 void Name::_add_east_asia(){
-    Continent cont = Continent::East_Asia;
+    Continent cont = Continent::Asia;
     _add(Tag::Bangladeshi_Taka,  "Bangladeshi Taka",   "BDT", cont);
     _add(Tag::Bhutanese_Ngultrum,"Bhutanese Ngultrum", "BTN", cont);
     _add(Tag::Bruneian_Dollar,   "Bruneian Dollar",    "BND", cont);
@@ -168,7 +169,7 @@ void Name::_add_east_asia(){
 }
 
 void Name::_add_west_asia(){
-    Continent cont = Continent::West_Asia;
+    Continent cont = Continent::Asia;
     _add(Tag::Afghan_Afghani,      "Afghan Afghani",      "AFN", cont);
     _add(Tag::Armenian_Dram,       "Armenian Dram",       "AMD", cont);
     _add(Tag::Azerbaijan_Manat,    "Azerbaijan Manat",    "AZN", cont);
@@ -315,12 +316,11 @@ void Name::_add(Tag type, QString full, QString short_, Continent continent)
 }
 
 
-QDataStream& operator <<(QDataStream& out, const currency::Tag& tag) {
-    return out << static_cast <uint32_t > (tag);
-}
+QDataStream& operator <<(QDataStream& out, const currency::Tag& tag)
+{ return out << static_cast <uint16_t > (tag); }
 
 QDataStream& operator>>(QDataStream& in, currency::Tag& tag) {
-    uint32_t  val;
+    uint16_t  val;
     in >> val;
     tag = static_cast<currency::Tag>(val);
     return in;

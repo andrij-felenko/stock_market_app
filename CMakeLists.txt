@@ -96,6 +96,11 @@ set (src_cpp
     data/currency/name.cpp
     data/currency/name.h
 
+    data/geo/continent.h
+    data/geo/country.cpp
+    data/geo/country.h
+    data/geo/continent.cpp
+
     model/search_tag.h
     model/search_tag.cpp
     model/asset_list.cpp
