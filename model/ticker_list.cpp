@@ -10,10 +10,12 @@ enum InstrumentRoles {
     TickerRole = Qt::UserRole + 1,
     TitleRole,
     CountryRole,
+    CountryTagRole,
     IndustryRole,
     QuoteRole,
     LogoRole,
     LogoUrlRole,
+    LogoSizeRole,
     PrimaryTickerRole,
     YearMinRole,
     YearMaxRole,
@@ -38,7 +40,8 @@ QVariant model::TickerList::data(const QModelIndex& index, int role) const
         case TickerRole:   return in->symbol().full();
         case QuoteRole:    return in->quotes()->current();
         case TitleRole:    return in->instrument()->identity()->title();
-        case CountryRole:  return in->instrument()->identity()->country();
+        case CountryRole:  return in->instrument()->identity()->country_str();
+        case CountryTagRole: return geo::country::alpha2(in->instrument()->identity()->country());
         case IndustryRole: return in->instrument()->identity()->industry();
         case LogoRole:     return in->instrument()->identity()->logo();
         case PrimaryTickerRole: return QVariant::fromValue(in->instrument()->primary_ticker());
@@ -47,6 +50,7 @@ QVariant model::TickerList::data(const QModelIndex& index, int role) const
         case CurrencyRole: return in->currency_str();
         case CurrentPriceRole: return in->quotes()->current();
         case LogoUrlRole: return in->instrument()->identity()->logo_url();
+        case LogoSizeRole: return in->instrument()->identity()->logo_size();
     }
     return "";
 }
@@ -57,6 +61,7 @@ QHash<int, QByteArray> model::TickerList::roleNames() const
     roles[TickerRole]  = "ticker";
     roles[TitleRole]   = "title";
     roles[CountryRole] = "country";
+    roles[CountryTagRole] = "country_tag";
     roles[IndustryRole]= "industry";
     roles[QuoteRole]   = "prices";
     roles[LogoRole]    = "logo";
@@ -66,6 +71,7 @@ QHash<int, QByteArray> model::TickerList::roleNames() const
     roles[CurrencyRole] = "currency";
     roles[CurrentPriceRole] = "price";
     roles[LogoUrlRole] = "logo_url";
+    roles[LogoSizeRole] = "logo_size";
     return roles;
 }
 

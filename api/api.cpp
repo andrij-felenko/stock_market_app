@@ -68,4 +68,5 @@ void api::API::_next()
 
     _lock = true;
     _request(_queue[0].type, _queue[0].name, _queue[0].keys);
+    qDebug() << Q_FUNC_INFO << _queue.size();
 }

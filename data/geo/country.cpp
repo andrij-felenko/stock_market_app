@@ -1,4 +1,5 @@
 #include "geo.h"
+#include <qdebug.h>
 
 namespace geo::country {
     struct Meta {
@@ -30,9 +31,9 @@ namespace geo {
     }
 }
 
-QString  operator - (geo::Country c) { return geo::country::alpha3(c); }
-QString  operator & (geo::Country c) { return geo::country::alpha2(c); }
-QString  operator ~ (geo::Country c) { return geo::country::primary(c); }
+QString geo::operator - (geo::Country c) { return geo::country::alpha3(c); }
+QString geo::operator & (geo::Country c) { return geo::country::alpha2(c); }
+QString geo::operator ~ (geo::Country c) { return geo::country::primary(c); }
 
 QString geo::country::primary(Country c)
 {
@@ -80,6 +81,7 @@ geo::Country geo::country::from_string(const QString& any)
             it.alpha2.compare(any, Qt::CaseInsensitive) == 0 ||
             it.alpha3.compare(any, Qt::CaseInsensitive) == 0)
             return it._enum;
+    qDebug() << Q_FUNC_INFO << any;
     return Country::Unknown;
 }
 

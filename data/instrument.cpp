@@ -185,22 +185,37 @@ void data::Instrument::fix_tickers_load()
     });
 }
 
+void data::Instrument::updatePrimarySymbol(const QString& primary)
+{
+    for (std::size_t i = 0; i < _tickers.size(); ++i) {
+        if (_tickers[i]->_symbol == ticker::Symbol(primary)) {
+            if (i == 0)
+                return;
+            std::swap(_tickers[0], _tickers[i]);
+            return;
+        }
+    }
+}
+
 namespace data {
     QDataStream& operator << (QDataStream& s, const Instrument& d) {
         s << *d._dividend  << *d._identity  << *d._profitability
           << *d._stability << *d._valuation;
         util::list_to_stream(s, d._tickers);
-        qDebug() << Q_FUNC_INFO << "POPIPOPI" << d.identity()->country() << d.identity()->logo_url();
+        qDebug() << Q_FUNC_INFO << "POPIPOPI"
+                 << ~d.identity()->country() << d.identity()->logo_url();
         return s;
     }
 
     QDataStream& operator >> (QDataStream& s, Instrument& d) {
-        qDebug() << Q_FUNC_INFO << "POPIPOPI" << d.identity()->country() << d.identity()->logo_url();
+        qDebug() << Q_FUNC_INFO << "POPIPOPI"
+                 << ~d.identity()->country() << d.identity()->logo_url();
         s >> *d._dividend  >> *d._identity  >> *d._profitability
           >> *d._stability >> *d._valuation;
         util::list_from_stream(s, d._tickers, &d);
         d.fix_tickers_load();
-        qDebug() << Q_FUNC_INFO << "LOPILOPI" << d.identity()->country() << d.identity()->logo_url();
+        qDebug() << Q_FUNC_INFO << "LOPILOPI"
+                 << ~d.identity()->country() << d.identity()->logo_url();
         return s;
     }
 }

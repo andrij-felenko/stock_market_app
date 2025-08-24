@@ -12,9 +12,9 @@ namespace data::ticker {
 class data::ticker::Symbol
 {
 public:
-    Symbol(QString full = "");
-    Symbol(QString code, QString exch);
-    Symbol(QString code, geo::Exchange exchange);
+    Symbol(const QString& full = "");
+    Symbol(QString code, QString venue);
+    Symbol(QString code, geo::Exchange venue);
 
     bool us()        const;
     bool nyse()      const;
@@ -31,47 +31,35 @@ public:
     bool lse_outer() const;
     bool lse_inner() const;
 
-    bool check_exchange(QString ex) const;
+    // bool check_exchange(QString ex) const;
     bool check_exchange(geo::Exchange  ex) const;
     bool contains(std::vector <geo::Exchange> ex) const;
 
-    QString     name() const;
-    QString    sufix() const;
-    QString to_short() const;
-    geo::Currency currency() const;
-
-    void set_short   (QString str);
-    void set_exchange(QString str);
-    void set_exchange(geo::Exchange e);
-
-    geo::Exchange exchange() const;
     QString full() const;
     QString code() const;
+    QString sufix() const;
+    QString venue() const;
+
+    geo::Currency currency() const;
+    geo::Exchange exchange() const;
 
     void set_code(QString code);
+    void set_venue(QString str);
+    void set_venue(geo::Exchange e);
 
     Symbol& operator =  (const Symbol& other) = default;
     bool    operator == (const Symbol& other) const;
     bool    operator != (const Symbol& other) const;
     bool    operator <  (const Symbol& other) const;
-    operator QString() const;
-    bool    operator == (const geo::Exchange enum_) const;
+    operator QString() const; // return full()
+    bool    operator == (const geo::Exchange venue) const;
     bool    operator == (const std::vector <geo::Exchange> list) const;
 
     void clear();
 
 private:
-    geo::Exchange _enum;
+    geo::Exchange _venue;
     QString _code;
-
-    struct ExchangeEnumStruct {
-        geo::Exchange enum_;
-        QString sufix;
-        QString exchange;
-        QString fullname;
-        int8_t priority;
-        geo::Currency currency;
-    };
 
     friend QDataStream& operator << (QDataStream& s, const Symbol& d);
     friend QDataStream& operator >> (QDataStream& s,       Symbol& d);

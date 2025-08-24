@@ -5,30 +5,34 @@
 #include <QtCore/QObject>
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
+#include <QtCore/QSize>
 
-namespace data { class Identity; }
+namespace data {
+    class Instrument;
+    class Identity;
+}
 
 class data::Identity : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString title     READ title     WRITE set_title     NOTIFY     titleChanged)
-    Q_PROPERTY(QString descript  READ descript  WRITE set_descrip   NOTIFY  descriptChanged)
-    Q_PROPERTY(QString country   READ country   WRITE set_country   NOTIFY   countryChanged)
-    Q_PROPERTY(QString sector    READ sector    WRITE set_sector    NOTIFY    sectorChanged)
-    Q_PROPERTY(QString industry  READ industry  WRITE set_industry  NOTIFY  industryChanged)
-    Q_PROPERTY(QString headquart READ headquart WRITE set_headquart NOTIFY headquartChanged)
-    Q_PROPERTY(QString isin      READ isin      WRITE set_isin      NOTIFY      isinChanged)
+    Q_PROPERTY(QString title     READ title       WRITE set_title     NOTIFY     titleChanged)
+    Q_PROPERTY(QString descript  READ descript    WRITE set_descrip   NOTIFY  descriptChanged)
+    Q_PROPERTY(QString country   READ country_str WRITE set_country   NOTIFY   countryChanged)
+    Q_PROPERTY(QString sector    READ sector      WRITE set_sector    NOTIFY    sectorChanged)
+    Q_PROPERTY(QString industry  READ industry    WRITE set_industry  NOTIFY  industryChanged)
+    Q_PROPERTY(QString headquart READ headquart   WRITE set_headquart NOTIFY headquartChanged)
+    Q_PROPERTY(QString isin      READ isin        WRITE set_isin      NOTIFY      isinChanged)
     Q_PROPERTY(QDate ipo     READ ipo  WRITE set_ipo  NOTIFY  ipoChanged FINAL)
     Q_PROPERTY(QUrl  url     READ url  WRITE set_url  NOTIFY  urlChanged FINAL)
     Q_PROPERTY(QUrl logo     READ logo WRITE set_logo NOTIFY logoChanged FINAL)
     Q_PROPERTY(QUrl logo_url READ logo_url NOTIFY logoChanged FINAL)
+    Q_PROPERTY(float logo_size READ logo_size NOTIFY logoChanged FINAL)
 public:
-    Identity(QObject* parent = nullptr);
-
     QString title() const;
     QString descript() const;
     QString sector() const;
-    QString country() const;
+    geo::Country country() const;
+    QString country_str() const;
     QString exchange() const;
     QString industry() const;
     QString headquart() const;
@@ -37,9 +41,12 @@ public:
     QUrl logo()     const;
     QUrl logo_url() const;
     QUrl url()      const;
+    float logo_size() const;
 
     uint8_t filled_capacity() const;
     void set_logo_bytes(QByteArray data);
+
+    void set_country(geo::Country c);
 
 public slots:
     void set_title(const QString& new_title);
@@ -67,8 +74,12 @@ signals:
     void urlChanged(QUrl url);
 
 private:
+    Identity(Instrument* parent);
+    friend class Instrument;
+    Instrument* instrument() const;
+
     QString _title;
-    QString _country;
+    geo::Country _country;
     QString _descript;
     QString _sector;
     QString _industry;
@@ -79,6 +90,7 @@ private:
     QUrl _url;
     QByteArray _logo_bytes;
     QUrl _logo_cache;
+    float _logo_size;
 
     void cache_logo();
     void load_logo() const;

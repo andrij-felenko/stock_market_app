@@ -138,7 +138,7 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
     switch (type){
         case api::Request::Info: {
             // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
-            t->symbol().set_exchange(obj.value("exchange").toString());
+            t->symbol().set_venue(obj.value("exchange").toString());
             in->identity()->set_title(obj.value("name").toString());
             in->identity()->set_logo(obj.value("logo").toString());
             in->identity()->set_country   (obj.value("country").toString());

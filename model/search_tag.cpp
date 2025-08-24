@@ -5,6 +5,7 @@
 #include "data/instrument.h"
 #include "data/market.h"
 #include "loader.h"
+#include "data/geo/geo.h"
 
 enum Tag {
     NameRole = Qt::UserRole + 1,
@@ -34,8 +35,8 @@ QVariant model::SearchTag::data(const QModelIndex& index, int role) const
     switch (role) {
         case TagRole:      return _list[index.row()].symbol.full();
         case NameRole:     return _list[index.row()].name;
-        case TypeRole:     return _list[index.row()].type;
-        case ExchangeRole: return _list[index.row()].symbol.to_short();
+        case TypeRole:     return ~_list[index.row()].type;
+        case ExchangeRole: return _list[index.row()].symbol.venue();
         case TickerSize: {
             // TODO make list of values of symbols
             auto ticker = Loader::instance()->market()->find(_list[index.row()].symbol);
@@ -76,7 +77,7 @@ void model::SearchTag::add(QString symbol, QString name, QString type)
     meta::Ticker m;
     m.symbol = symbol;
     m.name = name;
-    m.type = type;
+    m.type = geo::instype::from_string(type);
     _list.push_back(m);
     endInsertRows();
 }

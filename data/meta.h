@@ -19,7 +19,7 @@ namespace meta {
 struct meta::Instrument
 {
     QString prime_ticker;
-    QString country;
+    geo::Country country;
     QString title;
 
     struct Ticker {
@@ -48,7 +48,7 @@ public:
 
     data::ticker::Symbol symbol;
     QString name;
-    QString type;
+    geo::Instype type;
     const QString& name_normalize() const;
 
 private:

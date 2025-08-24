@@ -28,6 +28,10 @@ namespace data {
     };
 }
 
+namespace api {
+    class Eod;
+}
+
 class data::Instrument : public QObject
 {
     Q_OBJECT
@@ -77,8 +81,10 @@ private:
     bool _save_locker;
     bool _was_loaded;
     void fix_tickers_load();
+    void updatePrimarySymbol(const QString& primary);
 
     friend class data::Market;
+    friend class api::Eod;
 
     friend QDataStream& operator << (QDataStream& s, const Instrument& d);
     friend QDataStream& operator >> (QDataStream& s,       Instrument& d);

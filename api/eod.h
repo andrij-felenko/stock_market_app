@@ -24,6 +24,7 @@ public:
 
     // void fetch_ticker_data(const QString& ticker);
 
+    static void fundamental(data::ticker::Symbol tag);
     static void historical_year(data::ticker::Symbol tag, int8_t year = -1, char period = 'd');
 
 signals:
@@ -40,6 +41,7 @@ private:
 
     void _handle_exchange(const QJsonDocument& json, QString name);
     void _handle_candle  (const QJsonDocument& json, QString name);
+    void _handle_info    (const QJsonDocument& json, QString name);
 };
 
 #endif

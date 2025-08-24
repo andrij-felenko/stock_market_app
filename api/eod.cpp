@@ -29,9 +29,14 @@ void api::Eod::get_all_tag(QString exchange)
 void api::Eod::get_all_exchange_tag()
 {
     Eod* data = Eod::instance();
-    QStringList list = geo::exchange::all_exchange_short();
+    QStringList list = geo::exchange::all_exchange_venue();
     for (const auto& it : std::as_const(list))
         data->_send(Request::Exchange, it);
+}
+
+void api::Eod::fundamental(data::ticker::Symbol tag)
+{
+    Eod::instance()->_send(Request::Info, tag);
 }
 
 void api::Eod::historical_year(data::ticker::Symbol tag, int8_t year, char period)
@@ -67,7 +72,6 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
         case api::Request::MetricMargin:
         case api::Request::MetricValuation:
 
-        case api::Request::Info:
         case api::Request::Peers:
         case api::Request::Quote:
         case api::Request::Tag:
@@ -76,12 +80,15 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
         case api::Request::Reported: return false;
         case api::Request::Exchange: url = base + "/exchange-symbol-list/" + name; break;
         case api::Request::Candle: url = base + "/eod/" + name; break;
+        case api::Request::Info: url = base + "/fundamentals/" + name; break;
     }
 
     QUrlQuery query;
 
     switch (type){
-        case api::Request::Exchange: {
+        case api::Request::Exchange:
+        case api::Request::Info:
+        {
             query.addQueryItem("api_token", settings::network()->key_eod());
             query.addQueryItem("fmt", "json");
             break;
@@ -124,6 +131,10 @@ void api::Eod::_handler_answer(Request type, QByteArray data, QString name, bool
         _handle_candle(doc, name);
         break;
     }
+    case api::Request::Info: {
+        _handle_info(doc, name);
+        break;
+    }
     default:;
     }
 }
@@ -135,10 +146,10 @@ void api::Eod::_handle_exchange(const QJsonDocument& json, QString name)
     for (const auto& it : std::as_const(root)){
         QJsonObject obj = it.toObject();
         meta::Ticker meta;
-        meta.symbol.set_code    (obj.value("Code")    .toString());
-        meta.symbol.set_exchange(obj.value("Exchange").toString());
+        meta.symbol.set_code (obj.value("Code")    .toString());
+        meta.symbol.set_venue(obj.value("Exchange").toString());
         meta.name = obj.value("Name").toString();
-        meta.type = obj.value("Type").toString();
+        meta.type = geo::instype::from_string(obj.value("Type").toString());
 
         market->add_meta(meta);
     }
@@ -179,4 +190,42 @@ void api::Eod::_handle_candle(const QJsonDocument& json, QString name)
     qDebug() << "save 1" << Q_FUNC_INFO << ticker->quotes()->raw_points().size() << ticker << name;
     ticker->save();
     qDebug() << "save 2" << Q_FUNC_INFO << ticker->quotes()->raw_points().size() << ticker << name;
+}
+
+void api::Eod::_handle_info(const QJsonDocument& json, QString name)
+{
+    auto finded = Nexus.market()->find(name);
+    if (!finded.has_value()) {
+        finded = Nexus.market()->find(name);
+        if (!finded.has_value()){
+            qDebug() << "not found";
+            return;
+        }
+    }
+
+    data::Ticker* ticker = finded.value();
+    data::Instrument* in = ticker->instrument();
+    QJsonObject root = json.object();
+
+    QJsonObject general = root["General"].toObject();
+    qDebug() << "GENERAL RRRRRRRRRR" << general;
+    in->identity()->set_isin   (general["ISIN"].toString());
+    in->identity()->set_descrip(general["Description"].toString());
+    in->identity()->set_logo   ("https://eodhd.com" + general["LogoURL"].toString());
+    in->identity()->set_url    (general["WebURL"].toString());
+    in->updatePrimarySymbol    (general["PrimaryTicker"].toString());
+    in->identity()->set_country(general["CountryName"].toString());
+
+    // fix country
+    geo::Country c_by_primary = geo::exchange::country(in->primary_symbol(true).exchange());
+    if (in->identity()->country() == c_by_primary ||
+        in->identity()->country() == geo::Country::Unknown)
+        return;
+    if (geo::exchange::exist(in->identity()->country())){
+        in->identity()->set_country(c_by_primary);
+    }
+
+
+
+    ticker->save();
 }

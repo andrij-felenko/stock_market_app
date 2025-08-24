@@ -188,7 +188,7 @@ void api::MarketStack::_handler_answer(Request type, QByteArray data, QString na
             data::Ticker* t = finded.value();
             data::Instrument* in = t->instrument();
             t->symbol().set_code(root.value("symbol").toString());
-            t->symbol().set_exchange(root.value("stock_exchange").toObject().value("acronym").toString());
+            t->symbol().set_venue(root.value("stock_exchange").toObject().value("acronym").toString());
             in->identity()->set_title(root.value("name").toString());
             in->identity()->set_sector(root.value("sector").toString());
             in->identity()->set_industry(root.value("industry").toString());

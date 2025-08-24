@@ -5,6 +5,7 @@
 #include <QTimer>
 #include "data/instrument.h"
 #include <QThread>
+#include "data/geo/geo.h"
 
 using dtS = data::ticker::Symbol;
 
@@ -30,7 +31,8 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
     QMap <int, int> counts;
 
     // видалити всі не stock параметри
-    std::erase_if(metalist, [](const meta::Ticker& m) { return m.type != "Common Stock"; });
+    std::erase_if(metalist, [](const meta::Ticker& m)
+    { return m.type != geo::Instype::CommonStock; });
 
     // викликати сортування списку що задишився
     std::ranges::sort(metalist, {}, [](const meta::Ticker& m){ return m.name.length(); });
@@ -50,7 +52,7 @@ void data::Market::clusterise_ticker_meta(TickerMetaList metalist)
         qDebug() << "clusterise_ticker_meta" << metalist.size() << "--------------------------"
                  << list.size() << metalist[0].name;
         for (const auto& it : list)
-            qDebug() << it.name << it.symbol << it.type;
+            qDebug() << it.name << it.symbol << +it.type;
 
         // завжди список має бути хоча б з одного елемента
         // (насправді якщо це правда то це значить find погано працює)
@@ -312,7 +314,7 @@ TickerMetaList market::meta::find(const TickerMetaList& list, ::meta::Ticker m)
             // find min string by size
             QString min = tickers[0];
             for (const auto& it : us)
-                if (it.symbol.code().length() < min.length())
+                if (it.symbol.sufix().length() < min.length())
                     min = it.symbol;
 
             // TODO maybe set min to 1 symbol, not 2 as is now
@@ -342,29 +344,12 @@ TickerMetaList market::meta::find(const TickerMetaList& list, ::meta::Ticker m)
 // ================================================================================================
 
 
-QMap <QString, QString> edsm_map = {
-    { "common_stock", "Common Stock" },
-    { "etf", "ETF" },
-    { "fund", "FUND" },
-    { "mutual_fund", "Mutual Fund" },
-    { "preferred_stock", "Preferred Stock" },
-    { "unit", "Unit" },
-    { "notes", "Notes" },
-    { "bond", "BOND" },
-    { "etc", "ETC" },
-    { "index", "INDEX" },
-    { "fund", "Fund" },
-    { "capital_notes", "Capital Notes" },
-    { "other", "" },
-    { "note", "Note" }
-};
-
 void data::Market::load_ticker_meta()
 {
     qDebug() << Q_FUNC_INFO;
 
-    std::function load_as = [this](QString title, QString type, QString path){
-        QFile file(path + "/tickers_meta/" + title + ".edsm");
+    std::function load_as = [this](geo::Instype type, QString path){
+        QFile file(path + "/tickers_meta/" + geo::instype::file_name(type) + ".edsm");
         if (!file.open(QIODevice::ReadOnly))
             return;
 
@@ -395,13 +380,12 @@ void data::Market::load_ticker_meta()
             }
         }
         file.close();
-        qDebug() << "SearchTag load" << type << size << _ticker_meta.size();
+        qDebug() << "SearchTag load" << +type << size << _ticker_meta.size();
     };
 
-    for (auto it = edsm_map.begin(); it != edsm_map.end(); ++it){
+    for (const auto& it : geo::instype::all()){
         // load_as(it.key(), it.value(), ":/rc");
-        load_as(it.key(), it.value(),
-                QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+        load_as(it, QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
     }
 
     qDebug() << "SEARCH TAGE ALL DATA SIZE" << _ticker_meta.size();
@@ -414,11 +398,11 @@ void data::Market::save_ticker_meta()
     if (_ticker_meta.empty())
         return;
 
-    std::function save_as = [this](QString title, QString type){
+    std::function save_as = [this](geo::Instype type){
         QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
         basePath += "/tickers_meta/";
         QDir().mkpath(basePath);
-        QString filename = basePath + title + ".edsm";
+        QString filename = basePath + geo::instype::file_name(type) + ".edsm";
 
         QFile file(filename);
         if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly)){
@@ -442,20 +426,7 @@ void data::Market::save_ticker_meta()
         qDebug() << "Save to: " << filename << size;
     };
 
-    for (const auto& it : std::as_const(_ticker_meta)){
-        bool edsm_found = false;
-        for (auto type = edsm_map.begin(); type != edsm_map.end(); type++)
-            if (type.value().compare(it.type, Qt::CaseInsensitive) == 0){
-                edsm_found = true;
-                break;
-            }
-
-        if (! edsm_found){
-            qDebug() << it.type << "ffffffffffffffffffffffffffffffffff";
-        }
-    }
-
-    for (auto it = edsm_map.begin(); it != edsm_map.end(); ++it)
-        save_as(it.key(), it.value());
+    for (const auto& it : geo::instype::all())
+        save_as(it);
 }
 // ================================================================================================

@@ -25,8 +25,8 @@ Instrument* Ticker::instrument() const { return static_cast <Instrument*> (paren
 
 QString       Ticker::currency_str() const { return geo::currency::to_full(currency()); }
 geo::Currency Ticker::    currency() const { return _symbol.currency(); }
-QString Ticker::   country() const { return instrument()->identity()->country(); }
-QString Ticker::   exchange() const { return _symbol.sufix(); }
+QString Ticker::   country() const { return instrument()->identity()->country_str(); }
+QString Ticker::   exchange() const { return _symbol.venue(); }
 
 ticker::Symbol Ticker::   symbol()     const { return _symbol; }
 QString        Ticker::   symbol_str() const { return _symbol.full(); }
@@ -41,7 +41,7 @@ void Ticker::set_symbol(ticker::Symbol symbol)
     if (_symbol == symbol)
         return;
     _symbol = symbol;
-    emit exchangeChanged(symbol.sufix());
+    emit exchangeChanged(symbol.venue());
     emit symbolChanged(symbol.full());
 }
 

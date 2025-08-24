@@ -21,7 +21,7 @@ namespace geo {
     }
 }
 
-QString operator ~ (geo::Region c) { return geo::region::to_string(c); }
+QString geo::operator ~ (geo::Region c) { return geo::region::to_string(c); }
 
 QString geo::region::to_string(geo::Region type)
 {

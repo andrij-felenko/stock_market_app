@@ -6,10 +6,13 @@
 
 using namespace data;
 
-data::Identity::Identity(QObject* parent) : QObject(parent)
+data::Identity::Identity(Instrument* parent) : QObject(parent)
 {
+    _logo_size = 1;
     connect(this, &Identity::logoChanged, this, &Identity::cache_logo);
 }
+
+Instrument* data::Identity::instrument() const { return static_cast <Instrument*>(parent()); }
 
 QString Identity::    title() const { return _title; }
 void    Identity::set_title(const QString& new_title)
@@ -29,13 +32,17 @@ void    Identity::set_descrip(const QString& new_descript)
     emit descriptChanged(_descript);
 }
 
-QString Identity::    country() const { return  _country; }
+geo::Country Identity::country() const { return _country; }
+QString Identity::country_str() const { return ~_country; }
 void    Identity::set_country(const QString& new_country)
+{ set_country(geo::country::from_string(new_country)); }
+
+void Identity::set_country(geo::Country c)
 {
-    if (_country == new_country)
+    if (_country == c)
         return;
-    _country = new_country;
-    emit countryChanged(_country);
+    _country = c;
+    emit countryChanged(country_str());
 }
 
 QString Identity::    sector() const { return _sector; }
@@ -83,6 +90,7 @@ void  Identity::set_ipo(const QDate& new_ipo)
     emit ipoChanged(_ipo);
 }
 
+float Identity::logo_size() const { return _logo_size; }
 QUrl Identity::logo_url() const { return _logo; }
 QUrl Identity::logo() const
 {
@@ -112,7 +120,10 @@ void Identity::cache_logo()
     }
 
     // Масштабуємо до 64×64 зберігаючи пропорції
-    img = img.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QSize size = img.size();
+    float coef = float(size.width()) / size.height();
+    img = img.scaled(64 * coef, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    _logo_size = coef;
 
     // Кодуємо в потрібний формат
     QByteArray scaledData;
@@ -135,6 +146,7 @@ void Identity::cache_logo()
 
 void Identity::set_logo(const QUrl& new_logo)
 {
+    qDebug() << Q_FUNC_INFO << new_logo;
     if (_logo == new_logo)
         return;
 
@@ -145,6 +157,9 @@ void Identity::set_logo(const QUrl& new_logo)
 
 void Identity::set_logo_bytes(QByteArray data)
 {
+    if (data.isEmpty() || _logo_bytes == data)
+        return;
+
     _logo_bytes = data;
     emit logoChanged(logo());
 }
@@ -166,8 +181,8 @@ void Identity::load_logo() const
 uint8_t Identity::filled_capacity() const
 {
     uint8_t filled = 0, count = 0;
+    if (count++; _country == geo::Country::Unknown) filled++;
     if (count++; not     _title.isEmpty()) filled++;
-    if (count++; not   _country.isEmpty()) filled++;
     if (count++; not  _descript.isEmpty()) filled++;
     if (count++; not    _sector.isEmpty()) filled++;
     if (count++; not  _industry.isEmpty()) filled++;
@@ -187,7 +202,7 @@ namespace data {
           << i._industry << i._headquart << i._isin
           << i._ipo      << i._logo      << i._url
           << i._country  << i._logo_bytes;
-        qDebug() << i._country << Q_FUNC_INFO;
+        qDebug() << ~i._country << Q_FUNC_INFO;
         return s;
     }
 
@@ -197,7 +212,7 @@ namespace data {
           >> i._ipo      >> i._logo      >> i._url
           >> i._country  >> i._logo_bytes;
         i.cache_logo();
-        qDebug() << i._country << Q_FUNC_INFO;
+        qDebug() << ~i._country << Q_FUNC_INFO;
         return s;
     }
 }

@@ -5,7 +5,7 @@
 
 meta::Instrument::Instrument()
     : prime_ticker(""),
-      country(""),
+      country(geo::Country::Unknown),
       title("")
 {
     //

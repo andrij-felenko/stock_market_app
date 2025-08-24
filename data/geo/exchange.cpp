@@ -4,6 +4,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QDataStream>
 #include <QtCore/QList>
+#include <qdebug.h>
 
 namespace geo::exchange {
     struct Meta {
@@ -11,12 +12,12 @@ namespace geo::exchange {
         Currency currency; // валюта торгів
         Country  country;  // місце розміщення біржі
         QString  sufix;    // короткий суфікс, що йде після крапки в тікері (AAPL.US → "US")
-        QString  code; // назва/код майданчика (наприклад "NYSE", "XETRA", "LSE"...)
+        QString  venue; // назва/код майданчика (наприклад "NYSE", "XETRA", "LSE"...)
         QString  name; // людська назва біржі
     };
 
-    static const std::vector <exchange::Meta>& metadata();
-    static inline quint8 bits(Exchange e) { return static_cast<quint8>(e); }
+    const std::vector <exchange::Meta>& metadata();
+    inline quint8 bits(Exchange e) { return static_cast<quint8>(e); }
 }
 
 namespace geo {
@@ -29,12 +30,11 @@ namespace geo {
         tag = static_cast <Exchange>(val);
         return in;
     }
-    QString operator~(Continent c) { return continent::to_string(c); }
 }
 
-QString operator & (geo::Exchange c) { return geo::exchange::sufix(c); }
-QString operator - (geo::Exchange c) { return geo::exchange::code(c); }
-QString operator ~ (geo::Exchange c) { return geo::exchange::name(c); }
+QString geo::operator & (geo::Exchange c) { return geo::exchange::sufix(c); }
+QString geo::operator - (geo::Exchange c) { return geo::exchange::venue(c); }
+QString geo::operator ~ (geo::Exchange c) { return geo::exchange::name(c); }
 
 bool geo::exchange::exist(Exchange e)
 {
@@ -43,6 +43,15 @@ bool geo::exchange::exist(Exchange e)
 
     for (const auto& m : metadata())
         if (m.e == e)
+            return true;
+
+    return false;
+}
+
+bool geo::exchange::exist(Country c)
+{
+    for (const auto& m : metadata())
+        if (m.country == c)
             return true;
 
     return false;
@@ -57,21 +66,21 @@ QString geo::exchange::sufix(Exchange e)
     return "--";
 }
 
+QString geo::exchange::venue(Exchange e)
+{
+    if (exist(e))
+        for (const auto& m : metadata())
+            if (m.e == e)
+                return m.venue;
+    return "----";
+}
+
 QString geo::exchange::name(Exchange e)
 {
     if (exist(e))
         for (const auto& m : metadata())
             if (m.e == e)
                 return m.name;
-    return "----";
-}
-
-QString geo::exchange::code(Exchange e)
-{
-    if (exist(e))
-        for (const auto& m : metadata())
-            if (m.e == e)
-                return m.code;
     return "---";
 }
 
@@ -95,13 +104,28 @@ geo::Country geo::exchange::country(Exchange e)
 
 geo::Exchange geo::exchange::from_string(const QString& s)
 {
+    if (Exchange ret = from_venue_string(s); ret != Exchange::Unknown)
+        return ret;
+
     for (const auto& m : metadata())
-        if (m.code.compare(s, Qt::CaseInsensitive) == 0 ||
-            m.name.compare(s, Qt::CaseInsensitive) == 0)
+        if (m.name .compare(s, Qt::CaseInsensitive) == 0)
             return m.e;
+
     for (const auto& m : metadata())
         if (m.sufix.compare(s, Qt::CaseInsensitive) == 0)
             return m.e;
+
+    return Exchange::Unknown;
+}
+
+geo::Exchange geo::exchange::from_venue_string(const QString& s)
+{
+    // qDebug() << Q_FUNC_INFO << s;
+    for (const auto& m : metadata()){
+        // qDebug() << m.venue << m.sufix << m.name;
+        if (m.venue.compare(s, Qt::CaseInsensitive) == 0)
+            return m.e;
+    }
     return Exchange::Unknown;
 }
 
@@ -149,11 +173,11 @@ std::vector <geo::Exchange> geo::exchange::all_exchange()
     return ret;
 }
 
-QStringList geo::exchange::all_exchange_short()
+QStringList geo::exchange::all_exchange_venue()
 {
     QStringList ret;
     for (const auto& m : metadata())
-        ret.push_back(m.name);
+        ret.push_back(m.venue);
     ret.removeDuplicates();
     return ret;
 }
@@ -173,7 +197,7 @@ bool ex::eurominor(Exchange e) { return exist(e) && (bits(e) & 0b1100'0000) == +
 bool ex::asia     (Exchange e) { return exist(e) && (bits(e) & 0b1110'0000) == +Exchange::Asia; }
 bool ex::world    (Exchange e) { return exist(e) && (bits(e) & 0b1100'0000) == +Exchange::World; }
 
-static const std::vector <geo::exchange::Meta>& geo::exchange::metadata()
+const std::vector <geo::exchange::Meta>& geo::exchange::metadata()
 {
     static std::vector <exchange::Meta> _;
     if (not _.empty())

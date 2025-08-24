@@ -97,14 +97,12 @@ set (src_cpp
     # data/currency/name.h
 
     data/geo/geo.h
-    # data/geo/continent.h
     data/geo/continent.cpp
     data/geo/country.cpp
-    # data/geo/country.h
     data/geo/currency.cpp
     data/geo/exchange.cpp
-    # data/geo/exchange.h
     data/geo/region.cpp
+    data/geo/instype.cpp
 
     model/search_tag.h
     model/search_tag.cpp

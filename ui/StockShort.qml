@@ -52,8 +52,8 @@ Rectangle {
     Image {
         id: _logo
         source: logo
-        width: 32
         height: 32
+        width: height * logo_size
         anchors.left: parent.left
         anchors.top: parent.top
         clip: true
@@ -121,7 +121,7 @@ Rectangle {
         id: _flag
         anchors.left: _manipulate_button.left
         y: _right.y - 4
-        source: country == "" ? "" : "https://flagsapi.com/" + to_tag(country) + "/flat/64.png"
+        source: country_tag == "" ? "" : "https://flagsapi.com/" + to_tag(country_tag) + "/flat/64.png"
         width: 24
         height: 24
     }

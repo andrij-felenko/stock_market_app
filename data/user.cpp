@@ -48,7 +48,10 @@ void data::User::load()
     qDebug() << "Load from: " << file.fileName();
 }
 
-void data::User::addToFavorite(const QString& symbol){ addToFavorite(ticker::Symbol(symbol)); }
+void data::User::addToFavorite(const QString& symbol){
+    qDebug() << Q_FUNC_INFO << symbol;
+    addToFavorite(ticker::Symbol(symbol));
+}
 
 bool data::User::isInAssetList(const QString& symbol)
 {
@@ -60,9 +63,12 @@ bool data::User::isInAssetList(const QString& symbol)
 
 void data::User::addToFavorite(const ticker::Symbol& symbol)
 {
+    qDebug() << Q_FUNC_INFO << symbol;
     auto t = Nexus.market()->find(symbol);
-    if (not t.has_value())
+    if (not t.has_value()){
+        qDebug() << "Not found symbol" << symbol;
         return;
+    }
 
     Ticker* ticker = t.value();
 
@@ -77,10 +83,13 @@ void data::User::addToFavorite(const ticker::Symbol& symbol)
 
     if (not ticker->instrument()->have_fundamental()){
         auto list = ticker->instrument()->tickers();
-        for (const auto& it : list)
+        for (const auto& it : list){
+            api::Eod::fundamental(symbol);
             if (it.us())
-                api::FinnHub::update_info_by_tag(it.code());
-                // api::AlphaVantage::update_info_by_tag(it.code());
+                // api::FinnHub::update_info_by_tag(it.code());
+                QTimer::singleShot(1500, this,
+                                   [&](){ api::AlphaVantage::update_info_by_tag(it.code()); });
+        }
     }
 }
 

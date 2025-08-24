@@ -679,22 +679,24 @@ enum class Exchange : uint8_t {
     // ----------------------------------------------------------------------------------------
 };
 using ExchangeList = std::vector <Exchange>;
-constexpr uint16_t operator + (Exchange e) { return static_cast <uint8_t>(e); }
+constexpr uint16_t operator + (Exchange e) { return static_cast <uint16_t>(e); }
 namespace exchange {
-    bool     exist   (Exchange e);
-    QString  sufix   (Exchange e);
-    QString  name    (Exchange e);
-    QString  code    (Exchange e);
-    Currency currency(Exchange e);
-    Country  country (Exchange e);
+    bool     exist      (Country c);
+    bool     exist      (Exchange e);
+    QString  sufix      (Exchange e);
+    QString  name       (Exchange e);
+    QString  venue      (Exchange e);
+    Currency currency   (Exchange e);
+    Country  country    (Exchange e);
     Exchange from_string(const QString& s);
+    Exchange from_venue_string(const QString& s);
 
     std::vector <Exchange> major_europe_sufix();
     std::vector <Exchange> minor_europe_sufix();
     std::vector <Exchange> other_worlds_sufix();
     std::vector <Exchange> us_sufix();
     std::vector <Exchange> all_exchange();
-    QStringList all_exchange_short();
+    QStringList all_exchange_venue();
 
     bool us       (Exchange e);
     bool nyse     (Exchange e);
@@ -707,11 +709,40 @@ namespace exchange {
     bool asia     (Exchange e);
     bool world    (Exchange e);
 }
-QString operator & (Exchange c);
-QString operator - (Exchange c);
-QString operator ~ (Exchange c);
+QString operator & (Exchange c); // return sufix (short symbols that set in the end of stock)
+QString operator - (Exchange c); // return venue (short name of exchange)
+QString operator ~ (Exchange c); // return name
 
 QDataStream& operator << (QDataStream& out, const Currency& tag);
 QDataStream& operator >> (QDataStream& in,        Currency& tag);
+
+
+enum class Instype : uint8_t {
+    Unknown        = 0b0000,
+    CommonStock    = 0b0010,
+    PreferredStock = 0b0011,
+    ETC            = 0b0100,
+    ETF            = 0b0101,
+    Fund           = 0b0110,
+    MutualFund     = 0b0111,
+    Unit           = 0b1000,
+    Bond           = 0b1010,
+    Index          = 0b1100,
+    Note           = 0b1110,
+    CapitalNotes   = 0b1111,
+};
+constexpr uint8_t operator + (Instype e) { return static_cast <uint8_t>(e); }
+namespace instype {
+    Instype from_string(const QString& s);
+    QString to_string(Instype e);
+    QString file_name(Instype e);
+    std::vector <Instype> all();
+    QStringList all_names();
+}
+QString operator ~ (Instype e);
+
+QDataStream& operator << (QDataStream& out, const Instype& tag);
+QDataStream& operator >> (QDataStream& in,        Instype& tag);
+
 }
 #endif // GEO_ENUM_H

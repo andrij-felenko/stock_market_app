@@ -21,7 +21,7 @@ namespace geo {
     }
 }
 
-QString operator ~ (geo::Continent c) { return geo::continent::to_string(c); }
+QString geo::operator ~ (geo::Continent c) { return geo::continent::to_string(c); }
 
 QString geo::continent::to_string(Continent c)
 {

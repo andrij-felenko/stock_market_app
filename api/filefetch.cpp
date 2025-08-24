@@ -15,6 +15,7 @@ api::FileFetch* api::FileFetch::instance() {
 }
 
 bool api::FileFetch::_request(Request type, QString name, StringMap keys) {
+    qDebug() << Q_FUNC_INFO << name;
     if (type != Request::Text) return false;
     const auto urlStr = keys.value("url");
     if (urlStr.isEmpty()) return false;
@@ -34,6 +35,7 @@ bool api::FileFetch::_request(Request type, QString name, StringMap keys) {
 
 void api::FileFetch::_handler_answer(Request type, QByteArray data, QString name, bool) {
     // знайти тикер за tag (так само, як у AlphaVantage)
+    qDebug() << Q_FUNC_INFO << name;
     auto found = Nexus.market()->find(name);
     if (!found.has_value()) {
         found = Nexus.market()->find(name);
@@ -47,7 +49,7 @@ void api::FileFetch::_handler_answer(Request type, QByteArray data, QString name
     // save_cache(name, data);
 
     t->instrument()->save();
-    emit t->save();
+    t->save();
 }
 
 void api::FileFetch::save_cache(const QString& tag, const QByteArray& bytes, const QString& ext) {
