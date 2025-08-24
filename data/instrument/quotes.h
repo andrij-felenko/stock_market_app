@@ -35,6 +35,16 @@ struct data::QuotesTime {
     friend QDataStream& operator >> (QDataStream& s,       QuotesTime& q);
 };
 
+/*!
+ * \class data::Quotes
+ * \brief Цінові ряди (щоденні та внутрішньоденні) для побудови графіків/індикаторів.
+ *
+ * \property data::Quotes::points
+ * Нормалізований набір точок (QObjects) для QML-графіків: дата/час, open/high/low/close, обсяг.
+ * Служить візуалізації (свічки/лінія), пошуку екстремумів (year_min/year_max) та поточної ціни.
+ *
+ * \note \c set_intraday() переключає джерело на внутрішньоденні дані за обраною датою.
+ */
 class data::Quotes : public QObject
 {
     Q_OBJECT

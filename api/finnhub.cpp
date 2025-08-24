@@ -143,7 +143,7 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
             in->identity()->set_logo(obj.value("logo").toString());
             in->identity()->set_country   (obj.value("country").toString());
             in->identity()->set_industry  (obj.value("finnhubIndustry").toString());
-            in->valuation()->set_market_cap(obj.value("marketCapitalization").toDouble() * 1'000'000);
+            in->valuation()->setMarketCapitalization(obj.value("marketCapitalization").toDouble() * 1'000'000);
 
             in->identity()->set_ipo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
             in->identity()->set_url(obj.value("weburl").toString());

@@ -172,18 +172,19 @@ void api::AlphaVantage::_handle_info(const QJsonObject& root, QString name, data
     in->identity()->set_ipo(QDate::fromString(root.value("LatestQuarter").toString(),
                                               "yyyy-MM-dd"));
 
-    in->valuation()->set_market_cap(root.value("MarketCapitalization").toDouble());
-    in->valuation()->set_eps(root.value("EPS").toDouble());
-    in->valuation()->set_pe_ratio(root.value("PERatio").toDouble());
-    in->valuation()->set_pb_ratio(root.value("PriceToBookRatio").toDouble());
-    in->valuation()->set_book_value(root.value("BookValue").toDouble());
-    in->valuation()->set_share_count(root.value("SharesOutstanding").toDouble());
+    // TODO Alpha vintage update
+    // in->valuation()->setMarketCapitalization(root.value("MarketCapitalization").toDouble());
+    // in->valuation()->set_eps(root.value("EPS").toDouble());
+    // in->valuation()->set_pe_ratio(root.value("PERatio").toDouble());
+    // in->valuation()->set_pb_ratio(root.value("PriceToBookRatio").toDouble());
+    // in->valuation()->set_book_value(root.value("BookValue").toDouble());
+    // in->shares()->setSharesOutstanding(root.value("SharesOutstanding").toDouble());
 
-    in->profitability()->set_roa(root.value("ReturnOnAssetsTTM").toDouble());
-    in->profitability()->set_roe(root.value("ReturnOnEquityTTM").toDouble());
-    in->profitability()->set_margin_oper(root.value("OperatingMarginTTM").toDouble());
-    in->profitability()->set_netincome(root.value("ProfitMargin").toDouble());
-    in->profitability()->set_margin_gros(root.value("GrossProfitTTM").toDouble() /
+    in->profitability()->setRoa(root.value("ReturnOnAssetsTTM").toDouble());
+    in->profitability()->setRoe(root.value("ReturnOnEquityTTM").toDouble());
+    in->profitability()->setMarginOper(root.value("OperatingMarginTTM").toDouble());
+    in->profitability()->setNetIncome(root.value("ProfitMargin").toDouble());
+    in->profitability()->setMarginGros(root.value("GrossProfitTTM").toDouble() /
                                          root.value("RevenueTTM").toDouble());
 
 
@@ -194,8 +195,8 @@ void api::AlphaVantage::_handle_info(const QJsonObject& root, QString name, data
     in->dividend()->set_prev_date(QDate::fromString(root.value("ExDividendDate").toString(),
                                                     "yyyy-MM-dd"));
 
-    in->stability()->set_beta(root.value("Beta").toDouble());
-    in->stability()->set_revenue(root.value("RevenueTTM").toDouble());
+    in->stability()->setBeta(root.value("Beta").toDouble());
+    in->profitability()->setRevenueTtm(root.value("RevenueTTM").toDouble());
 
     t->save();
 }

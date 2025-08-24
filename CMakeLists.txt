@@ -77,6 +77,12 @@ set (src_cpp
     data/instrument/profitability.h
     data/instrument/symbol.cpp
     data/instrument/symbol.h
+    data/instrument/shares.cpp
+    data/instrument/shares.h
+    data/instrument/earnings.cpp
+    data/instrument/earnings.h
+    data/instrument/balance.cpp
+    data/instrument/balance.h
 
     data/user.h
     data/user.cpp

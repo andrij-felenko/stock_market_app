@@ -16,11 +16,15 @@ enum InstRole {
 data::Instrument::Instrument(const ticker::Symbol& tag, QObject* parent)
     : QObject(parent), _save_locker(false), _was_loaded(false)
 {
+    _balance = new Balance(this);
     _dividend = new Dividend(this);
+    _earnings = new Earnings(this);
     _identity = new Identity(this);
+    _profitability = new Profitability(this);
+    _shares = new Shares(this);
     _stability = new Stability(this);
     _valuation = new Valuation(this);
-    _profitability = new Profitability(this);
+
     _tickers.reserve(100);
 
     ensure(tag);
@@ -80,11 +84,14 @@ bool data::Instrument::have_fundamental() const
     return _identity->filled_capacity() > 30;
 }
 
+data::Balance*       data::Instrument::balance()       const { return _balance; }
 data::Dividend*      data::Instrument::dividend()      const { return _dividend; }
+data::Earnings*      data::Instrument::earnings()      const { return _earnings; }
 data::Identity*      data::Instrument::identity()      const { return _identity; }
+data::Profitability* data::Instrument::profitability() const { return _profitability; }
+data::Shares*        data::Instrument::shares()        const { return _shares; }
 data::Stability*     data::Instrument::stability()     const { return _stability; }
 data::Valuation*     data::Instrument::valuation()     const { return _valuation; }
-data::Profitability* data::Instrument::profitability() const { return _profitability; }
 
 // tdsm - ticker data stock manager
 void data::Instrument::save() const
@@ -199,23 +206,29 @@ void data::Instrument::updatePrimarySymbol(const QString& primary)
 
 namespace data {
     QDataStream& operator << (QDataStream& s, const Instrument& d) {
-        s << *d._dividend  << *d._identity  << *d._profitability
-          << *d._stability << *d._valuation;
+        s << *d._dividend
+          << *d._identity
+          << *d._profitability
+          << *d._stability
+          << *d._valuation
+          << *d._balance
+          << *d._earnings
+          << *d._shares;
         util::list_to_stream(s, d._tickers);
-        qDebug() << Q_FUNC_INFO << "POPIPOPI"
-                 << ~d.identity()->country() << d.identity()->logo_url();
         return s;
     }
 
     QDataStream& operator >> (QDataStream& s, Instrument& d) {
-        qDebug() << Q_FUNC_INFO << "POPIPOPI"
-                 << ~d.identity()->country() << d.identity()->logo_url();
-        s >> *d._dividend  >> *d._identity  >> *d._profitability
-          >> *d._stability >> *d._valuation;
+        s >> *d._dividend
+          >> *d._identity
+          >> *d._profitability
+          >> *d._stability
+          >> *d._valuation
+          >> *d._balance
+          >> *d._earnings
+          >> *d._shares;
         util::list_from_stream(s, d._tickers, &d);
         d.fix_tickers_load();
-        qDebug() << Q_FUNC_INFO << "LOPILOPI"
-                 << ~d.identity()->country() << d.identity()->logo_url();
         return s;
     }
 }

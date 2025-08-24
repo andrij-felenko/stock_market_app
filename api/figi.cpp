@@ -164,26 +164,27 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
         in->identity()->set_url(obj.value("OfficialSite").toString());
         in->identity()->set_ipo(QDate::fromString(obj.value("LatestQuarter").toString(), "yyyy-MM-dd"));
 
-        in->valuation()->set_market_cap(obj.value("MarketCapitalization").toDouble());
-        in->valuation()->set_eps(obj.value("EPS").toDouble());
-        in->valuation()->set_pe_ratio(obj.value("PERatio").toDouble());
-        in->valuation()->set_pb_ratio(obj.value("PriceToBookRatio").toDouble());
-        in->valuation()->set_book_value(obj.value("BookValue").toDouble());
-        in->valuation()->set_share_count(obj.value("SharesOutstanding").toDouble());
+        // TODO Figi
+        // in->valuation()->setMarketCapitalization(obj.value("MarketCapitalization").toDouble());
+        // in->valuation()->set_eps(obj.value("EPS").toDouble());
+        // in->valuation()->set_pe_ratio(obj.value("PERatio").toDouble());
+        // in->valuation()->set_pb_ratio(obj.value("PriceToBookRatio").toDouble());
+        // in->valuation()->set_book_value(obj.value("BookValue").toDouble());
+        // in->valuation()->set_share_count(obj.value("SharesOutstanding").toDouble());
 
-        in->profitability()->set_roa(obj.value("ReturnOnAssetsTTM").toDouble());
-        in->profitability()->set_roe(obj.value("ReturnOnEquityTTM").toDouble());
-        in->profitability()->set_margin_gros(obj.value("GrossProfitTTM").toDouble() / obj.value("RevenueTTM").toDouble());
-        in->profitability()->set_margin_oper(obj.value("OperatingMarginTTM").toDouble());
-        in->profitability()->set_netincome(obj.value("ProfitMargin").toDouble());
+        in->profitability()->setRoa(obj.value("ReturnOnAssetsTTM").toDouble());
+        in->profitability()->setRoe(obj.value("ReturnOnEquityTTM").toDouble());
+        in->profitability()->setMarginGros(obj.value("GrossProfitTTM").toDouble() / obj.value("RevenueTTM").toDouble());
+        in->profitability()->setMarginOper(obj.value("OperatingMarginTTM").toDouble());
+        in->profitability()->setNetIncome(obj.value("ProfitMargin").toDouble());
 
         in->dividend()->set_yield(obj.value("DividendYield").toDouble());
         in->dividend()->set_per_share(obj.value("DividendPerShare").toDouble());
         in->dividend()->set_next_date(QDate::fromString(obj.value("DividendDate").toString(), "yyyy-MM-dd"));
         in->dividend()->set_prev_date(QDate::fromString(obj.value("ExDividendDate").toString(), "yyyy-MM-dd"));
 
-        in->stability()->set_beta(obj.value("Beta").toDouble());
-        in->stability()->set_revenue(obj.value("RevenueTTM").toDouble());
+        in->stability()->setBeta(obj.value("Beta").toDouble());
+        in->profitability()->setRevenueTtm(obj.value("RevenueTTM").toDouble());
 
         t->save();
         break;

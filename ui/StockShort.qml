@@ -114,6 +114,7 @@ Rectangle {
         if (s == "Norway") return "NO"
         if (s == "Finland") return "FI"
         if (s == "Switzerland") return "CH"
+        if (s == "--" || s == "---") return "";
         return s
     }
 
@@ -121,7 +122,7 @@ Rectangle {
         id: _flag
         anchors.left: _manipulate_button.left
         y: _right.y - 4
-        source: country_tag == "" ? "" : "https://flagsapi.com/" + to_tag(country_tag) + "/flat/64.png"
+        source: to_tag(country_tag) == "" ? "" : "https://flagsapi.com/" + to_tag(country_tag) + "/flat/64.png"
         width: 24
         height: 24
     }

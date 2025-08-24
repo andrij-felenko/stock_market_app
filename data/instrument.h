@@ -15,6 +15,9 @@
 #include "instrument/profitability.h"
 #include "instrument/stability.h"
 #include "instrument/valuation.h"
+#include "instrument/balance.h"
+#include "instrument/earnings.h"
+#include "instrument/shares.h"
 
 #include "utilities/features.h"
 
@@ -35,17 +38,23 @@ namespace api {
 class data::Instrument : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(Balance*       balance       READ balance       CONSTANT)
     Q_PROPERTY(Dividend*      dividend      READ dividend      CONSTANT)
+    Q_PROPERTY(Earnings*      earnings      READ earnings      CONSTANT)
     Q_PROPERTY(Identity*      identity      READ identity      CONSTANT)
+    Q_PROPERTY(Profitability* profitability READ profitability CONSTANT)
+    Q_PROPERTY(Shares*        shares        READ shares        CONSTANT)
     Q_PROPERTY(Stability*     stability     READ stability     CONSTANT)
     Q_PROPERTY(Valuation*     valuation     READ valuation     CONSTANT)
-    Q_PROPERTY(Profitability* profitability READ profitability CONSTANT)
 public:
     Dividend* dividend() const;
     Identity* identity() const;
     Stability* stability() const;
     Valuation* valuation() const;
     Profitability* profitability() const;
+    Earnings* earnings() const;
+    Balance* balance() const;
+    Shares* shares() const;
 
     Ticker* primary_ticker(bool absolute = false) const;
 
@@ -71,11 +80,14 @@ private:
 
     Ticker* const ensure(ticker::Symbol symbol);
 
+    Balance* _balance = nullptr;
     Dividend* _dividend = nullptr;
+    Earnings* _earnings = nullptr;
     Identity* _identity = nullptr;
+    Profitability* _profitability = nullptr;
+    Shares* _shares = nullptr;
     Stability* _stability = nullptr;
     Valuation* _valuation = nullptr;
-    Profitability* _profitability = nullptr;
 
     std::vector <Ticker*> _tickers;
     bool _save_locker;
