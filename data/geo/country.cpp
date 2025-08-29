@@ -401,6 +401,7 @@ const std::vector <geo::country::Meta>& geo::country::metadata()
     push(Country::Bahamas,           "BS", "BHS", "Bahamas", "The Bahamas");
     push(Country::CaymanIslands,     "KY", "CYM", "Cayman Islands"); // UK territory
     push(Country::DominicanRepublic, "DO", "DOM", "Dominican Republic");
+    push(Country::VirginIslands,     "VG", "VGB", "Virgin Islands, British"); // UK territory
 
     push(Country::Brazil,    "BR", "BRA", "Brazil", "Federative Republic of Brazil");
     push(Country::Argentina, "AR", "ARG", "Argentina", "Argentine Republic");
@@ -443,6 +444,8 @@ const std::vector <geo::country::Meta>& geo::country::metadata()
     push(Country::WallisAndFutuna, "WF", "WLF", "Wallis and Futuna"); // FR territory
     push(Country::AmericanSamoa,   "AS", "ASM", "American Samoa"); // US territory
     push(Country::Tokelau,         "TK", "TKL", "Tokelau"); // NZ territory
+
+    push(Country::SpecailArea,     "XS", "XSA", "Special area");
 
     return _;
 }

@@ -192,6 +192,7 @@ enum class Country : uint16_t {
     Haiti             = +Region::Caribbean | 0b1001,
     Barbados          = +Region::Caribbean | 0b1010,
     Grenada           = +Region::Caribbean | 0b1011,
+    VirginIslands     = +Region::Caribbean | 0b1100,
 
     Brazil    = +Region::SouthAmerica | 0b0001,
     Argentina = +Region::SouthAmerica | 0b0010,
@@ -358,6 +359,7 @@ enum class Country : uint16_t {
     Tokelau         = +Region::Polynesia | 0b1001, // (NZ territory)
 
     // Unknown
+    SpecailArea = 0xFFFE,
     Unknown = 0xFFFF
 };
 constexpr uint16_t operator + (Country c) { return static_cast <uint16_t>(c); }
@@ -388,8 +390,8 @@ namespace country {
     QStringList all_alpha3(Continent c = Continent::None);
 }
 QString  operator - (Country c);
-QString  operator & (Country c);
-QString  operator ~ (Country c);
+QString  operator & (Country c); // "US"
+QString  operator ~ (Country c); // "USA"
 
 QDataStream& operator << (QDataStream& out, const geo::Country& c);
 QDataStream& operator >> (QDataStream& in,        geo::Country& c);
@@ -602,80 +604,124 @@ QDataStream& operator >> (QDataStream& in,        Currency& tag);
 
 enum class Exchange : uint8_t {
     // ----------------------------------------------------------------------------------------
-    US        = 0b0000'0000, // 00..'....
-    NASDAQ    = 0b0001'0001, // 0001'0...
-    NYSE      = 0b0001'1000, // 0001'1...
+    US        = 0b0000'0000, // 000.'.... // US
+    NASDAQ    = US | 0b0001, // 0000'0...
+    NYSE      = US | 0b1000, // 0000'1...
     NYSE_ARCA = NYSE| 0b001,
     NYSE_MKT  = NYSE| 0b010,
     AMEX      = NYSE| 0b011,
     BATS      = NYSE| 0b100,
 
-    PINK        = 0b10'0000, // 0010'....
+    PINK         = 0b1'0000, // 0001'0...
     OTC_GREY = PINK | 0b001,
     OTC_CE   = PINK | 0b010,
     OTC_BB   = PINK | 0b011,
 
-    OTC       = 0b0011'0000, // 0011'....
-    OTC_QB   = OTC | 0b0001,
-    OTC_QX   = OTC | 0b0010,
-    NMFQA    = OTC | 0b0101,
-    OTC_MKTS = OTC | 0b1001, // 0011'1...
-    OTC_MTKS = OTC | 0b1010,
+    OTC      = 0b0001'1000, // 0001'1...
+    OTC_QB   = OTC | 0b001,
+    OTC_QX   = OTC | 0b010,
+    NMFQA    = OTC | 0b011,
+    OTC_MKTS = OTC | 0b100, // 0001'11..
+    OTC_MTKS = OTC | 0b101,
+
     // ----------------------------------------------------------------------------------------
-    World         = 0b0100'0000, // 01..'....
+    America          = 0b0010'0000, // 001. .... america
+    Toronto     = America | 0b0001,
+    NEO         = America | 0b0010,
+    TSX         = America | 0b0011,
+    Chilean     = America | 0b0100,
+    BuenosAires = America | 0b0101,
+    SaoPaulo    = America | 0b0110,
+    Mexico      = America | 0b0111,
+    Lima        = America | 0b1000,
 
-    America = World | 0b00'0000, // 0100'.... america
-    Toronto  = America | 0b0001,
-    NEO      = America | 0b0010,
-    TSX      = America | 0b0011,
+    Africa              = 0b0100'0000, // 010.'.... africa
+    VictoriaFalls = Africa | 0b0'0001,
+    Zimbabwe      = Africa | 0b0'0010,
+    Lusaka        = Africa | 0b0'0011,
+    Uganda        = Africa | 0b0'0100,
+    Dar_es_Salaam = Africa | 0b0'0101,
+    Rwanda        = Africa | 0b0'0110,
+    Botswana      = Africa | 0b0'0111,
+    Nigerian      = Africa | 0b0'1000,
+    Egyptian      = Africa | 0b0'1001,
+    Malawi        = Africa | 0b0'1010,
+    Ghana         = Africa | 0b0'1011,
+    Nairobi       = Africa | 0b0'1100,
+    Casablanca    = Africa | 0b0'1101,
+    Mauritius     = Africa | 0b0'1110,
+    Johannesburg  = Africa | 0b0'1111,
 
-    Africa  = World | 0b01'0000, // 0101'.... africa
+    Asia           = 0b0110'0000, // 011.'.... asia
+    Taiwan     = Asia | 0b0'0001,
+    TaiwanOTC  = Asia | 0b0'0010,
+    Korea      = Asia | 0b0'0011,
+    KOSDAQ     = Asia | 0b0'0100,
+    Tel_aviv   = Asia | 0b0'0101,
+    Shenzhen   = Asia | 0b0'0110,
+    Vietnam    = Asia | 0b0'0111,
+    Philippine = Asia | 0b0'1000,
+    Shanghai   = Asia | 0b0'1001,
+    Jakarta    = Asia | 0b0'1010,
+    India      = Asia | 0b0'1011,
+    Karachi    = Asia | 0b0'1100,
+    Thailand   = Asia | 0b0'1101,
+    Colombo    = Asia | 0b0'1110,
+    Kuala      = Asia | 0b0'1111,
 
-    Asia = World | 0b10'0000, // 011.'.... asia
-    Taiwan   = Asia | 0b0001,
-    Korea    = Asia | 0b0010,
-    TEL_AVIV = Asia | 0b0011,
+    // ----------------------------------------------------------------------------------------
+    Global             = 0b1001'0000, // 1000 .... Global exchanges
+    EuropeFund      = Global | 0b001,
+    GovernmentBonds = Global | 0b010,
+    MoneyMarket     = Global | 0b011,
+    Forex           = Global | 0b100,
 
-    Oceania  = World | 0b11'1000, // 0111'1... oceania
+    Unknown = 0b1001'0000, // 1001 ....
+
+    Oceania   =      0b1011'1000, // 1011'.... oceania
     Australia = Oceania |  0b001,
     // ----------------------------------------------------------------------------------------
-    Unknown = 0b1111'1111,
-    // ----------------------------------------------------------------------------------------
-    EU        = 0b1000'0000, // 1...'....
-    EU1   = EU | 0b000'0000, // 10..'.... // europe main exchanges
-    LSE   = EU1 | 0b00'0001,
-    PA    = EU1 | 0b00'0010,
-    AM    = EU1 | 0b00'0011,
-    LU    = EU1 | 0b00'0100,
-    DE    = EU1 | 0b01'0000, // 1001'.... // Germany
-    BE    = EU1 | DE|0b0001,
-    XETRA = EU1 | DE|0b0010,
+    EU             = 0b1100'0000, // 11..'....
+    EU_WEST     = EU | 0b00'0000, // 1100'.... // west europe
+    Paris     = EU_WEST | 0b0001,
+    Amsterdam = EU_WEST | 0b0010,
+    Luxemburg = EU_WEST | 0b0011,
+    Swiss     = EU_WEST | 0b0100,
+    Madrid    = EU_WEST | 0b0101,
+    Brussels  = EU_WEST | 0b0110,
+    Vienna    = EU_WEST | 0b0111,
+    Lisbon    = EU_WEST | 0b1000,
+    Irish     = EU_WEST | 0b1001,
+    UK        = EU_WEST | 0b1010,
+    LondonIL  = EU_WEST | 0b1011,
+    LSE       = EU_WEST | 0b1100,
 
-    EU2  = EU | 0b100'0000, // 11..'....
-    EU2C = EU2 | 0b01'0000, // 1101'.... // central europe sub echanges
-    SW     = EU2C | 0b0001,
-    MC     = EU2C | 0b0010,
-    BR     = EU2C | 0b0011,
-    VI     = EU2C | 0b0101,
-    LS     = EU2C | 0b0110,
-    PRAGA  = EU2C | 0b0111,
-    WARSH  = EU2C | 0b1000,
-    ATHENS = EU2C | 0b1001,
-    DE2   = EU2| 0b10'0000, // 1110'.... // Germany 2
-    DUSEL = EU2|DE2|0b0011,
-    HANOV = EU2|DE2|0b0100,
-    MUNIC = EU2|DE2|0b0101,
-    STUTG = EU2|DE2|0b0110,
-    FRANK = EU2|DE2|0b0111,
-    HUMBR = EU2|DE2|0b1000,
+    EU_EAST     = EU | 0b01'0000, // 1101 .... // east europe
+    Prague    = EU_EAST | 0b0001,
+    Warsaw    = EU_EAST | 0b0010,
+    Athens    = EU_EAST | 0b0011,
+    Budapest  = EU_EAST | 0b0100,
+    Zagreb    = EU_EAST | 0b0101,
+    Bucharest = EU_EAST | 0b0110,
 
-    Scand = EU2 | 0b10'0000, // 1110'.... // Scandinavia
-    OL     = Scand | 0b0001,
-    HE     = Scand | 0b0010,
-    CO     = Scand | 0b0011,
-    Sweden = Scand | 0b0100, // 1110'01.. // Sweden
-    ST     = Sweden |  0b01,
-    XSTO   = Sweden |  0b10,
+    DE      = EU | 0b10'0000, // 1110'.... // Germany 2
+    Dusseldorf = DE | 0b0001,
+    Hanover    = DE | 0b0010,
+    Munich     = DE | 0b0011,
+    Stuttgart  = DE | 0b0100,
+    Frankfurt  = DE | 0b0101,
+    Humburg    = DE | 0b0110,
+    Berlin     = DE | 0b0111,
+    XETRA      = DE | 0b1000,
+
+    Scand      = EU | 0b10'0000, // 1111'.... // Scandinavia
+    Oslo       = Scand | 0b0001,
+    Helsinki   = Scand | 0b0010,
+    Copenhagen = Scand | 0b0011,
+    Iceland    = Scand | 0b0100,
+    Sweden     = Scand | 0b1100, // 1111'11.. // Sweden
+    Stockholm  = Sweden |  0b01,
+    XSTO       = Sweden |  0b10,
     // ----------------------------------------------------------------------------------------
 };
 using ExchangeList = std::vector <Exchange>;
@@ -691,6 +737,9 @@ namespace exchange {
     Exchange from_string(const QString& s);
     Exchange from_venue_string(const QString& s);
 
+    bool is_major_europe_sufix(Exchange e);
+    bool is_minor_europe_sufix(geo::Exchange e);
+    bool is_other_worlds_sufix(geo::Exchange e);
     std::vector <Exchange> major_europe_sufix();
     std::vector <Exchange> minor_europe_sufix();
     std::vector <Exchange> other_worlds_sufix();
@@ -708,6 +757,10 @@ namespace exchange {
     bool eurominor(Exchange e);
     bool asia     (Exchange e);
     bool world    (Exchange e);
+    bool global   (Exchange e);
+    bool oceania  (Exchange e);
+    bool africa   (Exchange e);
+    bool america  (Exchange e);
 }
 QString operator & (Exchange c); // return sufix (short symbols that set in the end of stock)
 QString operator - (Exchange c); // return venue (short name of exchange)
