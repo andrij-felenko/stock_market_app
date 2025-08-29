@@ -28,10 +28,10 @@ Column {
         model: Nexus.search_tag
 
         delegate: Button {
-            width: 500
+            width: 800
             height: 40
             text:  symbol + " | " + title + " | " + region + " | " + currency + " | " + ticker_size
-            onClicked: Nexus.user.addToFavorite(symbol)
+            onClicked: Nexus.user.addToFavorite(symbol_code, symbol_venue)
         }
     }
 

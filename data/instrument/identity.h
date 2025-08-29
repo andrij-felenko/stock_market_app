@@ -50,18 +50,16 @@ namespace data {
 class data::Identity : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString title     READ title       WRITE set_title     NOTIFY     titleChanged)
-    Q_PROPERTY(QString descript  READ descript    WRITE set_descrip   NOTIFY  descriptChanged)
-    Q_PROPERTY(QString country   READ country_str WRITE set_country   NOTIFY   countryChanged)
-    Q_PROPERTY(QString sector    READ sector      WRITE set_sector    NOTIFY    sectorChanged)
-    Q_PROPERTY(QString industry  READ industry    WRITE set_industry  NOTIFY  industryChanged)
-    Q_PROPERTY(QString headquart READ headquart   WRITE set_headquart NOTIFY headquartChanged)
-    Q_PROPERTY(QString isin      READ isin        WRITE set_isin      NOTIFY      isinChanged)
-    Q_PROPERTY(QDate ipo     READ ipo  WRITE set_ipo  NOTIFY  ipoChanged FINAL)
-    Q_PROPERTY(QUrl  url     READ url  WRITE set_url  NOTIFY  urlChanged FINAL)
-    Q_PROPERTY(QUrl logo     READ logo WRITE set_logo NOTIFY logoChanged FINAL)
-    Q_PROPERTY(QUrl logo_url READ logo_url NOTIFY logoChanged FINAL)
-    Q_PROPERTY(float logo_size READ logo_size NOTIFY logoChanged FINAL)
+    Q_PROPERTY(QString descript  READ descript    NOTIFY  descriptChanged)
+    Q_PROPERTY(QString country   READ country_str NOTIFY   countryChanged)
+    Q_PROPERTY(QString sector    READ sector      NOTIFY    sectorChanged)
+    Q_PROPERTY(QString industry  READ industry    NOTIFY  industryChanged)
+    Q_PROPERTY(QString headquart READ headquart   NOTIFY headquartChanged)
+    Q_PROPERTY(QDate ipo         READ ipo         NOTIFY  ipoChanged FINAL)
+    Q_PROPERTY(QUrl  url         READ url         NOTIFY  urlChanged FINAL)
+    Q_PROPERTY(QUrl logo         READ logo        NOTIFY logoChanged FINAL)
+    Q_PROPERTY(QUrl logo_url     READ logo_url    NOTIFY logoChanged FINAL)
+    Q_PROPERTY(float logo_size   READ logo_size   NOTIFY logoChanged FINAL)
 public:
     QString title() const;
     QString descript() const;
@@ -78,22 +76,19 @@ public:
     QUrl url()      const;
     float logo_size() const;
 
-    uint8_t filled_capacity() const;
-    void set_logo_bytes(QByteArray data);
-
-    void set_country(geo::Country c);
-
-public slots:
-    void set_title(const QString& new_title);
-    void set_descrip(const QString& new_descript);
-    void set_sector(const QString& new_sector);
-    void set_country(const QString& new_country);
-    void set_industry(const QString& new_industry);
-    void set_headquart(const QString& new_headquart);
-    void set_isin(const QString& new_isin);
-    void set_ipo(const QDate& new_ipo);
-    void set_logo(const QUrl& new_logo);
-    void set_url(const QUrl& new_url);
+    uint8_t filledCapacity() const;
+    void setLogoBytes(QByteArray data);
+    void setTitle(const QString& new_title);
+    void setDescrip(const QString& new_descript);
+    void setSector(const QString& new_sector);
+    void setCountry(const QString& new_country);
+    void setCountry(geo::Country c);
+    void setIndustry(const QString& new_industry);
+    void setHeadquart(const QString& new_headquart);
+    void setIsin(const QString& new_isin);
+    void setIpo(const QDate& new_ipo);
+    void setLogo(const QUrl& new_logo);
+    void setUrl(const QUrl& new_url);
 
 signals:
     void titleChanged(QString title);

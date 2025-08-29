@@ -55,9 +55,7 @@ set (src_cpp
 
     data/market.cpp
     data/market.h
-    data/market_meta.cpp
-    data/meta.cpp
-    data/meta.h
+    # data/market_meta.cpp
 
     data/instrument.cpp
     data/instrument.h
@@ -83,6 +81,8 @@ set (src_cpp
     data/instrument/earnings.h
     data/instrument/balance.cpp
     data/instrument/balance.h
+    data/instrument/meta.cpp
+    data/instrument/meta.h
 
     data/user.h
     data/user.cpp

@@ -19,7 +19,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
     void clear();
-    void add(QString symbol, QString name, QString type);
+    // void add(QString symbol, QString name, QString type);
 
 public slots:
     void find_by_part(QString str);
@@ -30,7 +30,7 @@ private:
 
     friend class ::Loader;
 
-    std::vector <meta::Ticker> _list;
+    std::vector <data::Instrument*> _list;
 };
 
 #endif // MODEL_SEARCH_TAG_H

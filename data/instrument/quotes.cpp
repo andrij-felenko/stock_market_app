@@ -53,7 +53,7 @@ void Quotes::recalculate()
     emit pointsChanged();
 }
 
-void Quotes::set_data(QDate d, float open, float close, float high, float low, quint64  v)
+void Quotes::setData(QDate d, float open, float close, float high, float low, quint64  v)
 {
     for (auto& p : _points)
         if (d == p.date){
@@ -77,7 +77,7 @@ void Quotes::set_data(QDate d, float open, float close, float high, float low, q
     _points.push_back(p);
 }
 
-void Quotes::set_data(QTime t, float open, float close, float high, float low, quint64 v)
+void Quotes::setData(QTime t, float open, float close, float high, float low, quint64 v)
 {
     for (auto& p : _intraday)
         if (t == p.time){
@@ -101,13 +101,13 @@ void Quotes::set_data(QTime t, float open, float close, float high, float low, q
     _intraday.push_back(p);
 }
 
-void Quotes::set_intraday(QDate date)
+void Quotes::setIntraday(QDate date)
 {
     _intraday.clear();
     _last_intraday = date;
 }
 
-float Quotes::year_max() const
+float Quotes::yearMax() const
 {
     float max = 0;
     for (const auto& it : _points)
@@ -121,7 +121,7 @@ float Quotes::year_max() const
     return max;
 }
 
-float Quotes::year_min() const
+float Quotes::yearMin() const
 {
     float min = std::numeric_limits <float>::max();
     for (const auto& it : _points)

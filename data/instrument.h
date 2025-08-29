@@ -7,7 +7,7 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
 
-#include "data/meta.h"
+#include "instrument/meta.h"
 #include "instrument/symbol.h"
 #include "instrument/ticker.h"
 #include "instrument/dividend.h"
@@ -42,6 +42,7 @@ class data::Instrument : public QObject
     Q_PROPERTY(Dividend*      dividend      READ dividend      CONSTANT)
     Q_PROPERTY(Earnings*      earnings      READ earnings      CONSTANT)
     Q_PROPERTY(Identity*      identity      READ identity      CONSTANT)
+    Q_PROPERTY(Meta*          meta          READ meta          CONSTANT)
     Q_PROPERTY(Profitability* profitability READ profitability CONSTANT)
     Q_PROPERTY(Shares*        shares        READ shares        CONSTANT)
     Q_PROPERTY(Stability*     stability     READ stability     CONSTANT)
@@ -55,6 +56,7 @@ public:
     Earnings* earnings() const;
     Balance* balance() const;
     Shares* shares() const;
+    Meta* meta() const;
 
     Ticker* primary_ticker(bool absolute = false) const;
 
@@ -71,14 +73,11 @@ public:
 
     Ticker* const operator [] (ticker::Symbol symbol) const;
 
-    operator meta::Ticker() const;
-    // void set_meta_ticker(const meta::Ticker& meta);
-
 private:
     Instrument(const ticker::Symbol& tag,  QObject* parent = nullptr);
-    Instrument(const meta  ::Ticker& meta, QObject* parent = nullptr);
 
     Ticker* const ensure(ticker::Symbol symbol);
+    void _sort_tickers();
 
     Balance* _balance = nullptr;
     Dividend* _dividend = nullptr;
@@ -88,6 +87,7 @@ private:
     Shares* _shares = nullptr;
     Stability* _stability = nullptr;
     Valuation* _valuation = nullptr;
+    Meta* _meta = nullptr;
 
     std::vector <Ticker*> _tickers;
     bool _save_locker;

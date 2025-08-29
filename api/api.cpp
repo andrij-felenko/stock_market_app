@@ -5,6 +5,11 @@ api::API::API(QObject* parent) : QObject(parent), _lock(false), shift_ms(0)
     _replies.reserve(100);
 }
 
+void api::API::_handler_error(Request type, QNetworkReply::NetworkError error, QString name)
+{
+    //
+}
+
 void api::API::_add_reply(Request type, QNetworkReply* reply, const QString& symbol,
                           std::function<QByteArray (QByteArray)> reader)
 {
@@ -37,8 +42,8 @@ void api::API::_finish(QNetworkReply* reply)
 
     std::erase_if(_replies, [reply, this, error](Reply* r) {
         if (r && r->_reply == reply) {
-            if (not error)
-                _handler_answer(r->_type, r->_buffer, r->_symbol, r->_reader != nullptr);
+            if (error) _handler_error (r->_type, reply->error(), r->_symbol);
+            else       _handler_answer(r->_type, r->_buffer, r->_symbol, r->_reader != nullptr);
             r->deleteLater();
             return true;
         }

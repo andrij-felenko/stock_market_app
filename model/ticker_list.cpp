@@ -21,6 +21,9 @@ enum InstrumentRoles {
     YearMaxRole,
     CurrencyRole,
     CurrentPriceRole,
+
+    Code,
+    Venue,
 };
 
 int model::TickerList::rowCount(const QModelIndex& parent) const
@@ -40,17 +43,19 @@ QVariant model::TickerList::data(const QModelIndex& index, int role) const
         case TickerRole:   return in->symbol().full();
         case QuoteRole:    return in->quotes()->current();
         case TitleRole:    return in->instrument()->identity()->title();
-        case CountryRole:  return in->instrument()->identity()->country_str();
-        case CountryTagRole: return geo::country::alpha2(in->instrument()->identity()->country());
+        case CountryRole:  return ~in->instrument()->meta()->isin_country();
+        case CountryTagRole: return geo::country::alpha2(in->instrument()->meta()->isin_country());
         case IndustryRole: return in->instrument()->identity()->industry();
         case LogoRole:     return in->instrument()->identity()->logo();
         case PrimaryTickerRole: return QVariant::fromValue(in->instrument()->primary_ticker());
-        case YearMaxRole: return in->quotes()->year_max();
-        case YearMinRole: return in->quotes()->year_min();
+        case YearMaxRole: return in->quotes()->yearMax();
+        case YearMinRole: return in->quotes()->yearMin();
         case CurrencyRole: return in->currency_str();
         case CurrentPriceRole: return in->quotes()->current();
         case LogoUrlRole: return in->instrument()->identity()->logo_url();
         case LogoSizeRole: return in->instrument()->identity()->logo_size();
+        case Code: return in->symbol().code();
+        case Venue: return in->symbol().venue();
     }
     return "";
 }
@@ -72,6 +77,8 @@ QHash<int, QByteArray> model::TickerList::roleNames() const
     roles[CurrentPriceRole] = "price";
     roles[LogoUrlRole] = "logo_url";
     roles[LogoSizeRole] = "logo_size";
+    roles[Code] = "symbol_code";
+    roles[Venue] = "symbol_venue";
     return roles;
 }
 

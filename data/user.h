@@ -32,7 +32,8 @@ public:
 
 public slots:
     void addToFavorite(const QString& symbol);
-    void excludeFromFavorite(const QString& symbol);
+    void addToFavorite(const QString& code, const QString& venue);
+    void excludeFromFavorite(const QString& code, const QString& venue);
     bool isInAssetList(const QString& symbol);
 
 signals:

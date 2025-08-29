@@ -166,7 +166,7 @@ void api::MarketStack::_handler_answer(Request type, QByteArray data, QString na
                         continue;
                 }
                 data::Ticker* t = finded.value();
-                t->quotes()->set_data(QDate::fromString(obj.value("date").toString().left(10),
+                t->quotes()->setData(QDate::fromString(obj.value("date").toString().left(10),
                                                         "yyyy-MM-dd"),
                                       obj.value("open").toDouble(),
                                       obj.value("close").toDouble(),
@@ -189,11 +189,11 @@ void api::MarketStack::_handler_answer(Request type, QByteArray data, QString na
             data::Instrument* in = t->instrument();
             t->symbol().set_code(root.value("symbol").toString());
             t->symbol().set_venue(root.value("stock_exchange").toObject().value("acronym").toString());
-            in->identity()->set_title(root.value("name").toString());
-            in->identity()->set_sector(root.value("sector").toString());
-            in->identity()->set_industry(root.value("industry").toString());
-            in->identity()->set_isin(root.value("isin").toString());
-            in->identity()->set_country(root.value("stock_exchange").toObject().value("country_code").toString());
+            in->identity()->setTitle(root.value("name").toString());
+            in->identity()->setSector(root.value("sector").toString());
+            in->identity()->setIndustry(root.value("industry").toString());
+            in->identity()->setIsin(root.value("isin").toString());
+            in->identity()->setCountry(root.value("stock_exchange").toObject().value("country_code").toString());
 
             t->save();
             break;

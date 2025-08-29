@@ -161,15 +161,15 @@ void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString n
 void api::AlphaVantage::_handle_info(const QJsonObject& root, QString name, data::Ticker* t)
 {
     data::Instrument* in = t->instrument();
-    in->identity()->set_title(root.value("Name").toString());
-    in->identity()->set_descrip(root.value("Description").toString());
+    in->identity()->setTitle(root.value("Name").toString());
+    in->identity()->setDescrip(root.value("Description").toString());
 
-    in->identity()->set_country(root.value("Country").toString());
-    in->identity()->set_sector(root.value("Sector").toString());
-    in->identity()->set_industry(root.value("Industry").toString());
-    in->identity()->set_headquart(root.value("Address").toString());
-    in->identity()->set_url(root.value("OfficialSite").toString());
-    in->identity()->set_ipo(QDate::fromString(root.value("LatestQuarter").toString(),
+    in->identity()->setCountry(root.value("Country").toString());
+    in->identity()->setSector(root.value("Sector").toString());
+    in->identity()->setIndustry(root.value("Industry").toString());
+    in->identity()->setHeadquart(root.value("Address").toString());
+    in->identity()->setUrl(root.value("OfficialSite").toString());
+    in->identity()->setIpo(QDate::fromString(root.value("LatestQuarter").toString(),
                                               "yyyy-MM-dd"));
 
     // TODO Alpha vintage update
@@ -188,11 +188,11 @@ void api::AlphaVantage::_handle_info(const QJsonObject& root, QString name, data
                                          root.value("RevenueTTM").toDouble());
 
 
-    in->dividend()->set_yield(root.value("DividendYield").toDouble());
-    in->dividend()->set_per_share(root.value("DividendPerShare").toDouble());
-    in->dividend()->set_next_date(QDate::fromString(root.value("DividendDate").toString(),
+    in->dividend()->setYield(root.value("DividendYield").toDouble());
+    in->dividend()->setPerShare(root.value("DividendPerShare").toDouble());
+    in->dividend()->setNextDate(QDate::fromString(root.value("DividendDate").toString(),
                                                     "yyyy-MM-dd"));
-    in->dividend()->set_prev_date(QDate::fromString(root.value("ExDividendDate").toString(),
+    in->dividend()->setPrevDate(QDate::fromString(root.value("ExDividendDate").toString(),
                                                     "yyyy-MM-dd"));
 
     in->stability()->setBeta(root.value("Beta").toDouble());
@@ -215,14 +215,14 @@ void api::AlphaVantage::_handle_candle(const QJsonObject& root, data::Ticker* t)
         float close = candle.value("4. close" ).toString().toFloat();
         quint64 vol = candle.value("5. volume").toString().toULongLong();
 
-        t->quotes()->set_data(date, open, close, high, low, vol);
+        t->quotes()->setData(date, open, close, high, low, vol);
     }
 
     QJsonObject time_minute = root.value("Time Series (1min)").toObject();
     if (! time_minute.isEmpty()){
         QJsonObject meta = root.value("Meta Data").toObject();
         QString str = meta.value("Last Refreshed").toString().first(10);
-        t->quotes()->set_intraday(QDate::fromString(str, "yyyy-MM-dd"));
+        t->quotes()->setIntraday(QDate::fromString(str, "yyyy-MM-dd"));
     }
     for (auto it = time_minute.begin(); it != time_minute.end(); ++it) {
         QString dateStr = it.key();
@@ -235,7 +235,7 @@ void api::AlphaVantage::_handle_candle(const QJsonObject& root, data::Ticker* t)
         float close = candle.value("4. close" ).toString().toFloat();
         quint64 vol = candle.value("5. volume").toString().toULongLong();
 
-        t->quotes()->set_data(time, open, close, high, low, vol);
+        t->quotes()->setData(time, open, close, high, low, vol);
     }
 
     t->quotes()->recalculate();
@@ -247,10 +247,10 @@ void api::AlphaVantage::_handle_tag(const QJsonObject& root)
     QJsonArray list = root.value("bestMatches").toArray();
     Nexus.search_tag()->clear();
     for (const auto& it : std::as_const(list)){
-        QJsonObject obj = it.toObject();
-        Nexus.search_tag()->add(obj.value("1. symbol"  ).toString(),
-                                obj.value("2. name"    ).toString(),
-                                obj.value("3. type"    ).toString());
+        // QJsonObject obj = it.toObject();
+        // Nexus.search_tag()->add(obj.value("1. symbol").toString(),
+        //                         obj.value("2. name"  ).toString(),
+        //                         obj.value("3. type"  ).toString());
     }
 }
 
@@ -259,7 +259,7 @@ void api::AlphaVantage::_handle_dividend(const QJsonObject& root, data::Ticker* 
     QJsonArray array = root.value("data").toArray();
     for (const auto& it : std::as_const(array)){
         QJsonObject obj = it.toObject();
-        t->instrument()->dividend()->set_history(QDate::fromString(obj.value("ex_dividend_date")
+        t->instrument()->dividend()->setHistory(QDate::fromString(obj.value("ex_dividend_date")
                                                                    .toString(), "yyyy-MM-dd"),
                                                  obj.value("amount").toDouble());
     }

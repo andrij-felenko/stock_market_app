@@ -7,8 +7,8 @@ data::Dividend::Dividend(QObject* parent) : QObject(parent)
     //
 }
 
-float Dividend::    yield() const { return _yield; }
-void  Dividend::set_yield(float new_yield)
+float Dividend::yield() const { return _yield; }
+void  Dividend::setYield(float new_yield)
 {
     if (qFuzzyCompare(_yield, new_yield))
         return;
@@ -16,8 +16,8 @@ void  Dividend::set_yield(float new_yield)
     emit yieldChanged(_yield);
 }
 
-float Dividend::    per_share() const { return _per_share; }
-void  Dividend::set_per_share(float new_per_share)
+float Dividend::per_share() const { return _per_share; }
+void  Dividend::setPerShare(float new_per_share)
 {
     if (qFuzzyCompare(_per_share, new_per_share))
         return;
@@ -25,8 +25,8 @@ void  Dividend::set_per_share(float new_per_share)
     emit per_shareChanged(_per_share);
 }
 
-float Dividend::    pay_ratio() const { return _pay_ratio; }
-void  Dividend::set_pay_ratio(float new_payout_ratio)
+float Dividend::pay_ratio() const { return _pay_ratio; }
+void  Dividend::setPayRatio(float new_payout_ratio)
 {
     if (qFuzzyCompare(_pay_ratio, new_payout_ratio))
         return;
@@ -34,8 +34,8 @@ void  Dividend::set_pay_ratio(float new_payout_ratio)
     emit pay_ratioChanged(_pay_ratio);
 }
 
-QDate Dividend::    next_date() const { return _next_date; }
-void  Dividend::set_next_date(const QDate& new_next_date)
+QDate Dividend::next_date() const { return _next_date; }
+void  Dividend::setNextDate(const QDate& new_next_date)
 {
     if (_next_date == new_next_date)
         return;
@@ -43,16 +43,16 @@ void  Dividend::set_next_date(const QDate& new_next_date)
     emit next_dateChanged(_next_date);
 }
 
-QDate Dividend::    prev_date() const { return _prev_date; }
+QDate Dividend::prev_date() const { return _prev_date; }
 
-void Dividend::set_history(QDate date, float amount)
+void Dividend::setHistory(QDate date, float amount)
 {
     DividendList dl;
     dl.amount = amount;
     dl.date = date;
     _history.emplace_back(dl);
 }
-void  Dividend::set_prev_date(const QDate& new_prev_date)
+void  Dividend::setPrevDate(const QDate& new_prev_date)
 {
     if (_prev_date == new_prev_date)
         return;

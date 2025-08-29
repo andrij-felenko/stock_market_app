@@ -195,7 +195,7 @@ void data::Market::add_sorted_instrument(const ticker::Symbol main, const Ticker
     for (const auto& it : list){
         auto ticker = in->ensure(it.symbol);
         if (it.symbol == main)
-            in->identity()->set_title(it.name);
+            in->identity()->setTitle(it.name);
 
         ticker->setSymbol(it.symbol);
     }

@@ -153,22 +153,29 @@ void Loader::loadMainUI()
 void Loader::load_pre_data()
 {
     qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
-    market()->load_instruments();
-    qDebug() << Q_FUNC_INFO << 12;
+    market()->load_meta();
+    qDebug() << Q_FUNC_INFO << 12 << market()->_instruments.size();
     if (market()->empty()){
+        // api::Eod::get_all_tag(geo::exchange::venue(geo::Exchange::HE));
+        api::Eod::get_all_exchange_tag();
         qDebug() << Q_FUNC_INFO << 13;
-        market()->load_ticker_meta();
+        // market()->load_ticker_meta();
         qDebug() << Q_FUNC_INFO << 14;
 
-        if (market()->_ticker_meta.empty())
-            api::Eod::get_all_exchange_tag();
-        else {
-            qDebug() << Q_FUNC_INFO << 16;
-            _market->clusterise_ticker_meta();
-            qDebug() << Q_FUNC_INFO << 17;
-        }
+        // if (market()->_ticker_meta.empty())
+        //     api::Eod::get_all_exchange_tag();
+        // else {
+        //     qDebug() << Q_FUNC_INFO << 16;
+        //     _market->clusterise_ticker_meta();
+        //     qDebug() << Q_FUNC_INFO << 17;
+        // }
     }
-    qDebug() << Q_FUNC_INFO << 20;
+    QMap <int, int> size;
+    for (const auto& it : _market->_instruments){
+        int cur = it->tickers_ptr().size();
+        size[cur] = size.value(cur, 0) + 1;
+    }
+    qDebug() << Q_FUNC_INFO << 20 << size;
 }
 
 void Loader::load_data()

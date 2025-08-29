@@ -155,14 +155,14 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
     QJsonObject obj = doc.object();
     switch (type){
     case api::Request::Info: {
-        in->identity()->set_title(obj.value("Name").toString());
-        in->identity()->set_descrip(obj.value("Description").toString());
-        in->identity()->set_country(obj.value("Country").toString());
-        in->identity()->set_sector(obj.value("Sector").toString());
-        in->identity()->set_industry(obj.value("Industry").toString());
-        in->identity()->set_headquart(obj.value("Address").toString());
-        in->identity()->set_url(obj.value("OfficialSite").toString());
-        in->identity()->set_ipo(QDate::fromString(obj.value("LatestQuarter").toString(), "yyyy-MM-dd"));
+        in->identity()->setTitle(obj.value("Name").toString());
+        in->identity()->setDescrip(obj.value("Description").toString());
+        in->identity()->setCountry(obj.value("Country").toString());
+        in->identity()->setSector(obj.value("Sector").toString());
+        in->identity()->setIndustry(obj.value("Industry").toString());
+        in->identity()->setHeadquart(obj.value("Address").toString());
+        in->identity()->setUrl(obj.value("OfficialSite").toString());
+        in->identity()->setIpo(QDate::fromString(obj.value("LatestQuarter").toString(), "yyyy-MM-dd"));
 
         // TODO Figi
         // in->valuation()->setMarketCapitalization(obj.value("MarketCapitalization").toDouble());
@@ -178,10 +178,10 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
         in->profitability()->setMarginOper(obj.value("OperatingMarginTTM").toDouble());
         in->profitability()->setNetIncome(obj.value("ProfitMargin").toDouble());
 
-        in->dividend()->set_yield(obj.value("DividendYield").toDouble());
-        in->dividend()->set_per_share(obj.value("DividendPerShare").toDouble());
-        in->dividend()->set_next_date(QDate::fromString(obj.value("DividendDate").toString(), "yyyy-MM-dd"));
-        in->dividend()->set_prev_date(QDate::fromString(obj.value("ExDividendDate").toString(), "yyyy-MM-dd"));
+        in->dividend()->setYield(obj.value("DividendYield").toDouble());
+        in->dividend()->setPerShare(obj.value("DividendPerShare").toDouble());
+        in->dividend()->setNextDate(QDate::fromString(obj.value("DividendDate").toString(), "yyyy-MM-dd"));
+        in->dividend()->setPrevDate(QDate::fromString(obj.value("ExDividendDate").toString(), "yyyy-MM-dd"));
 
         in->stability()->setBeta(obj.value("Beta").toDouble());
         in->profitability()->setRevenueTtm(obj.value("RevenueTTM").toDouble());
@@ -204,14 +204,14 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
             float close = candle.value("4. close" ).toString().toFloat();
             quint64 vol = candle.value("5. volume").toString().toULongLong();
 
-            t->quotes()->set_data(date, open, close, high, low, vol);
+            t->quotes()->setData(date, open, close, high, low, vol);
         }
 
         QJsonObject time_minute = root.value("Time Series (1min)").toObject();
         if (! time_minute.isEmpty()){
             QJsonObject meta = root.value("Meta Data").toObject();
             QString str = meta.value("Last Refreshed").toString().first(10);
-            t->quotes()->set_intraday(QDate::fromString(str, "yyyy-MM-dd"));
+            t->quotes()->setIntraday(QDate::fromString(str, "yyyy-MM-dd"));
         }
         for (auto it = time_minute.begin(); it != time_minute.end(); ++it) {
             QString dateStr = it.key();
@@ -224,7 +224,7 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
             float close = candle.value("4. close" ).toString().toFloat();
             quint64 vol = candle.value("5. volume").toString().toULongLong();
 
-            t->quotes()->set_data(time, open, close, high, low, vol);
+            t->quotes()->setData(time, open, close, high, low, vol);
         }
 
         t->quotes()->recalculate();
@@ -237,10 +237,10 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
         model::SearchTag* st = Loader::instance()->search_tag();
         st->clear();
         for (const auto& it : std::as_const(list)){
-            QJsonObject obj = it.toObject();
-            st->add(obj.value("1. symbol"  ).toString(),
-                    obj.value("2. name"    ).toString(),
-                    obj.value("3. type"    ).toString());
+            // QJsonObject obj = it.toObject();
+            // st->add(obj.value("1. symbol"  ).toString(),
+            //         obj.value("2. name"    ).toString(),
+            //         obj.value("3. type"    ).toString());
         }
         break;
     }
@@ -249,7 +249,7 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
         QJsonArray array = root.value("data").toArray();
         for (const auto& it : std::as_const(array)){
             QJsonObject obj = it.toObject();
-            in->dividend()->set_history(QDate::fromString(obj.value("ex_dividend_date").toString(),
+            in->dividend()->setHistory(QDate::fromString(obj.value("ex_dividend_date").toString(),
                                                           "yyy-MM-dd"),
                                         obj.value("amount").toDouble());
         }

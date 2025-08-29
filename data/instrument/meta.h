@@ -1,8 +1,7 @@
 #ifndef DATA_META_H
 #define DATA_META_H
 
-#include <vector>
-#include "geo/geo.h"
+#include "data/geo/geo.h"
 #include "data/instrument/symbol.h"
 #include <QtCore/QObject>
 #include <QtCore/QDate>
@@ -11,56 +10,69 @@
 #include <QtCore/QTimer>
 #include <QtCore/QDataStream>
 
-namespace meta {
-    struct Ticker;
-    struct Instrument;
+namespace api {
+    class Eod;
 }
 
-struct meta::Instrument
+namespace data {
+    class Meta;
+    class Instrument;
+}
+
+class data::Meta : public QObject
 {
-    QString prime_ticker;
-    geo::Country country;
-    QString title;
-
-    struct Ticker {
-        geo::Currency currency;
-        data::ticker::Symbol symbol;
-
-        friend QDataStream& operator << (QDataStream& s, const Ticker& d);
-        friend QDataStream& operator >> (QDataStream& s,       Ticker& d);
-    };
-    std::vector <Ticker> list;
-    QByteArray data() const;
-
-    explicit Instrument();
-    Instrument(const QByteArray& data);
-
-    friend QDataStream& operator << (QDataStream& s, const Instrument& d);
-    friend QDataStream& operator >> (QDataStream& s,       Instrument& d);
-};
-
-class meta::Ticker
-{
+    Q_OBJECT
+    Q_PROPERTY(QString isin  READ isin_str NOTIFY  isinChanged)
+    Q_PROPERTY(QString title READ title    NOTIFY titleChanged)
+    Q_PROPERTY(QString type  READ type_str NOTIFY  typeChanged)
 public:
-    Ticker(data::ticker::Symbol symbol = data::ticker::Symbol());
-    Ticker(const QByteArray& data);
-    QByteArray data() const;
+    Meta& operator = (const Meta& other);
+    Meta& operator = (const QByteArray& raw);
 
-    data::ticker::Symbol symbol;
-    QString name;
-    geo::Instype type;
-    const QString& name_normalize() const;
+    QByteArray data() const;
+    QDataStream& save(QDataStream& s, data::ticker::SymbolList tickers) const;
+    data::ticker::SymbolList load(QDataStream& s);
+    static data::ticker::SymbolList load(QDataStream& s, QByteArray& data);
+
+    QString isin_str() const { return isin_full(); }
+    QString title() const { return _title; }
+    QString type_str() const { return geo::instype::to_string(_type); }
+    geo::Instype type() const { return _type; }
+
+    void set_title(QString title);
+    void set_type(geo::Instype type);
+    void set_isin(QByteArray isin);
+    geo::Country isin_country() const;
+    QString isin_code() const;
+    QString isin_full() const;
+
+signals:
+    void  isinChanged();
+    void titleChanged();
+    void  typeChanged();
 
 private:
-    mutable QString _name_normalize;
+    explicit Meta(QObject* parent = nullptr);
+    friend class Instrument;
+    friend class Market;
+    friend class api::Eod;
+    Instrument* instrument() const;
 
-    void normalize() const;
-    void clear_cache();
+    geo::Country _isin_country;
+    QByteArray _isin_code;
 
-    friend QDataStream& operator << (QDataStream& s, const Ticker& d);
-    friend QDataStream& operator >> (QDataStream& s,       Ticker& d);
+    QString _title;
+    geo::Instype _type;
 };
 
-using TickerMetaList = std::vector <meta::Ticker>;
+/*
+    "Code": "1T9", T //
+    "Exchange": "F", T //
+    "Name": "Tarkett", I //
+    "Country": "Germany", - //
+    "Currency": "EUR", T - //
+    "Type": "Common Stock", I //
+    "Isin": "FR0`004`188`670" I //
+ * */
 
 #endif

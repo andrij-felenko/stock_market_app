@@ -124,7 +124,7 @@ void api::TwelveData::_handler_answer(Request type, QByteArray data, QString nam
             QDate date = QDate::fromString(datetime, "yyyy-MM-dd");
             // або time, залежно від granularності
 
-            t->quotes()->set_data(date, open, close, high, low, volume);
+            t->quotes()->setData(date, open, close, high, low, volume);
             qDebug() << "=====================================" << date;
         }
         qDebug() << 6;

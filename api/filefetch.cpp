@@ -43,7 +43,7 @@ void api::FileFetch::_handler_answer(Request type, QByteArray data, QString name
     }
 
     data::Ticker* t = found.value();
-    t->instrument()->identity()->set_logo_bytes(data);
+    t->instrument()->identity()->setLogoBytes(data);
 
     // опційне кешування на диск
     // save_cache(name, data);

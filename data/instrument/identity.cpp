@@ -14,8 +14,8 @@ data::Identity::Identity(Instrument* parent) : QObject(parent)
 
 Instrument* data::Identity::instrument() const { return static_cast <Instrument*>(parent()); }
 
-QString Identity::    title() const { return _title; }
-void    Identity::set_title(const QString& new_title)
+QString Identity::   title() const { return _title; }
+void    Identity::setTitle(const QString& new_title)
 {
     if (_title == new_title)
         return;
@@ -23,8 +23,8 @@ void    Identity::set_title(const QString& new_title)
     emit titleChanged(_title);
 }
 
-QString Identity::    descript() const { return _descript; }
-void    Identity::set_descrip(const QString& new_descript)
+QString Identity::   descript() const { return _descript; }
+void    Identity::setDescrip(const QString& new_descript)
 {
     if (_descript == new_descript)
         return;
@@ -34,10 +34,10 @@ void    Identity::set_descrip(const QString& new_descript)
 
 geo::Country Identity::country() const { return _country; }
 QString Identity::country_str() const { return ~_country; }
-void    Identity::set_country(const QString& new_country)
-{ set_country(geo::country::from_string(new_country)); }
+void    Identity::setCountry(const QString& new_country)
+{ setCountry(geo::country::from_string(new_country)); }
 
-void Identity::set_country(geo::Country c)
+void Identity::setCountry(geo::Country c)
 {
     if (_country == c)
         return;
@@ -45,8 +45,8 @@ void Identity::set_country(geo::Country c)
     emit countryChanged(country_str());
 }
 
-QString Identity::    sector() const { return _sector; }
-void    Identity::set_sector(const QString& new_sector)
+QString Identity::   sector() const { return _sector; }
+void    Identity::setSector(const QString& new_sector)
 {
     if (_sector == new_sector)
         return;
@@ -54,8 +54,8 @@ void    Identity::set_sector(const QString& new_sector)
     emit sectorChanged(_sector);
 }
 
-QString Identity::    industry() const { return _industry; }
-void    Identity::set_industry(const QString& new_industry)
+QString Identity::   industry() const { return _industry; }
+void    Identity::setIndustry(const QString& new_industry)
 {
     if (_industry == new_industry)
         return;
@@ -63,8 +63,8 @@ void    Identity::set_industry(const QString& new_industry)
     emit industryChanged(_industry);
 }
 
-QString Identity::    headquart() const { return _headquart; }
-void    Identity::set_headquart(const QString& new_headquart)
+QString Identity::   headquart() const { return _headquart; }
+void    Identity::setHeadquart(const QString& new_headquart)
 {
     if (_headquart == new_headquart)
         return;
@@ -72,8 +72,8 @@ void    Identity::set_headquart(const QString& new_headquart)
     emit headquartChanged(_headquart);
 }
 
-QString Identity::    isin() const { return _isin; }
-void    Identity::set_isin(const QString& new_isin)
+QString Identity::   isin() const { return _isin; }
+void    Identity::setIsin(const QString& new_isin)
 {
     if (_isin == new_isin)
         return;
@@ -81,8 +81,8 @@ void    Identity::set_isin(const QString& new_isin)
     emit isinChanged(_isin);
 }
 
-QDate Identity::    ipo() const { return _ipo; }
-void  Identity::set_ipo(const QDate& new_ipo)
+QDate Identity::   ipo() const { return _ipo; }
+void  Identity::setIpo(const QDate& new_ipo)
 {
     if (_ipo == new_ipo)
         return;
@@ -144,7 +144,7 @@ void Identity::cache_logo()
     emit logoChanged(logo());
 }
 
-void Identity::set_logo(const QUrl& new_logo)
+void Identity::setLogo(const QUrl& new_logo)
 {
     qDebug() << Q_FUNC_INFO << new_logo;
     if (_logo == new_logo)
@@ -155,7 +155,7 @@ void Identity::set_logo(const QUrl& new_logo)
     emit logoChanged(_logo);
 }
 
-void Identity::set_logo_bytes(QByteArray data)
+void Identity::setLogoBytes(QByteArray data)
 {
     if (data.isEmpty() || _logo_bytes == data)
         return;
@@ -164,8 +164,8 @@ void Identity::set_logo_bytes(QByteArray data)
     emit logoChanged(logo());
 }
 
-QUrl Identity::    url() const { return _url; }
-void Identity::set_url(const QUrl& new_url)
+QUrl Identity::   url() const { return _url; }
+void Identity::setUrl(const QUrl& new_url)
 {
     if (_url == new_url)
         return;
@@ -178,7 +178,7 @@ void Identity::load_logo() const
     api::FileFetch::fetch_logo(static_cast <Instrument*> (parent())->primary_symbol(), _logo);
 }
 
-uint8_t Identity::filled_capacity() const
+uint8_t Identity::filledCapacity() const
 {
     uint8_t filled = 0, count = 0;
     if (count++; _country == geo::Country::Unknown) filled++;

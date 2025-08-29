@@ -28,6 +28,7 @@ protected:
     virtual bool _request(Request type, QString name, StringMap keys = {}) = 0;
     virtual void _handler_answer(Request type, QByteArray data,
                                  QString name, bool stream = false) = 0;
+    virtual void _handler_error(Request type, QNetworkReply::NetworkError error, QString name);
 
     virtual void _add_reply(api::Request type,
                             QNetworkReply* reply,

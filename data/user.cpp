@@ -53,6 +53,10 @@ void data::User::addToFavorite(const QString& symbol){
     addToFavorite(ticker::Symbol(symbol));
 }
 
+void data::User::addToFavorite(const QString& code, const QString& venue){
+    addToFavorite(ticker::Symbol(code, venue));
+}
+
 bool data::User::isInAssetList(const QString& symbol)
 {
     for (const auto& it : _asset_list)
@@ -79,24 +83,20 @@ void data::User::addToFavorite(const ticker::Symbol& symbol)
 
     qDebug() << Q_FUNC_INFO << ticker->quotes()->raw_points().size() << symbol << ticker;
     if (ticker->quotes()->empty())
-        api::Eod::historical_year(symbol, 1);
+        api::Eod::historical_year(symbol, 30);
 
     if (not ticker->instrument()->have_fundamental()){
         auto list = ticker->instrument()->tickers();
         for (const auto& it : list){
             api::Eod::fundamental(symbol);
-            if (it.us())
-                // api::FinnHub::update_info_by_tag(it.code());
-                QTimer::singleShot(1500, this,
-                                   [&](){ api::AlphaVantage::update_info_by_tag(it.code()); });
         }
     }
 }
 
-void data::User::excludeFromFavorite(const QString& symbol)
+void data::User::excludeFromFavorite(const QString& code, const QString& venue)
 {
     std::erase_if(_favorite_list, [&](const data::Ticker* t){
-        return t && t->symbol() == ticker::Symbol(symbol);
+        return t && t->symbol() == ticker::Symbol(code, venue);
     });
     emit favoriteListUpdated();
     save();

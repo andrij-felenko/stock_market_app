@@ -96,7 +96,7 @@ Rectangle {
                 if (parent.to_add){
                     // TODO add to assets list
                 } else {
-                    Nexus.user.excludeFromFavorite(ticker)
+                    Nexus.user.excludeFromFavorite(symbol_code, symbol_venue)
                 }
             }
         }

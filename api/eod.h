@@ -38,6 +38,8 @@ private:
     virtual bool _request(Request type, QString name, StringMap keys = {}) override;
     virtual void _handler_answer(Request type, QByteArray data,
                                  QString name, bool stream = false) override;
+    virtual void _handler_error(Request type, QNetworkReply::NetworkError error,
+                                QString name) override;
 
     void _handle_exchange(const QJsonDocument& json, QString name);
     void _handle_candle  (const QJsonDocument& json, QString name);

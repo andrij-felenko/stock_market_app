@@ -46,11 +46,11 @@ namespace data {
 class data::Dividend : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(float yield     READ yield     WRITE set_yield     NOTIFY     yieldChanged)
-    Q_PROPERTY(float per_share READ per_share WRITE set_per_share NOTIFY per_shareChanged)
-    Q_PROPERTY(float pay_ratio READ pay_ratio WRITE set_pay_ratio NOTIFY pay_ratioChanged)
-    Q_PROPERTY(QDate next_date READ next_date WRITE set_next_date NOTIFY next_dateChanged)
-    Q_PROPERTY(QDate prev_date READ prev_date WRITE set_prev_date NOTIFY prev_dateChanged)
+    Q_PROPERTY(float yield     READ yield     NOTIFY     yieldChanged)
+    Q_PROPERTY(float per_share READ per_share NOTIFY per_shareChanged)
+    Q_PROPERTY(float pay_ratio READ pay_ratio NOTIFY pay_ratioChanged)
+    Q_PROPERTY(QDate next_date READ next_date NOTIFY next_dateChanged)
+    Q_PROPERTY(QDate prev_date READ prev_date NOTIFY prev_dateChanged)
 public:
     Dividend(QObject* parent = nullptr);
 
@@ -60,14 +60,13 @@ public:
     QDate next_date() const;
     QDate prev_date() const;
 
-    void set_history(QDate date, float f);
+    void setHistory(QDate date, float f);
 
-public slots:
-    void set_yield    (float new_yield);
-    void set_per_share(float new_per_share);
-    void set_pay_ratio(float new_payout_ratio);
-    void set_next_date(const QDate& new_next_date);
-    void set_prev_date(const QDate& new_prev_date);
+    void setYield    (float new_yield);
+    void setPerShare(float new_per_share);
+    void setPayRatio(float new_payout_ratio);
+    void setNextDate(const QDate& new_next_date);
+    void setPrevDate(const QDate& new_prev_date);
 
 signals:
     void     yieldChanged(float yield);

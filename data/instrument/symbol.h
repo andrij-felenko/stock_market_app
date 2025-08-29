@@ -35,6 +35,7 @@ public:
     bool check_exchange(geo::Exchange  ex) const;
     bool contains(std::vector <geo::Exchange> ex) const;
 
+    QString full_venue() const;
     QString full() const;
     QString code() const;
     QString sufix() const;

@@ -139,14 +139,14 @@ void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, 
         case api::Request::Info: {
             // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
             t->symbol().set_venue(obj.value("exchange").toString());
-            in->identity()->set_title(obj.value("name").toString());
-            in->identity()->set_logo(obj.value("logo").toString());
-            in->identity()->set_country   (obj.value("country").toString());
-            in->identity()->set_industry  (obj.value("finnhubIndustry").toString());
+            in->identity()->setTitle(obj.value("name").toString());
+            in->identity()->setLogo(obj.value("logo").toString());
+            in->identity()->setCountry   (obj.value("country").toString());
+            in->identity()->setIndustry  (obj.value("finnhubIndustry").toString());
             in->valuation()->setMarketCapitalization(obj.value("marketCapitalization").toDouble() * 1'000'000);
 
-            in->identity()->set_ipo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
-            in->identity()->set_url(obj.value("weburl").toString());
+            in->identity()->setIpo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
+            in->identity()->setUrl(obj.value("weburl").toString());
             t->save();
             // ticker->count_akcij = obj.value("sharedOutstanding").toDouble() * 1'000'000;
             break;

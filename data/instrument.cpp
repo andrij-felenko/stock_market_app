@@ -16,6 +16,7 @@ enum InstRole {
 data::Instrument::Instrument(const ticker::Symbol& tag, QObject* parent)
     : QObject(parent), _save_locker(false), _was_loaded(false)
 {
+    _meta = new Meta(this);
     _balance = new Balance(this);
     _dividend = new Dividend(this);
     _earnings = new Earnings(this);
@@ -30,10 +31,92 @@ data::Instrument::Instrument(const ticker::Symbol& tag, QObject* parent)
     ensure(tag);
 }
 
-data::Instrument::Instrument(const meta::Ticker& meta, QObject* parent)
-    : Instrument(meta.symbol, parent)
+void data::Instrument::_sort_tickers()
 {
-    _identity->set_title(meta.name);
+    auto weight = [&](geo::Exchange ex) {
+        if (geo::exchange::otc(ex))      return 20;
+        if (geo::exchange::trash(ex))    return 0;   // найнижчий пріоритет
+        if (geo::exchange::nyse(ex))     return 100; // найважливіше
+        if (geo::exchange::nasdaq(ex))   return 90;
+        if (geo::exchange::us(ex))       return 80;
+        if (geo::exchange::euromajor(ex))return 70;
+        if (geo::exchange::eurominor(ex))return 60;
+        if (geo::exchange::asia(ex))     return 50;
+        if (geo::exchange::world(ex))    return 40;
+        return 10; // дефолт
+    };
+
+    std::ranges::sort(_tickers, [&](Ticker* a, Ticker* b){
+        geo::Country c_a = geo::exchange::country(a->symbol().exchange());
+        geo::Country c_b = geo::exchange::country(b->symbol().exchange());
+
+        if (c_a == _meta->_isin_country && c_b != _meta->_isin_country)
+            return true;
+        if (c_b == _meta->_isin_country && c_a != _meta->_isin_country)
+            return false;
+
+        return weight(a->symbol().exchange()) > weight(b->symbol().exchange());
+    });
+
+    // find better title
+    QStringList list = _meta->title().split('|', Qt::SkipEmptyParts);
+    list << _meta->_title;
+
+    // нормалізація
+    for (QString& s : list) s = s.trimmed();
+    list.removeAll(QString());
+    list.removeDuplicates();
+
+    if (list.isEmpty())
+        return;
+
+    // 1) рахуємо найчастішу форму без урахування регістру
+    QMap<QString, int> counter;
+    for (const auto& s : list) counter[s.toLower()]++;
+
+    QString bestLower;
+    int max = 0;
+    for (auto it = counter.cbegin(); it != counter.cend(); ++it) {
+        if (it.value() > max) { max = it.value(); bestLower = it.key(); }
+    }
+    if (bestLower.isEmpty())
+        return;
+
+    // 2) залишаємо лише кандидатів, що відповідають найчастішій формі
+    QStringList candidates;
+    for (const auto& s : list)
+        if (s.compare(bestLower, Qt::CaseInsensitive) == 0)
+            candidates << s;
+
+    if (candidates.isEmpty())
+        return;
+
+    // 3) вибираємо «найкрасивішу» форму серед кандидатів
+    auto score = [](const QString& s) {
+        int badCaps = 0;
+        bool newWord = true;
+        for (QChar ch : s) {
+            if (ch.isSpace() || ch=='(' || ch==')' || ch=='-' || ch=='/' || ch=='.' || ch=='&')
+                newWord = true;
+            else {
+                if (ch.isUpper() && !newWord)
+                    ++badCaps; // велика літера не на початку слова
+                newWord = false;
+            }
+        }
+        return badCaps;
+    };
+
+    const QString& best =
+        *std::min_element(candidates.begin(), candidates.end(),
+                          [&](const QString& a, const QString& b) {
+                              int sa = score(a), sb = score(b);
+                              if (sa != sb) return sa < sb;       // менше «поганих» капсів
+                              if (a.size() != b.size()) return a.size() < b.size(); // коротший
+                              return a < b;                        // стабільний tie-breaker
+                          });
+
+    _meta->set_title(best);
 }
 
 data::ticker::Symbol data::Instrument::primary_symbol(bool absolute) const
@@ -80,14 +163,15 @@ bool data::Instrument::contains(const ticker::Symbol& symbol) const
 bool data::Instrument::was_loaded() const { return _was_loaded; }
 bool data::Instrument::have_fundamental() const
 {
-    qDebug() << Q_FUNC_INFO << _identity->filled_capacity() << primary_symbol(true);
-    return _identity->filled_capacity() > 30;
+    qDebug() << Q_FUNC_INFO << _identity->filledCapacity() << primary_symbol(true);
+    return _identity->filledCapacity() > 30;
 }
 
 data::Balance*       data::Instrument::balance()       const { return _balance; }
 data::Dividend*      data::Instrument::dividend()      const { return _dividend; }
 data::Earnings*      data::Instrument::earnings()      const { return _earnings; }
 data::Identity*      data::Instrument::identity()      const { return _identity; }
+data::Meta*          data::Instrument::meta()          const { return _meta; }
 data::Profitability* data::Instrument::profitability() const { return _profitability; }
 data::Shares*        data::Instrument::shares()        const { return _shares; }
 data::Stability*     data::Instrument::stability()     const { return _stability; }
@@ -145,10 +229,14 @@ void data::Instrument::load()
 
 data::Ticker* const data::Instrument::operator[](ticker::Symbol symbol) const
 {
-    for (const auto& it : _tickers)
+    for (const auto& it : _tickers){
+        if (symbol.code() == "INTC" && it->symbol().code() == "INTC")
+            qDebug() << symbol.code() << symbol.venue() << ~symbol.exchange()
+                     << it->symbol().code() << it->symbol().venue() << ~it->symbol().exchange();
         if (it->symbol() == symbol){
             return it;
         }
+    }
     return nullptr;
 }
 
@@ -164,14 +252,6 @@ data::Ticker* const data::Instrument::ensure(ticker::Symbol symbol)
             qDebug() << "CREATE DTREF.US" << this << t << &t;
     }
     return t;
-}
-
-data::Instrument::operator meta::Ticker() const
-{
-    meta::Ticker meta;
-    meta.name    = _identity->title();
-    meta.symbol  = _tickers[0]->symbol();
-    return meta;
 }
 
 void data::Instrument::fix_tickers_load()

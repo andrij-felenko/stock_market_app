@@ -57,12 +57,12 @@ public:
     QVector <QObject*> points();
 
     void recalculate();
-    void set_data(QDate d, float open, float close, float high, float low, quint64  v);
-    void set_data(QTime t, float open, float close, float high, float low, quint64  v);
-    void set_intraday(QDate date);
+    void setData(QDate d, float open, float close, float high, float low, quint64  v);
+    void setData(QTime t, float open, float close, float high, float low, quint64  v);
+    void setIntraday(QDate date);
 
-    Q_INVOKABLE float year_max() const;
-    Q_INVOKABLE float year_min() const;
+    Q_INVOKABLE float yearMax() const;
+    Q_INVOKABLE float yearMin() const;
 
     Q_INVOKABLE float current() const;
     Q_INVOKABLE bool  empty();

@@ -56,6 +56,7 @@ void dtS::set_venue(QString str) { set_venue(geo::exchange::from_venue_string(st
 void dtS::set_venue(geo::Exchange  e) { if (e != geo::Exchange::Unknown) _venue = e; }
 
 geo::Exchange dtS::exchange() const { return _venue; }
+QString dtS::full_venue() const { return QString("%1.%2").arg(_code, venue()); }
 QString dtS::full() const { return QString("%1.%2").arg(_code, sufix()); }
 QString dtS::code() const { return _code; }
 
