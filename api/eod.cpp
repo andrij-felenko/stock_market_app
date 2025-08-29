@@ -481,7 +481,7 @@ void api::Eod::_handle_info(const QJsonDocument& json, QString name)
     for (const auto& it : list){
         if (it.us()){
             // api::FinnHub::update_info_by_tag(it.code());
-            api::AlphaVantage::update_info_by_tag(it.code());
+            // api::AlphaVantage::update_info_by_tag(it.code());
         }
     }
 

@@ -3,27 +3,39 @@
 #include <QtCore/QDebug>
 
 data::ticker::Symbol::Symbol(QString code, geo::Exchange exchange)
-    : _code(code), _venue(exchange) { /* */ }
+    : _code(code), _venue(exchange)
+{
+    // _();
+}
 
 data::ticker::Symbol::Symbol(QString code, QString exch)
     : _code(code), _venue(geo::Exchange::Unknown)
 {
+    // _();
     set_venue(exch);
 }
 
 data::ticker::Symbol::Symbol(const QString& full) : _code(""), _venue(geo::Exchange::Unknown)
 {
+    // _();
+
     // qDebug() << Q_FUNC_INFO << full;
     QStringList list = full.split(".");
     if (list.length() == 1){
-        _code = full;
-        _venue = geo::Exchange::US;
+        set_code(full);
+        set_venue(geo::Exchange::US);
     }
     else if (list.length() == 2){
-        _code = list[0];
+        set_code (list[0]);
         set_venue(list[1]);
     }
 }
+
+// void data::ticker::Symbol::_()
+// {
+//     connect(this, &Symbol:: codeChanged, this, &Symbol::fullChanged);
+//     connect(this, &Symbol::venueChanged, this, &Symbol::fullChanged);
+// }
 
 using dtS = data::ticker::Symbol;
 
@@ -53,15 +65,35 @@ QString       dtS::sufix()    const { return geo::exchange::sufix   (_venue); }
 geo::Currency dtS::currency() const { return geo::exchange::currency(_venue); }
 
 void dtS::set_venue(QString str) { set_venue(geo::exchange::from_venue_string(str)); }
-void dtS::set_venue(geo::Exchange  e) { if (e != geo::Exchange::Unknown) _venue = e; }
+void dtS::set_venue(geo::Exchange  e)
+{
+    if (e == _venue) return;
+    _venue = e;
+    // emit venueChanged();
+}
+void dtS::set_code(QString code)
+{
+    if (_code.compare(code, Qt::CaseInsensitive) == 0) return;
+    _code = code.toUpper();
+    // emit codeChanged();
+}
+void dtS::clear()
+{
+    set_code("");
+    set_venue(geo::Exchange::Unknown);
+}
+
+data::ticker::Symbol& data::ticker::Symbol::operator =(const Symbol& other)
+{
+    set_code(other._code);
+    set_venue(other._venue);
+    return *this;
+}
 
 geo::Exchange dtS::exchange() const { return _venue; }
 QString dtS::full_venue() const { return QString("%1.%2").arg(_code, venue()); }
 QString dtS::full() const { return QString("%1.%2").arg(_code, sufix()); }
 QString dtS::code() const { return _code; }
-
-void dtS::set_code(QString code) { _code = code.toUpper(); }
-void dtS::clear() { _code.clear(); _venue = geo::Exchange::Unknown; }
 bool dtS::empty() const { return not exist() || _code.isEmpty(); }
 
 bool dtS::lse_outer() const
@@ -83,8 +115,6 @@ bool dtS::world()     const { return geo::exchange::world    (_venue); }
 bool dtS::exist()     const { return geo::exchange::exist    (_venue); }
 
 bool dtS::check_exchange(geo::Exchange ex) const { return _venue == ex; }
-// bool dtS::check_exchange(QString ex) const
-// { return !empty() && geo::exchange::from_string(ex) == _venue; }
 
 namespace data::ticker {
     QDataStream& operator << (QDataStream& s, const Symbol& d) { return s << d._code << d._venue; }

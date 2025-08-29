@@ -4,13 +4,22 @@
 #include "data/geo/geo.h"
 #include <QDataStream>
 #include <QString>
+#include <QtCore/QObject>
 
 namespace data::ticker {
     class Symbol;
 }
 
-class data::ticker::Symbol
+class data::ticker::Symbol // : public QObject
 {
+    // Q_OBJECT
+    // Q_PROPERTY(geo::Currency currency   READ currency                 NOTIFY venueChanged)
+    // Q_PROPERTY(geo::Exchange exchange   READ exchange WRITE set_venue NOTIFY venueChanged)
+    // Q_PROPERTY(QString       venue      READ venue    WRITE set_venue NOTIFY venueChanged)
+    // Q_PROPERTY(QString       sufix      READ sufix                    NOTIFY venueChanged)
+    // Q_PROPERTY(QString       full       READ full                     NOTIFY fullChanged)
+    // Q_PROPERTY(QString       full_venue READ full_venue               NOTIFY fullChanged)
+    // Q_PROPERTY(QString       code       READ code     WRITE set_code  NOTIFY  codeChanged)
 public:
     Symbol(const QString& full = "");
     Symbol(QString code, QString venue);
@@ -31,7 +40,6 @@ public:
     bool lse_outer() const;
     bool lse_inner() const;
 
-    // bool check_exchange(QString ex) const;
     bool check_exchange(geo::Exchange  ex) const;
     bool contains(std::vector <geo::Exchange> ex) const;
 
@@ -48,7 +56,7 @@ public:
     void set_venue(QString str);
     void set_venue(geo::Exchange e);
 
-    Symbol& operator =  (const Symbol& other) = default;
+    Symbol& operator =  (const Symbol& other);
     bool    operator == (const Symbol& other) const;
     bool    operator != (const Symbol& other) const;
     bool    operator <  (const Symbol& other) const;
@@ -58,7 +66,14 @@ public:
 
     void clear();
 
+// signals:
+//     void codeChanged();
+//     void fullChanged();
+//     void venueChanged();
+
 private:
+    // void _();
+
     geo::Exchange _venue;
     QString _code;
 
