@@ -8,6 +8,7 @@
 #include <QtCore/QTimer>
 #include "data/market.h"
 
+class Loader;
 namespace model { class SearchTag; }
 
 class model::SearchTag : public QAbstractListModel
