@@ -44,10 +44,6 @@ public:
     // const QMap<int,int>& numberOfDividendsByYear() const { return _numberOfDividendsByYear; }
     // private: QMap<int,int> _numberOfDividendsByYear;
 
-
-
-
-
 private:
     double _per_share;
     double _yield;

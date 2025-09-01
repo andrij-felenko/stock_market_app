@@ -100,6 +100,7 @@ namespace sdk {
     class Capital;
     class CashFlow;
     class CorporateAction;
+    class Data;
     class Dividend;
     class Earnings;
     class Estimate;

@@ -10,14 +10,6 @@ class sdk::Meta : Trackable
 public:
     Meta();
 
-    sdk::Instype type() const { return _type; }
-    FieldTOpt setType(sdk::Instype type)
-    { return sdk::set_if(this, _type, type, sdk::Meta_type); }
-
-    const QString& name() const { return _name; }
-    FieldTOpt setName(const QString& name)
-    { return sdk::set_if(this, _name, name, sdk::Meta_name); }
-
     const QString& sector() const { return _sector; }
     FieldTOpt setSector(const QString& sector)
     { return sdk::set_if(this, _sector, sector, sdk::Meta_sector); }
@@ -75,8 +67,6 @@ public:
     { return sdk::set_if(this, _fulltime_employees, count, sdk::Meta_fulltime_employees); }
 
 private:
-    sdk::Instype _type;
-    QString _name;
     QString _sector;
     QString _industry;
     QString _gic_sector;

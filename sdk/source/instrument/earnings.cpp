@@ -2,7 +2,7 @@
 #define SDK_INSTRUMENT_QUARTEL_DATA_H
 
 #include "sdk.h" // IWYU pragma: keep
-#include "symbol.h"
+#include "instrument/symbol.h"
 
 class sdk::QuartelData
 {

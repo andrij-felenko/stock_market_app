@@ -6,15 +6,18 @@
 class sdk::Isin
 {
 public:
-    Isin();
+    Isin(const QByteArray& isin = "");
     Isin(const QByteArray& code, sdk::Country country);
 
-    Isin& operator =  (const Isin& other);
-    bool  operator == (const Isin& other) const;
+    Isin& operator == (const Isin& other);
+    std::strong_ordering operator <=> (const Isin& other) const;
+
+    sdk::Country country() const;
+    QByteArray code() const;
 
 private:
-    sdk::Country _country;
-    QByteArray _code;
+    sdk::Country _country = sdk::Country::Unknown;
+    QByteArray _code = "";
 
     friend QDataStream& operator << (QDataStream& s, const Isin& d);
     friend QDataStream& operator >> (QDataStream& s,       Isin& d);

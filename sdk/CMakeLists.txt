@@ -15,6 +15,7 @@ set (sdk_h
     include/api/marketstack.h
     include/api/filefetch.h
 
+    include/instrument/data.h
     include/instrument/trend.h
     include/instrument/earnings.h
     include/instrument/quartel_data.h
@@ -81,6 +82,7 @@ set (sdk_cpp
     source/api/marketstack.cpp
     source/api/filefetch.cpp
 
+    source/instrument/data.cpp
     source/instrument/trend.cpp
     source/instrument/earnings.cpp
     source/instrument/quartel_data.cpp

@@ -2,7 +2,6 @@
 #define SDK_INSTRUMENT_LEGAL_H
 
 #include "sdk.h" // IWYU pragma: keep
-#include "isin.h"
 #include <QtCore/QDate>
 #include <QtCore/QJsonObject>
 
@@ -14,10 +13,6 @@ public:
     const QString& openFigi() const { return _open_figi; }
     FieldTOpt setOpenFigi(const QString& openfigi)
     { return sdk::set_if(this, _open_figi, openfigi, sdk::Legal_openFigi); }
-
-    const Isin isin() const { return _isin; }
-    FieldTOpt setIsin(const QByteArray& code, sdk::Country country)
-    { return sdk::set_if(this, _isin, Isin(code, country), sdk::Legal_isin); }
 
     const QString& lei() const { return _lei; }
     FieldTOpt setLei(const QString& lei) { return sdk::set_if(this, _lei, lei, sdk::Legal_lei); }
@@ -62,7 +57,6 @@ public:
 
 private:
     QString _open_figi;
-    Isin _isin;
     QString _lei;
     QString _cik;
     sdk::Month _fiscal_yearend;

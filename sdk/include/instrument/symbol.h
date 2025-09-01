@@ -17,6 +17,7 @@ public:
     Symbol(const QString& full = "");
     Symbol(QString code, QString venue);
     Symbol(QString code, sdk::Exchange venue);
+    Symbol(const QByteArray& code, sdk::Exchange venue);
 
     bool us()        const;
     bool nyse()      const;
@@ -68,7 +69,7 @@ private:
     // void _();
 
     sdk::Exchange _venue;
-    QString _code;
+    QByteArray _code;
 
     friend QDataStream& operator << (QDataStream& s, const Symbol& d);
     friend QDataStream& operator >> (QDataStream& s,       Symbol& d);

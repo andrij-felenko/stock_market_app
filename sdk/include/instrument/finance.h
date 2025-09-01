@@ -3,6 +3,8 @@
 
 #include "sdk.h" // IWYU pragma: keep
 #include "capital.h"
+#include "estimate.h"
+#include "fundamental.h"
 #include "quartel_data.h"
 
 class sdk::Finance : Trackable
@@ -11,9 +13,11 @@ public:
     Finance();
 
     Capital capital;
-
-
+    Estimate estimates;
+    Fundamental fundamental;
     QuartelData& quartel(uint16_t year, Quartel q);
+
+    bool hasQuartel(uint16_t year, Quartel q) const;
 
     // TODO Прибуток на акцію (EPS). NetIncomeTTM / SharesOutstanding
     // Розраховується як чистий прибуток компанії за останні 12 місяців, поділений на к-сть акцій.

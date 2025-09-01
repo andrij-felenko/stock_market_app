@@ -2,14 +2,20 @@
 #include <QStringList>
 #include <QtCore/QDebug>
 
-sdk::Symbol::Symbol(QString code, sdk::Exchange exchange)
+sdk::Symbol::Symbol(const QByteArray& code, sdk::Exchange exchange)
     : _code(code), _venue(exchange)
 {
     // _();
 }
 
+sdk::Symbol::Symbol(QString code, sdk::Exchange exchange)
+    : Symbol(code.toLatin1(), exchange)
+{
+    // _();
+}
+
 sdk::Symbol::Symbol(QString code, QString exch)
-    : _code(code), _venue(sdk::Exchange::Unknown)
+    : Symbol(code.toLatin1(), sdk::Exchange::Unknown)
 {
     // _();
     set_venue(exch);
@@ -73,8 +79,8 @@ void dtS::set_venue(sdk::Exchange  e)
 }
 void dtS::set_code(QString code)
 {
-    if (_code.compare(code, Qt::CaseInsensitive) == 0) return;
-    _code = code.toUpper();
+    if (_code.compare(code.toLatin1(), Qt::CaseInsensitive) == 0) return;
+    _code = code.toUpper().toLatin1();
     // emit codeChanged();
 }
 void dtS::clear()
@@ -97,10 +103,11 @@ QString dtS::code() const { return _code; }
 bool dtS::empty() const { return not exist() || _code.isEmpty(); }
 
 bool dtS::lse_outer() const
-{ return _venue == sdk::Exchange::LSE && ! _code.isEmpty() &&  _code[0].isDigit(); }
+{ return _venue == sdk::Exchange::LSE && ! _code.isEmpty() && _code[0] >= '0' && _code[0] <= '9'; }
 
 bool dtS::lse_inner() const
-{ return _venue == sdk::Exchange::LSE && ! _code.isEmpty() && !_code[0].isDigit(); }
+{ return _venue == sdk::Exchange::LSE && ! _code.isEmpty() &&
+            !(_code[0] >= '0' && _code[0] <= '9'); }
 
 bool dtS::us()        const { return sdk::exchange::us       (_venue); }
 bool dtS::nyse()      const { return sdk::exchange::nyse     (_venue); }
