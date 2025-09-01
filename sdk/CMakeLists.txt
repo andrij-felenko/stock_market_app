@@ -41,15 +41,6 @@ set (sdk_h
     include/data/market.h
 
     include/data/instrument.h
-    include/data/instrument/stability.h
-    include/data/instrument/valuation.h
-    include/data/instrument/dividend.h
-    include/data/instrument/identity.h
-    include/data/instrument/profitability.h
-    include/data/instrument/shares.h
-    include/data/instrument/earnings.h
-    include/data/instrument/balance.h
-    include/data/instrument/meta.h
 
     include/data/user.h
     include/data/user/info.h
@@ -106,15 +97,6 @@ set (sdk_cpp
     source/data/market.cpp
 
     source/data/instrument.cpp
-    source/data/instrument/stability.cpp
-    source/data/instrument/valuation.cpp
-    source/data/instrument/dividend.cpp
-    source/data/instrument/identity.cpp
-    source/data/instrument/profitability.cpp
-    source/data/instrument/shares.cpp
-    source/data/instrument/earnings.cpp
-    source/data/instrument/balance.cpp
-    source/data/instrument/meta.cpp
 
     source/data/user.cpp
     source/data/user/info.cpp

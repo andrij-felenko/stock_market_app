@@ -1,11 +1,13 @@
 #include "instrument/meta.h"
+#include <QtCore/QBuffer>
+#include <QtGui/QImageReader>
 
-void Identity::cache_logo()
+void sdk::Meta::cache_logo()
 {
     if (_logo.isEmpty())
         return;
 
-    QByteArray data = _logo_bytes;
+    QByteArray data = _logo_full;
     QBuffer buffer(&data);
     buffer.open(QIODevice::ReadOnly);
     QImageReader reader(&buffer);
@@ -44,7 +46,7 @@ void Identity::cache_logo()
     emit logoChanged(logo());
 }
 
-void Identity::load_logo() const
+void sdk::Meta::load_logo() const
 {
     api::FileFetch::fetch_logo(static_cast <Instrument*> (parent())->primary_symbol(), _logo);
 }
