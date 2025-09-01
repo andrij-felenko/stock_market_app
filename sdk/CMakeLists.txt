@@ -41,7 +41,6 @@ set (sdk_h
     include/data/market.h
 
     include/data/instrument.h
-    include/data/instrument/ticker.h
     include/data/instrument/stability.h
     include/data/instrument/valuation.h
     include/data/instrument/dividend.h
@@ -107,7 +106,6 @@ set (sdk_cpp
     source/data/market.cpp
 
     source/data/instrument.cpp
-    source/data/instrument/ticker.cpp
     source/data/instrument/stability.cpp
     source/data/instrument/valuation.cpp
     source/data/instrument/dividend.cpp

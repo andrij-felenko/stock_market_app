@@ -50,6 +50,12 @@ public:
     FieldTOpt setWebsite(const QUrl& website)
     { return sdk::set_if(this, _website, website, sdk::Meta_website); }
 
+    int fulltimeEmployees() const { return _fulltime_employees; }
+    FieldTOpt setFulltimeEmployees(const int count)
+    { return sdk::set_if(this, _fulltime_employees, count, sdk::Meta_fulltime_employees); }
+
+
+    // ----------------------- Logo ---------------------------------------------------------------
     const QUrl& logoLink() const { return _logo_url; }
     FieldTOpt setLogoLink(const QUrl& logoLink)
     { return sdk::set_if(this, _logo_url, logoLink, sdk::Meta_logo_url); }
@@ -62,9 +68,9 @@ public:
     FieldTOpt setLogoFull(const QByteArray& data)
     { return sdk::set_if(this, _logo_full, data, sdk::Meta_logo_full); }
 
-    int fulltimeEmployees() const { return _fulltime_employees; }
-    FieldTOpt setFulltimeEmployees(const int count)
-    { return sdk::set_if(this, _fulltime_employees, count, sdk::Meta_fulltime_employees); }
+    void cache_logo();
+    void load_logo() const;
+    // ============================================================================================
 
 private:
     QString _sector;
@@ -77,10 +83,11 @@ private:
     QJsonObject _officers;
     QString _phone_number;
     QUrl _website;
+    int _fulltime_employees;
+
     QUrl _logo_url;
     QByteArray _logo;
     QByteArray _logo_full;
-    int _fulltime_employees;
 };
 
 #endif // SDK_INSTRUMENT_META_H
