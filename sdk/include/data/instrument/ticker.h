@@ -20,14 +20,14 @@ class data::Ticker : public QObject
     Q_OBJECT
     Q_PROPERTY(Quotes* quotes  READ quotes CONSTANT)
     Q_PROPERTY(bool    primary READ is_primary NOTIFY primaryChanged)
-    Q_PROPERTY(geo::Currency currency READ currency               NOTIFY currencyChanged)
+    Q_PROPERTY(sdk::Currency currency READ currency               NOTIFY currencyChanged)
     Q_PROPERTY(QString   currency_str READ currency_str           NOTIFY currencyChanged)
     Q_PROPERTY(QString exchange   READ exchange                   NOTIFY exchangeChanged)
     Q_PROPERTY(QString country    READ country                    NOTIFY  countryChanged)
     Q_PROPERTY(QString symbol     READ symbol_str WRITE setSymbol NOTIFY   symbolChanged)
 public:
     Quotes* quotes() const;
-    geo::Currency currency() const;
+    sdk::Currency currency() const;
     QString currency_str() const;
     QString exchange() const;
     QString country() const;
@@ -45,10 +45,10 @@ public slots:
 
     void set_symbol(QString new_symbol);
     void set_symbol(QString code, QString exch);
-    void set_symbol(QString code, geo::Exchange e);
+    void set_symbol(QString code, sdk::Exchange e);
 
 signals:
-    void currencyChanged(geo::Currency currency);
+    void currencyChanged(sdk::Currency currency);
     void exchangeChanged(QString exchange);
     void countryChanged(QString country);
     void symbolChanged(QString symbol);

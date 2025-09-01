@@ -31,7 +31,7 @@ void api::Eod::get_all_tag(QString exchange)
 void api::Eod::get_all_exchange_tag()
 {
     Eod* data = Eod::instance();
-    QStringList list = geo::exchange::all_exchange_venue();
+    QStringList list = sdk::exchange::all_exchange_venue();
     for (const auto& it : std::as_const(list))
         data->_send(Request::Exchange, it);
 }
@@ -192,7 +192,7 @@ void api::Eod::_handle_exchange(const QJsonDocument& json, QString name)
         data::Meta meta;
         meta.set_isin(obj["Isin"].toString().toLatin1());
         meta.set_title(obj["Name"].toString());
-        meta.set_type(geo::instype::from_string(obj["Type"].toString()));
+        meta.set_type(sdk::instype::from_string(obj["Type"].toString()));
         data::ticker::Symbol symbol(obj["Code"].toString(), name);
 
         Nexus.market()->ensure(meta, symbol);
@@ -313,11 +313,11 @@ void api::Eod::_handle_info(const QJsonDocument& json, QString name)
     in->identity()->setSector(general["Sector"].toString());
     in->identity()->setHeadquart(general["Address"].toString());
     // fix country
-    geo::Country c_by_primary = geo::exchange::country(in->primary_symbol(true).exchange());
+    sdk::Country c_by_primary = sdk::exchange::country(in->primary_symbol(true).exchange());
     if (in->identity()->country() == c_by_primary ||
-        in->identity()->country() == geo::Country::Unknown)
+        in->identity()->country() == sdk::Country::Unknown)
         return;
-    if (geo::exchange::exist(in->identity()->country())){
+    if (sdk::exchange::exist(in->identity()->country())){
         in->identity()->setCountry(c_by_primary);
     }
 

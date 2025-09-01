@@ -1,7 +1,7 @@
 #include "geo/geo.h"
 #include <qdebug.h>
 
-namespace geo::country {
+namespace sdk::country {
     struct Meta {
         Country _enum;
         QString alpha2;
@@ -31,11 +31,11 @@ namespace geo {
     }
 }
 
-QString geo::operator - (geo::Country c) { return geo::country::alpha3(c); }
-QString geo::operator & (geo::Country c) { return geo::country::alpha2(c); }
-QString geo::operator ~ (geo::Country c) { return geo::country::primary(c); }
+QString sdk::operator - (sdk::Country c) { return sdk::country::alpha3(c); }
+QString sdk::operator & (sdk::Country c) { return sdk::country::alpha2(c); }
+QString sdk::operator ~ (sdk::Country c) { return sdk::country::primary(c); }
 
-QString geo::country::primary(Country c)
+QString sdk::country::primary(Country c)
 {
     for (const auto& it : metadata())
         if (it._enum == c)
@@ -44,7 +44,7 @@ QString geo::country::primary(Country c)
     return "NaN";
 }
 
-QString geo::country::longest(Country c)
+QString sdk::country::longest(Country c)
 {
     QString ret;
     for (const auto& it : metadata())
@@ -57,7 +57,7 @@ QString geo::country::longest(Country c)
     return ret.isEmpty() ? "NaN" : ret;
 }
 
-QString geo::country::alpha2(Country c)
+QString sdk::country::alpha2(Country c)
 {
     for (const auto& it : metadata())
         if (it._enum == c)
@@ -65,7 +65,7 @@ QString geo::country::alpha2(Country c)
     return "--";
 }
 
-QString geo::country::alpha3(Country c)
+QString sdk::country::alpha3(Country c)
 {
     for (const auto& it : metadata())
         if (it._enum == c)
@@ -74,7 +74,7 @@ QString geo::country::alpha3(Country c)
 }
 
 // Розпізнавання з рядка: аліаси/повна назва/ISO
-geo::Country geo::country::from_string(const QString& any)
+sdk::Country sdk::country::from_string(const QString& any)
 {
     for (const auto& it : metadata())
         if (it.aliases.contains(any, Qt::CaseInsensitive) ||
@@ -85,12 +85,12 @@ geo::Country geo::country::from_string(const QString& any)
     return Country::Unknown;
 }
 
-geo::Continent geo::country::continent(Country c) { return static_cast <Continent> (+c & 0xFFF0); }
-geo::Region    geo::country::region   (Country c) { return static_cast <Region>    (+c & 0xFF00); }
+sdk::Continent sdk::country::continent(Country c) { return static_cast <Continent> (+c & 0xFFF0); }
+sdk::Region    sdk::country::region   (Country c) { return static_cast <Region>    (+c & 0xFF00); }
 
-std::vector <geo::Country> geo::country::all(Region r)
+std::vector <sdk::Country> sdk::country::all(Region r)
 {
-    std::vector <geo::Country> ret;
+    std::vector <sdk::Country> ret;
     ret.reserve(metadata().size());
 
     for (const auto &it : metadata())
@@ -99,9 +99,9 @@ std::vector <geo::Country> geo::country::all(Region r)
     return ret;
 }
 
-std::vector <geo::Country> geo::country::all(Continent c)
+std::vector <sdk::Country> sdk::country::all(Continent c)
 {
-    std::vector <geo::Country> ret;
+    std::vector <sdk::Country> ret;
     ret.reserve(metadata().size());
 
     for (const auto &it : metadata())
@@ -110,7 +110,7 @@ std::vector <geo::Country> geo::country::all(Continent c)
     return ret;
 }
 
-QStringList geo::country::all_names(Region r)
+QStringList sdk::country::all_names(Region r)
 {
     QStringList ret;
     ret.reserve(metadata().size() * 4);
@@ -121,7 +121,7 @@ QStringList geo::country::all_names(Region r)
     return ret;
 }
 
-QStringList geo::country::all_names(Continent c)
+QStringList sdk::country::all_names(Continent c)
 {
     QStringList ret;
     ret.reserve(metadata().size() * 4);
@@ -132,7 +132,7 @@ QStringList geo::country::all_names(Continent c)
     return ret;
 }
 
-QStringList geo::country::all_alpha2(Region r)
+QStringList sdk::country::all_alpha2(Region r)
 {
     QStringList ret;
     ret.reserve(metadata().size() * 4);
@@ -143,7 +143,7 @@ QStringList geo::country::all_alpha2(Region r)
     return ret;
 }
 
-QStringList geo::country::all_alpha2(Continent c)
+QStringList sdk::country::all_alpha2(Continent c)
 {
     QStringList ret;
     ret.reserve(metadata().size() * 4);
@@ -154,7 +154,7 @@ QStringList geo::country::all_alpha2(Continent c)
     return ret;
 }
 
-QStringList geo::country::all_alpha3(Region r)
+QStringList sdk::country::all_alpha3(Region r)
 {
     QStringList ret;
     ret.reserve(metadata().size() * 4);
@@ -165,7 +165,7 @@ QStringList geo::country::all_alpha3(Region r)
     return ret;
 }
 
-QStringList geo::country::all_alpha3(Continent c)
+QStringList sdk::country::all_alpha3(Continent c)
 {
     QStringList ret;
     ret.reserve(metadata().size() * 4);
@@ -176,14 +176,14 @@ QStringList geo::country::all_alpha3(Continent c)
     return ret;
 }
 
-const std::vector <geo::country::Meta>& geo::country::metadata()
+const std::vector <sdk::country::Meta>& sdk::country::metadata()
 {
-    static std::vector <geo::country::Meta> _;
+    static std::vector <sdk::country::Meta> _;
     if (not _.empty())
         return _;
 
-    auto push = [&](geo::Country e, const char* a2, const char* a3, auto... aliases){
-        _.emplace_back(geo::country::Meta(e, a2, a3, {aliases...}));
+    auto push = [&](sdk::Country e, const char* a2, const char* a3, auto... aliases){
+        _.emplace_back(sdk::country::Meta(e, a2, a3, {aliases...}));
     };
 
     // ----------------------- Europe -------------------------------------------------------------

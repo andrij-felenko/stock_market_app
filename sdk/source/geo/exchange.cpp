@@ -6,7 +6,7 @@
 #include <QtCore/QList>
 #include <QtCore/QDebug>
 
-namespace geo::exchange {
+namespace sdk::exchange {
     struct Meta {
         Exchange e;
         Currency currency; // валюта торгів
@@ -32,11 +32,11 @@ namespace geo {
     }
 }
 
-QString geo::operator & (geo::Exchange c) { return geo::exchange::sufix(c); }
-QString geo::operator - (geo::Exchange c) { return geo::exchange::venue(c); }
-QString geo::operator ~ (geo::Exchange c) { return geo::exchange::name(c); }
+QString sdk::operator & (sdk::Exchange c) { return sdk::exchange::sufix(c); }
+QString sdk::operator - (sdk::Exchange c) { return sdk::exchange::venue(c); }
+QString sdk::operator ~ (sdk::Exchange c) { return sdk::exchange::name(c); }
 
-bool geo::exchange::exist(Exchange e)
+bool sdk::exchange::exist(Exchange e)
 {
     if (e == Exchange::Unknown)
         return false;
@@ -48,7 +48,7 @@ bool geo::exchange::exist(Exchange e)
     return false;
 }
 
-bool geo::exchange::exist(Country c)
+bool sdk::exchange::exist(Country c)
 {
     for (const auto& m : metadata())
         if (m.country == c)
@@ -57,7 +57,7 @@ bool geo::exchange::exist(Country c)
     return false;
 }
 
-QString geo::exchange::sufix(Exchange e)
+QString sdk::exchange::sufix(Exchange e)
 {
     if (exist(e))
         for (const auto& m : metadata())
@@ -66,7 +66,7 @@ QString geo::exchange::sufix(Exchange e)
     return "--";
 }
 
-QString geo::exchange::venue(Exchange e)
+QString sdk::exchange::venue(Exchange e)
 {
     if (exist(e))
         for (const auto& m : metadata())
@@ -75,7 +75,7 @@ QString geo::exchange::venue(Exchange e)
     return "----";
 }
 
-QString geo::exchange::name(Exchange e)
+QString sdk::exchange::name(Exchange e)
 {
     if (exist(e))
         for (const auto& m : metadata())
@@ -84,7 +84,7 @@ QString geo::exchange::name(Exchange e)
     return "---";
 }
 
-geo::Currency geo::exchange::currency(Exchange e)
+sdk::Currency sdk::exchange::currency(Exchange e)
 {
     if (exist(e))
         for (const auto& m : metadata())
@@ -93,7 +93,7 @@ geo::Currency geo::exchange::currency(Exchange e)
     return Currency::None;
 }
 
-geo::Country geo::exchange::country(Exchange e)
+sdk::Country sdk::exchange::country(Exchange e)
 {
     if (exist(e))
         for (const auto& m : metadata())
@@ -102,7 +102,7 @@ geo::Country geo::exchange::country(Exchange e)
     return Country::Unknown;
 }
 
-geo::Exchange geo::exchange::from_string(const QString& s)
+sdk::Exchange sdk::exchange::from_string(const QString& s)
 {
     if (Exchange ret = from_venue_string(s); ret != Exchange::Unknown)
         return ret;
@@ -118,7 +118,7 @@ geo::Exchange geo::exchange::from_string(const QString& s)
     return Exchange::Unknown;
 }
 
-geo::Exchange geo::exchange::from_venue_string(const QString& s)
+sdk::Exchange sdk::exchange::from_venue_string(const QString& s)
 {
     // qDebug() << Q_FUNC_INFO << s;
     for (const auto& m : metadata()){
@@ -132,7 +132,7 @@ geo::Exchange geo::exchange::from_venue_string(const QString& s)
 // ------------------------------------------------------------------------------------------------
 // Набори бірж (добірки для фільтрації)
 // ------------------------------------------------------------------------------------------------
-std::vector <geo::Exchange> geo::exchange::major_europe_sufix()
+std::vector <sdk::Exchange> sdk::exchange::major_europe_sufix()
 {
     // Західна Європа + головні німецькі/британські майданчики
     return {
@@ -145,7 +145,7 @@ std::vector <geo::Exchange> geo::exchange::major_europe_sufix()
         Exchange::Berlin
     };
 }
-bool geo::exchange::is_major_europe_sufix(geo::Exchange e)
+bool sdk::exchange::is_major_europe_sufix(sdk::Exchange e)
 {
     for (const auto& it : major_europe_sufix())
         if (it == e)
@@ -153,7 +153,7 @@ bool geo::exchange::is_major_europe_sufix(geo::Exchange e)
     return false;
 }
 
-std::vector <geo::Exchange> geo::exchange::minor_europe_sufix()
+std::vector <sdk::Exchange> sdk::exchange::minor_europe_sufix()
 {
     // Інші західні, Скандинавія, регіональні DE, східна Європа
     return {
@@ -175,7 +175,7 @@ std::vector <geo::Exchange> geo::exchange::minor_europe_sufix()
         Exchange::Budapest, Exchange::Zagreb, Exchange::Bucharest
     };
 }
-bool geo::exchange::is_minor_europe_sufix(geo::Exchange e)
+bool sdk::exchange::is_minor_europe_sufix(sdk::Exchange e)
 {
     for (const auto& it : minor_europe_sufix())
         if (it == e)
@@ -183,7 +183,7 @@ bool geo::exchange::is_minor_europe_sufix(geo::Exchange e)
     return false;
 }
 
-std::vector <geo::Exchange> geo::exchange::other_worlds_sufix()
+std::vector <sdk::Exchange> sdk::exchange::other_worlds_sufix()
 {
     // Все поза США/ЄС: Америка (ex-US), Азія, Африка, Океанія, глобальні
     return {
@@ -213,7 +213,7 @@ std::vector <geo::Exchange> geo::exchange::other_worlds_sufix()
         Exchange::MoneyMarket, Exchange::Forex
     };
 }
-bool geo::exchange::is_other_worlds_sufix(geo::Exchange e)
+bool sdk::exchange::is_other_worlds_sufix(sdk::Exchange e)
 {
     for (const auto& it : other_worlds_sufix())
         if (it == e)
@@ -221,7 +221,7 @@ bool geo::exchange::is_other_worlds_sufix(geo::Exchange e)
     return false;
 }
 
-std::vector <geo::Exchange> geo::exchange::us_sufix()
+std::vector <sdk::Exchange> sdk::exchange::us_sufix()
 {
     // США: основні + OTC/PINK
     return {
@@ -236,7 +236,7 @@ std::vector <geo::Exchange> geo::exchange::us_sufix()
     };
 }
 
-std::vector <geo::Exchange> geo::exchange::all_exchange()
+std::vector <sdk::Exchange> sdk::exchange::all_exchange()
 {
     std::vector <Exchange> ret;
     ret.reserve(int(metadata().size()));
@@ -245,7 +245,7 @@ std::vector <geo::Exchange> geo::exchange::all_exchange()
     return ret;
 }
 
-QStringList geo::exchange::all_exchange_venue()
+QStringList sdk::exchange::all_exchange_venue()
 {
     QStringList ret;
     for (const auto& m : metadata())
@@ -257,7 +257,7 @@ QStringList geo::exchange::all_exchange_venue()
 // ------------------------------------------------------------------------------------------------
 // Класифікатори (бітові маски 1:1 з твоїм Symbol::Exchange)
 // ------------------------------------------------------------------------------------------------
-namespace ex = geo::exchange;
+namespace ex = sdk::exchange;
 bool ex::us       (Exchange e){ return exist(e) && (bits(e) & 0b1110'0000) == +Exchange::US; }
 bool ex::nyse     (Exchange e){ return exist(e) && (bits(e) & 0b1111'1000) == +Exchange::NYSE; }
 bool ex::nasdaq   (Exchange e){ return e == Exchange::NASDAQ; }
@@ -276,7 +276,7 @@ bool ex::world(Exchange e) {
     return exist(e) && (asia(e) || africa(e) || america(e) || oceania(e));
 }
 
-const std::vector <geo::exchange::Meta>& geo::exchange::metadata()
+const std::vector <sdk::exchange::Meta>& sdk::exchange::metadata()
 {
     static std::vector <exchange::Meta> _;
     if (not _.empty())

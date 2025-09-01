@@ -1,6 +1,6 @@
 #include "geo/geo.h"
 
-namespace geo::currency {
+namespace sdk::currency {
     struct Meta {
         Currency  _enum;
         QString   _full;
@@ -10,7 +10,7 @@ namespace geo::currency {
     const std::vector <Meta>& metadata();
 }
 
-namespace geo {
+namespace sdk {
     QDataStream& operator << (QDataStream& out, const Currency& tag)
     { return out << static_cast <uint16_t > (tag); }
 
@@ -22,10 +22,42 @@ namespace geo {
     }
 }
 
-QString operator & (geo::Currency c) { return geo::currency::to_short(c); }
-QString operator ~ (geo::Currency c) { return geo::currency::to_full (c); }
+int32_t sdk::currency::scale(sdk::Currency c)
+{
+    switch (c){
+        case Currency::Japanese_Yen:        // JPY
+        case Currency::South_Korean_Won:    // KRW (є також дубль нижче)
+        case Currency::Korean_Won:          // KRW (дубль у enum)
+        case Currency::Chinese_Yuan:        // CNY
+        case Currency::Indian_Rupee:        // INR
+        case Currency::Indonesian_Rupiah:   // IDR
+        case Currency::Russian_Ruble:       // RUB
+        case Currency::Colombian_Peso:      // COP
+        case Currency::Chilean_Peso:        // CLP
+        case Currency::Nigerian_Naira:      // NGN
+        case Currency::Uzbekistani_Som:     // UZS
+        case Currency::Argentine_Peso:      // ARS
+        case Currency::Paraguayan_Guarani:  // PYG
+        case Currency::Cambodian_Riel:      // KHR
+        case Currency::Lao_Kip:             // LAK
+        case Currency::Mongolian_Tughrik:   // MNT
+        case Currency::Iraqi_Dinar:         // IQD
+        case Currency::GreatBritain_Pence:  // GBP у пенсах → числа ×100
+            return 1'000'000;
+        case Currency::Lebanese_Pound:
+        case Currency::Iranian_Rial:
+        case Currency::Venezuelan_Bolivar:
+        case Currency::Vietnamese_Dong:
+            return 10'000'000;
+        default:;
+    }
+    return 10'000;
+}
 
-QString geo::currency::to_short(geo::Currency type)
+QString operator & (sdk::Currency c) { return sdk::currency::to_short(c); }
+QString operator ~ (sdk::Currency c) { return sdk::currency::to_full (c); }
+
+QString sdk::currency::to_short(sdk::Currency type)
 {
     for (const auto &it : metadata())
         if (it._enum == type)
@@ -33,7 +65,7 @@ QString geo::currency::to_short(geo::Currency type)
     return "NaN";
 }
 
-QString geo::currency::to_short(QString full)
+QString sdk::currency::to_short(QString full)
 {
     for (const auto &it : metadata())
         if (it._full.compare(full, Qt::CaseInsensitive) == 0 ||
@@ -42,7 +74,7 @@ QString geo::currency::to_short(QString full)
     return "NaN";
 }
 
-QString geo::currency::to_full(geo::Currency type)
+QString sdk::currency::to_full(sdk::Currency type)
 {
     for (const auto &it : metadata())
         if (it._enum == type)
@@ -50,7 +82,7 @@ QString geo::currency::to_full(geo::Currency type)
     return "NaN";
 }
 
-QString geo::currency::to_full(QString m_short)
+QString sdk::currency::to_full(QString m_short)
 {
     for (const auto &it : metadata())
         if (it._short.compare(m_short, Qt::CaseInsensitive) == 0)
@@ -58,7 +90,7 @@ QString geo::currency::to_full(QString m_short)
     return "NaN";
 }
 
-geo::Currency geo::currency::to_enum(QString currency)
+sdk::Currency sdk::currency::to_enum(QString currency)
 {
     for (const auto &it : metadata())
         if (it._full.compare(currency, Qt::CaseInsensitive) == 0 ||
@@ -67,7 +99,7 @@ geo::Currency geo::currency::to_enum(QString currency)
     return Currency::None;
 }
 
-geo::Currency geo::currency::from_short(QString currency)
+sdk::Currency sdk::currency::from_short(QString currency)
 {
     for (const auto &it : metadata())
         if (it._short.compare(currency, Qt::CaseInsensitive) == 0)
@@ -76,7 +108,7 @@ geo::Currency geo::currency::from_short(QString currency)
     return to_enum(currency);
 }
 
-QStringList geo::currency::all_short()
+QStringList sdk::currency::all_short()
 {
     QStringList ret;
     for (const auto &it : metadata())
@@ -84,9 +116,9 @@ QStringList geo::currency::all_short()
     return ret;
 }
 
-const std::vector <geo::currency::Meta>& geo::currency::metadata()
+const std::vector <sdk::currency::Meta>& sdk::currency::metadata()
 {
-    static std::vector <geo::currency::Meta> _;
+    static std::vector <sdk::currency::Meta> _;
     if (not _.empty())
         return _;
 

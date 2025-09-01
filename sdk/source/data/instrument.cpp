@@ -32,22 +32,22 @@ data::Instrument::Instrument(const ticker::Symbol& tag, QObject* parent)
 
 void data::Instrument::_sort_tickers()
 {
-    auto weight = [&](geo::Exchange ex) {
-        if (geo::exchange::otc(ex))      return 20;
-        if (geo::exchange::trash(ex))    return 0;   // найнижчий пріоритет
-        if (geo::exchange::nyse(ex))     return 100; // найважливіше
-        if (geo::exchange::nasdaq(ex))   return 90;
-        if (geo::exchange::us(ex))       return 80;
-        if (geo::exchange::euromajor(ex))return 70;
-        if (geo::exchange::eurominor(ex))return 60;
-        if (geo::exchange::asia(ex))     return 50;
-        if (geo::exchange::world(ex))    return 40;
+    auto weight = [&](sdk::Exchange ex) {
+        if (sdk::exchange::otc(ex))      return 20;
+        if (sdk::exchange::trash(ex))    return 0;   // найнижчий пріоритет
+        if (sdk::exchange::nyse(ex))     return 100; // найважливіше
+        if (sdk::exchange::nasdaq(ex))   return 90;
+        if (sdk::exchange::us(ex))       return 80;
+        if (sdk::exchange::euromajor(ex))return 70;
+        if (sdk::exchange::eurominor(ex))return 60;
+        if (sdk::exchange::asia(ex))     return 50;
+        if (sdk::exchange::world(ex))    return 40;
         return 10; // дефолт
     };
 
     std::ranges::sort(_tickers, [&](Ticker* a, Ticker* b){
-        geo::Country c_a = geo::exchange::country(a->symbol().exchange());
-        geo::Country c_b = geo::exchange::country(b->symbol().exchange());
+        sdk::Country c_a = sdk::exchange::country(a->symbol().exchange());
+        sdk::Country c_b = sdk::exchange::country(b->symbol().exchange());
 
         if (c_a == _meta->_isin_country && c_b != _meta->_isin_country)
             return true;

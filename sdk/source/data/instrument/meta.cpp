@@ -5,7 +5,7 @@
 #include <QtCore/QBuffer>
 #include "data/instrument.h"
 
-data::Meta::Meta(QObject* parent) : QObject(parent), _title(""), _type(geo::Instype::Unknown)
+data::Meta::Meta(QObject* parent) : QObject(parent), _title(""), _type(sdk::Instype::Unknown)
 {
     //
 }
@@ -38,7 +38,7 @@ void data::Meta::set_isin(QByteArray isin)
     if (isin.length() != 12)
         return;
 
-    _isin_country = geo::country::from_string(isin.left(2));
+    _isin_country = sdk::country::from_string(isin.left(2));
     _isin_code = isin.right(10);
 }
 
@@ -51,7 +51,7 @@ void data::Meta::set_title(QString title)
     emit titleChanged();
 }
 
-void data::Meta::set_type(geo::Instype type)
+void data::Meta::set_type(sdk::Instype type)
 {
     if (_type == type)
         return;
@@ -60,7 +60,7 @@ void data::Meta::set_type(geo::Instype type)
     emit typeChanged();
 }
 
-geo::Country data::Meta::isin_country() const { return _isin_country; }
+sdk::Country data::Meta::isin_country() const { return _isin_country; }
 QString      data::Meta::isin_full()    const { return &_isin_country + _isin_code; }
 QString      data::Meta::isin_code()    const { return _isin_code; }
 

@@ -64,7 +64,7 @@ public:
     QString title() const;
     QString descript() const;
     QString sector() const;
-    geo::Country country() const;
+    sdk::Country country() const;
     QString country_str() const;
     QString exchange() const;
     QString industry() const;
@@ -82,7 +82,7 @@ public:
     void setDescrip(const QString& new_descript);
     void setSector(const QString& new_sector);
     void setCountry(const QString& new_country);
-    void setCountry(geo::Country c);
+    void setCountry(sdk::Country c);
     void setIndustry(const QString& new_industry);
     void setHeadquart(const QString& new_headquart);
     void setIsin(const QString& new_isin);
@@ -109,7 +109,7 @@ private:
     Instrument* instrument() const;
 
     QString _title;
-    geo::Country _country;
+    sdk::Country _country;
     QString _descript;
     QString _sector;
     QString _industry;

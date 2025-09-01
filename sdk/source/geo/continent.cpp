@@ -1,6 +1,6 @@
 #include "geo/geo.h"
 
-namespace geo::continent {
+namespace sdk::continent {
     struct Meta {
         Continent _enum;
         QString _full;
@@ -21,9 +21,9 @@ namespace geo {
     }
 }
 
-QString geo::operator ~ (geo::Continent c) { return geo::continent::to_string(c); }
+QString sdk::operator ~ (sdk::Continent c) { return sdk::continent::to_string(c); }
 
-QString geo::continent::to_string(Continent c)
+QString sdk::continent::to_string(Continent c)
 {
     for (const auto &it : metadata())
         if (it._enum == c)
@@ -31,7 +31,7 @@ QString geo::continent::to_string(Continent c)
     return "NaN";
 }
 
-geo::Continent geo::continent::from_string(const QString& s)
+sdk::Continent sdk::continent::from_string(const QString& s)
 {
     for (const auto &it : metadata())
         if (it._full.compare(s, Qt::CaseInsensitive) == 0)
@@ -39,7 +39,7 @@ geo::Continent geo::continent::from_string(const QString& s)
     return Continent::None;
 }
 
-QStringList geo::continent::all_names()
+QStringList sdk::continent::all_names()
 {
     QStringList ret;
     ret.reserve(metadata().size());
@@ -50,9 +50,9 @@ QStringList geo::continent::all_names()
     return ret;
 }
 
-std::vector <geo::Continent> geo::continent::all()
+std::vector <sdk::Continent> sdk::continent::all()
 {
-    std::vector <geo::Continent> ret;
+    std::vector <sdk::Continent> ret;
     ret.reserve(metadata().size());
 
     for (const auto &it : metadata())
@@ -61,9 +61,9 @@ std::vector <geo::Continent> geo::continent::all()
     return ret;
 }
 
-const std::vector <geo::continent::Meta>& geo::continent::metadata()
+const std::vector <sdk::continent::Meta>& sdk::continent::metadata()
 {
-    static std::vector <geo::continent::Meta> _;
+    static std::vector <sdk::continent::Meta> _;
     if (not _.empty())
         return _;
 

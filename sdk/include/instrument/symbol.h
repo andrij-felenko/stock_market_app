@@ -1,20 +1,13 @@
-#ifndef DATA_INSTRUMENT_SYMBOL_H
-#define DATA_INSTRUMENT_SYMBOL_H
+#ifndef SDK_INSTRUMENT_SYMBOL_H
+#define SDK_INSTRUMENT_SYMBOL_H
 
-#include "geo/geo.h"
-#include <QDataStream>
-#include <QString>
-#include <QtCore/QObject>
+#include "sdk.h"
 
-namespace data::ticker {
-    class Symbol;
-}
-
-class data::ticker::Symbol // : public QObject
+class sdk::Symbol // : public QObject
 {
     // Q_OBJECT
-    // Q_PROPERTY(geo::Currency currency   READ currency                 NOTIFY venueChanged)
-    // Q_PROPERTY(geo::Exchange exchange   READ exchange WRITE set_venue NOTIFY venueChanged)
+    // Q_PROPERTY(sdk::Currency currency   READ currency                 NOTIFY venueChanged)
+    // Q_PROPERTY(sdk::Exchange exchange   READ exchange WRITE set_venue NOTIFY venueChanged)
     // Q_PROPERTY(QString       venue      READ venue    WRITE set_venue NOTIFY venueChanged)
     // Q_PROPERTY(QString       sufix      READ sufix                    NOTIFY venueChanged)
     // Q_PROPERTY(QString       full       READ full                     NOTIFY fullChanged)
@@ -23,7 +16,7 @@ class data::ticker::Symbol // : public QObject
 public:
     Symbol(const QString& full = "");
     Symbol(QString code, QString venue);
-    Symbol(QString code, geo::Exchange venue);
+    Symbol(QString code, sdk::Exchange venue);
 
     bool us()        const;
     bool nyse()      const;
@@ -40,8 +33,8 @@ public:
     bool lse_outer() const;
     bool lse_inner() const;
 
-    bool check_exchange(geo::Exchange  ex) const;
-    bool contains(std::vector <geo::Exchange> ex) const;
+    bool check_exchange(sdk::Exchange  ex) const;
+    bool contains(std::vector <sdk::Exchange> ex) const;
 
     QString full_venue() const;
     QString full() const;
@@ -49,20 +42,20 @@ public:
     QString sufix() const;
     QString venue() const;
 
-    geo::Currency currency() const;
-    geo::Exchange exchange() const;
+    sdk::Currency currency() const;
+    sdk::Exchange exchange() const;
 
     void set_code(QString code);
     void set_venue(QString str);
-    void set_venue(geo::Exchange e);
+    void set_venue(sdk::Exchange e);
 
     Symbol& operator =  (const Symbol& other);
     bool    operator == (const Symbol& other) const;
     bool    operator != (const Symbol& other) const;
     bool    operator <  (const Symbol& other) const;
     operator QString() const; // return full()
-    bool    operator == (const geo::Exchange venue) const;
-    bool    operator == (const std::vector <geo::Exchange> list) const;
+    bool    operator == (const sdk::Exchange venue) const;
+    bool    operator == (const std::vector <sdk::Exchange> list) const;
 
     void clear();
 
@@ -74,7 +67,7 @@ public:
 private:
     // void _();
 
-    geo::Exchange _venue;
+    sdk::Exchange _venue;
     QString _code;
 
     friend QDataStream& operator << (QDataStream& s, const Symbol& d);
@@ -83,6 +76,6 @@ private:
     friend QDebug operator << (QDebug dbg, const Symbol& symbol);
 };
 
-namespace data::ticker { using SymbolList = std::vector <Symbol>; }
+namespace sdk { using SymbolList = std::vector <Symbol>; }
 
-#endif // DATA_INSTRUMENT_SYMBOL_H
+#endif // SDK_INSTRUMENT_SYMBOL_H

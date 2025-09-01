@@ -36,13 +36,13 @@ public:
 
     QString isin_str() const { return isin_full(); }
     QString title() const { return _title; }
-    QString type_str() const { return geo::instype::to_string(_type); }
-    geo::Instype type() const { return _type; }
+    QString type_str() const { return sdk::instype::to_string(_type); }
+    sdk::Instype type() const { return _type; }
 
     void set_title(QString title);
-    void set_type(geo::Instype type);
+    void set_type(sdk::Instype type);
     void set_isin(QByteArray isin);
-    geo::Country isin_country() const;
+    sdk::Country isin_country() const;
     QString isin_code() const;
     QString isin_full() const;
 
@@ -58,11 +58,11 @@ private:
     friend class api::Eod;
     Instrument* instrument() const;
 
-    geo::Country _isin_country;
+    sdk::Country _isin_country;
     QByteArray _isin_code;
 
     QString _title;
-    geo::Instype _type;
+    sdk::Instype _type;
 };
 
 /*

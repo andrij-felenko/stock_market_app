@@ -1,6 +1,6 @@
 #include "geo/geo.h"
 
-namespace geo::instype {
+namespace sdk::instype {
     struct Meta {
         Instype  _enum;
         QStringList aliases;
@@ -26,9 +26,9 @@ namespace geo {
     }
 }
 
-QString geo::operator ~ (geo::Instype c) { return geo::instype::to_string(c); }
+QString sdk::operator ~ (sdk::Instype c) { return sdk::instype::to_string(c); }
 
-QString geo::instype::to_string(geo::Instype type)
+QString sdk::instype::to_string(sdk::Instype type)
 {
     for (const auto &it : metadata())
         if (it._enum == type)
@@ -37,7 +37,7 @@ QString geo::instype::to_string(geo::Instype type)
     return "NaN";
 }
 
-QString geo::instype::file_name(Instype e)
+QString sdk::instype::file_name(Instype e)
 {
     if (e != Instype::Unknown)
         for (const auto& it : metadata())
@@ -49,7 +49,7 @@ QString geo::instype::file_name(Instype e)
     return "other";
 }
 
-geo::Instype geo::instype::from_string(const QString& str)
+sdk::Instype sdk::instype::from_string(const QString& str)
 {
     for (const auto &it : metadata())
         for (const auto& s : it.aliases)
@@ -61,7 +61,7 @@ geo::Instype geo::instype::from_string(const QString& str)
     return Instype::Unknown;
 }
 
-QStringList geo::instype::all_names()
+QStringList sdk::instype::all_names()
 {
     QStringList ret;
     ret.reserve(metadata().size());
@@ -71,9 +71,9 @@ QStringList geo::instype::all_names()
     return ret;
 }
 
-std::vector <geo::Instype> geo::instype::all()
+std::vector <sdk::Instype> sdk::instype::all()
 {
-    std::vector <geo::Instype> ret;
+    std::vector <sdk::Instype> ret;
     ret.reserve(metadata().size());
 
     for (const auto &it : metadata())
@@ -81,14 +81,14 @@ std::vector <geo::Instype> geo::instype::all()
     return ret;
 }
 
-const std::vector <geo::instype::Meta>& geo::instype::metadata()
+const std::vector <sdk::instype::Meta>& sdk::instype::metadata()
 {
-    static std::vector <geo::instype::Meta> _;
+    static std::vector <sdk::instype::Meta> _;
     if (not _.empty())
         return _;
 
-    auto push = [&](geo::Instype e, auto... aliases){
-        _.emplace_back(geo::instype::Meta(e, {aliases...}));
+    auto push = [&](sdk::Instype e, auto... aliases){
+        _.emplace_back(sdk::instype::Meta(e, {aliases...}));
     };
 
     // Europe

@@ -1,0 +1,6 @@
+#ifndef SDK_INSTRUMENT_CAPITAL_H
+#define SDK_INSTRUMENT_CAPITAL_H
+
+// namespace
+
+#endif // SDK_INSTRUMENT_CAPITAL_H

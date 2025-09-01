@@ -44,7 +44,7 @@ QVariant model::TickerList::data(const QModelIndex& index, int role) const
         case QuoteRole:    return in->quotes()->current();
         case TitleRole:    return in->instrument()->identity()->title();
         case CountryRole:  return ~in->instrument()->meta()->isin_country();
-        case CountryTagRole: return geo::country::alpha2(in->instrument()->meta()->isin_country());
+        case CountryTagRole: return sdk::country::alpha2(in->instrument()->meta()->isin_country());
         case IndustryRole: return in->instrument()->identity()->industry();
         case LogoRole:     return in->instrument()->identity()->logo();
         case PrimaryTickerRole: return QVariant::fromValue(in->instrument()->primary_ticker());

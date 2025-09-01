@@ -5,8 +5,9 @@
 
 #include <QtCore/QThread>
 #include <QtCore/QCoreApplication>
+#include "trackable.h"
 
-namespace util {
+namespace sdk {
     // ----------------------- Defer --------------------------------------------------------------
     template <typename F> class Defer {
         F _func;
@@ -93,6 +94,29 @@ namespace util {
         });
         QObject::connect(thread, &QThread::finished, thread, &QObject::deleteLater);
         thread->start();
+    }
+    // ============================================================================================
+
+
+    // ----------------------- Set if functionality -----------------------------------------------
+    template<typename T>
+    static inline bool nearly_equal(T a, T b, T eps) {
+        if constexpr (std::is_floating_point_v<T>)
+            return std::fabs(a - b) <= eps*std::max<T>(T(1), std::max(std::fabs(a), std::fabs(b)));
+        else
+            return a == b;
+    }
+
+    template <typename T, typename Flag> static inline std::optional <Flag>
+    set_if(Trackable* ptr, T& field, const T& value, Flag flag, T eps = T{}) {
+        if constexpr (std::is_floating_point_v<T>) {
+            if (nearly_equal(field, value, eps)) return std::nullopt;
+        } else {
+            if (field == value) return std::nullopt;
+        }
+        field = value;
+        ptr->_last_updated = QDateTime::currentDateTime();
+        return flag;
     }
     // ============================================================================================
 }

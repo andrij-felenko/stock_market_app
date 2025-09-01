@@ -2,20 +2,20 @@
 #include <QStringList>
 #include <QtCore/QDebug>
 
-data::ticker::Symbol::Symbol(QString code, geo::Exchange exchange)
+data::ticker::Symbol::Symbol(QString code, sdk::Exchange exchange)
     : _code(code), _venue(exchange)
 {
     // _();
 }
 
 data::ticker::Symbol::Symbol(QString code, QString exch)
-    : _code(code), _venue(geo::Exchange::Unknown)
+    : _code(code), _venue(sdk::Exchange::Unknown)
 {
     // _();
     set_venue(exch);
 }
 
-data::ticker::Symbol::Symbol(const QString& full) : _code(""), _venue(geo::Exchange::Unknown)
+data::ticker::Symbol::Symbol(const QString& full) : _code(""), _venue(sdk::Exchange::Unknown)
 {
     // _();
 
@@ -23,7 +23,7 @@ data::ticker::Symbol::Symbol(const QString& full) : _code(""), _venue(geo::Excha
     QStringList list = full.split(".");
     if (list.length() == 1){
         set_code(full);
-        set_venue(geo::Exchange::US);
+        set_venue(sdk::Exchange::US);
     }
     else if (list.length() == 2){
         set_code (list[0]);
@@ -50,8 +50,8 @@ bool dtS::Symbol::operator < (const Symbol& other) const
 
 dtS::operator QString() const { return full(); }
 
-bool dtS::Symbol::operator == (const geo::Exchange venue) const { return _venue == venue; }
-bool dtS::Symbol::operator == (const std::vector <geo::Exchange> list) const
+bool dtS::Symbol::operator == (const sdk::Exchange venue) const { return _venue == venue; }
+bool dtS::Symbol::operator == (const std::vector <sdk::Exchange> list) const
 {
     for (const auto& it : list)
         if (*this == it)
@@ -60,12 +60,12 @@ bool dtS::Symbol::operator == (const std::vector <geo::Exchange> list) const
 }
 
 
-QString       dtS::venue()    const { return geo::exchange::venue   (_venue); }
-QString       dtS::sufix()    const { return geo::exchange::sufix   (_venue); }
-geo::Currency dtS::currency() const { return geo::exchange::currency(_venue); }
+QString       dtS::venue()    const { return sdk::exchange::venue   (_venue); }
+QString       dtS::sufix()    const { return sdk::exchange::sufix   (_venue); }
+sdk::Currency dtS::currency() const { return sdk::exchange::currency(_venue); }
 
-void dtS::set_venue(QString str) { set_venue(geo::exchange::from_venue_string(str)); }
-void dtS::set_venue(geo::Exchange  e)
+void dtS::set_venue(QString str) { set_venue(sdk::exchange::from_venue_string(str)); }
+void dtS::set_venue(sdk::Exchange  e)
 {
     if (e == _venue) return;
     _venue = e;
@@ -80,7 +80,7 @@ void dtS::set_code(QString code)
 void dtS::clear()
 {
     set_code("");
-    set_venue(geo::Exchange::Unknown);
+    set_venue(sdk::Exchange::Unknown);
 }
 
 data::ticker::Symbol& data::ticker::Symbol::operator =(const Symbol& other)
@@ -90,31 +90,31 @@ data::ticker::Symbol& data::ticker::Symbol::operator =(const Symbol& other)
     return *this;
 }
 
-geo::Exchange dtS::exchange() const { return _venue; }
+sdk::Exchange dtS::exchange() const { return _venue; }
 QString dtS::full_venue() const { return QString("%1.%2").arg(_code, venue()); }
 QString dtS::full() const { return QString("%1.%2").arg(_code, sufix()); }
 QString dtS::code() const { return _code; }
 bool dtS::empty() const { return not exist() || _code.isEmpty(); }
 
 bool dtS::lse_outer() const
-{ return _venue == geo::Exchange::LSE && ! _code.isEmpty() &&  _code[0].isDigit(); }
+{ return _venue == sdk::Exchange::LSE && ! _code.isEmpty() &&  _code[0].isDigit(); }
 
 bool dtS::lse_inner() const
-{ return _venue == geo::Exchange::LSE && ! _code.isEmpty() && !_code[0].isDigit(); }
+{ return _venue == sdk::Exchange::LSE && ! _code.isEmpty() && !_code[0].isDigit(); }
 
-bool dtS::us()        const { return geo::exchange::us       (_venue); }
-bool dtS::nyse()      const { return geo::exchange::nyse     (_venue); }
-bool dtS::nasdaq()    const { return geo::exchange::nasdaq   (_venue); }
-bool dtS::otc()       const { return geo::exchange::otc      (_venue); }
-bool dtS::europe()    const { return geo::exchange::europe   (_venue); }
-bool dtS::trash()     const { return geo::exchange::trash    (_venue); }
-bool dtS::euromajor() const { return geo::exchange::euromajor(_venue); }
-bool dtS::eurominor() const { return geo::exchange::eurominor(_venue); }
-bool dtS::asia()      const { return geo::exchange::asia     (_venue); }
-bool dtS::world()     const { return geo::exchange::world    (_venue); }
-bool dtS::exist()     const { return geo::exchange::exist    (_venue); }
+bool dtS::us()        const { return sdk::exchange::us       (_venue); }
+bool dtS::nyse()      const { return sdk::exchange::nyse     (_venue); }
+bool dtS::nasdaq()    const { return sdk::exchange::nasdaq   (_venue); }
+bool dtS::otc()       const { return sdk::exchange::otc      (_venue); }
+bool dtS::europe()    const { return sdk::exchange::europe   (_venue); }
+bool dtS::trash()     const { return sdk::exchange::trash    (_venue); }
+bool dtS::euromajor() const { return sdk::exchange::euromajor(_venue); }
+bool dtS::eurominor() const { return sdk::exchange::eurominor(_venue); }
+bool dtS::asia()      const { return sdk::exchange::asia     (_venue); }
+bool dtS::world()     const { return sdk::exchange::world    (_venue); }
+bool dtS::exist()     const { return sdk::exchange::exist    (_venue); }
 
-bool dtS::check_exchange(geo::Exchange ex) const { return _venue == ex; }
+bool dtS::check_exchange(sdk::Exchange ex) const { return _venue == ex; }
 
 namespace data::ticker {
     QDataStream& operator << (QDataStream& s, const Symbol& d) { return s << d._code << d._venue; }

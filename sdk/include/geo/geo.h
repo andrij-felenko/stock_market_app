@@ -7,7 +7,66 @@
 #include <QtCore/QDataStream>
 #include <cstdint>
 
-namespace geo {
+namespace sdk {
+enum class Quartel : uint8_t {
+    First, Second, Third, Fourth,
+    Annual = Fourth
+};
+constexpr uint8_t operator + (Quartel m) { return static_cast <uint8_t>(m); }
+namespace quartel {
+    QString to_string(Quartel m);
+    Quartel from_string(const QString& s);
+    Quartel from_month(int month);
+
+    QStringList all_names();
+    std::vector <Quartel> all();
+}
+QString operator ~ (Quartel m);
+
+QDataStream& operator << (QDataStream& out, const Quartel& m);
+QDataStream& operator >> (QDataStream& in,        Quartel& m);
+
+
+
+enum class Month : uint8_t {
+    Unknown = 0,
+    January, February, March,
+    April,   May,      June,
+    Jule,    August,   September,
+    October, November, December
+};
+constexpr uint8_t operator + (Month m) { return static_cast <uint8_t>(m); }
+namespace month {
+    QString to_string(Month m);
+    Month from_string(const QString& s);
+
+    QStringList all_names();
+    std::vector <Month> all();
+}
+QString operator ~ (Month m);
+
+QDataStream& operator << (QDataStream& out, const Month& m);
+QDataStream& operator >> (QDataStream& in,        Month& m);
+
+
+enum class HomeCategory : uint8_t {
+    Unknown,
+    Domestic,
+    Foreign
+};
+constexpr uint8_t operator + (HomeCategory m) { return static_cast <uint8_t>(m); }
+namespace home_category {
+    QString        to_string(HomeCategory m);
+    HomeCategory from_string(const QString& s);
+
+    QStringList all_names();
+    std::vector <HomeCategory> all();
+}
+QString operator ~ (HomeCategory m);
+
+QDataStream& operator << (QDataStream& out, const Month& m);
+QDataStream& operator >> (QDataStream& in,        Month& m);
+
 enum class Continent : uint16_t {
     Europe = 0xC400,
     Africa = 0xC500,
@@ -393,8 +452,8 @@ QString  operator - (Country c);
 QString  operator & (Country c); // "US"
 QString  operator ~ (Country c); // "USA"
 
-QDataStream& operator << (QDataStream& out, const geo::Country& c);
-QDataStream& operator >> (QDataStream& in,        geo::Country& c);
+QDataStream& operator << (QDataStream& out, const Country& c);
+QDataStream& operator >> (QDataStream& in,        Country& c);
 
 
 enum class Currency : uint16_t {
@@ -594,6 +653,8 @@ namespace currency {
     Currency from_short(QString currency);
 
     QStringList all_short();
+
+    int32_t scale(Currency c);
 }
 QString operator & (Currency c);
 QString operator ~ (Currency c);
@@ -738,8 +799,8 @@ namespace exchange {
     Exchange from_venue_string(const QString& s);
 
     bool is_major_europe_sufix(Exchange e);
-    bool is_minor_europe_sufix(geo::Exchange e);
-    bool is_other_worlds_sufix(geo::Exchange e);
+    bool is_minor_europe_sufix(Exchange e);
+    bool is_other_worlds_sufix(Exchange e);
     std::vector <Exchange> major_europe_sufix();
     std::vector <Exchange> minor_europe_sufix();
     std::vector <Exchange> other_worlds_sufix();

@@ -32,12 +32,12 @@ void    Identity::setDescrip(const QString& new_descript)
     emit descriptChanged(_descript);
 }
 
-geo::Country Identity::country() const { return _country; }
+sdk::Country Identity::country() const { return _country; }
 QString Identity::country_str() const { return ~_country; }
 void    Identity::setCountry(const QString& new_country)
-{ setCountry(geo::country::from_string(new_country)); }
+{ setCountry(sdk::country::from_string(new_country)); }
 
-void Identity::setCountry(geo::Country c)
+void Identity::setCountry(sdk::Country c)
 {
     if (_country == c)
         return;
@@ -181,7 +181,7 @@ void Identity::load_logo() const
 uint8_t Identity::filledCapacity() const
 {
     uint8_t filled = 0, count = 0;
-    if (count++; _country == geo::Country::Unknown) filled++;
+    if (count++; _country == sdk::Country::Unknown) filled++;
     if (count++; not     _title.isEmpty()) filled++;
     if (count++; not  _descript.isEmpty()) filled++;
     if (count++; not    _sector.isEmpty()) filled++;

@@ -23,8 +23,8 @@ void        Ticker::save()             { emit signal_save(); }
 Quotes*     Ticker::quotes()     const { return _quotes; }
 Instrument* Ticker::instrument() const { return static_cast <Instrument*> (parent()); }
 
-QString       Ticker::currency_str() const { return geo::currency::to_full(currency()); }
-geo::Currency Ticker::    currency() const { return _symbol.currency(); }
+QString       Ticker::currency_str() const { return sdk::currency::to_full(currency()); }
+sdk::Currency Ticker::    currency() const { return _symbol.currency(); }
 QString Ticker::   country() const { return instrument()->identity()->country_str(); }
 QString Ticker::   exchange() const { return _symbol.venue(); }
 
@@ -34,7 +34,7 @@ void           Ticker::setSymbol(QString new_symbol) { set_symbol(new_symbol); }
 
 void Ticker::set_symbol(QString new_symbol)          { set_symbol(ticker::Symbol(new_symbol)); }
 void Ticker::set_symbol(QString code, QString exch)  { set_symbol(ticker::Symbol(code, exch)); }
-void Ticker::set_symbol(QString code, geo::Exchange e){ set_symbol(ticker::Symbol(code, e)); }
+void Ticker::set_symbol(QString code, sdk::Exchange e){ set_symbol(ticker::Symbol(code, e)); }
 
 void Ticker::set_symbol(ticker::Symbol symbol)
 {

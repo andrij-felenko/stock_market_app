@@ -82,7 +82,7 @@ void model::SearchTag::clear()
 //     meta::Ticker m;
 //     m.symbol = symbol;
 //     m.name = name;
-//     m.type = geo::instype::from_string(type);
+//     m.type = sdk::instype::from_string(type);
 //     _list.push_back(m);
 //     endInsertRows();
 // }
