@@ -1,17 +1,12 @@
-#ifndef DATA_TICKER_QUOTES_H
-#define DATA_TICKER_QUOTES_H
+#ifndef SDK_INSTRUMENT_QUOTES_H
+#define SDK_INSTRUMENT_QUOTES_H
 
 #include <QtCore/QObject>
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
+#include "sdk.h"
 
-namespace data {
-    struct QuotesDate;
-    struct QuotesTime;
-    class  Quotes;
-}
-
-struct data::QuotesDate {
+struct sdk::QuotesDate {
     QDate date;
     float open;
     float close;
@@ -23,7 +18,7 @@ struct data::QuotesDate {
     friend QDataStream& operator >> (QDataStream& s,       QuotesDate& q);
 };
 
-struct data::QuotesTime {
+struct sdk::QuotesTime {
     QTime time;
     float open;
     float close;
@@ -45,40 +40,49 @@ struct data::QuotesTime {
  *
  * \note \c set_intraday() переключає джерело на внутрішньоденні дані за обраною датою.
  */
-class data::Quotes : public QObject
+class sdk::Quotes : Trackable
 {
-    Q_OBJECT
-    Q_PROPERTY(QVector <QObject*> points READ points NOTIFY pointsChanged)
 public:
-    Quotes(QObject* parent = nullptr);
+    Quotes();
     Quotes& operator = (const Quotes& other);
 
     const std::vector <QuotesDate>& raw_points() const;
-    QVector <QObject*> points();
 
     void recalculate();
     void setData(QDate d, float open, float close, float high, float low, quint64  v);
     void setData(QTime t, float open, float close, float high, float low, quint64  v);
     void setIntraday(QDate date);
 
-    Q_INVOKABLE float yearMax() const;
-    Q_INVOKABLE float yearMin() const;
+    // TODO 52WeekHigh — максимум ціни за 52 тижні (розрахунок із історії котирувань).
+    double fiftyTwoWeekHigh() const;
 
-    Q_INVOKABLE float current() const;
-    Q_INVOKABLE bool  empty();
+    // TODO 52WeekLow — мінімум ціни за 52 тижні (розрахунок із історії котирувань).
+    double fiftyTwoWeekLow() const;
 
-signals:
-    void pointsChanged();
+    // TODO 50DayMA — середня ціна за останні ~50 торгових днів.
+    double movingAverage50Day() const;
+
+    // TODO 200DayMA — середня ціна за останні ~200 торгових днів.
+    double movingAverage200Day() const;
+
+    float yearMax() const;
+    float yearMin() const;
+
+    float current() const;
+    bool  empty();
+
+    double beta() const { return _beta; }
+    FieldTOpt setBeta(double value)
+    { return sdk::set_if(this, _beta, value, sdk::Quotes_beta); }
 
 private:
+    double _beta = 0.0;
     QDate _last_intraday;
     std::vector <QuotesTime> _intraday;
     std::vector <QuotesDate> _points;
-
-    QVector <QObject*> _result;
 
     friend QDataStream& operator << (QDataStream& s, const Quotes& q);
     friend QDataStream& operator >> (QDataStream& s,       Quotes& q);
 };
 
-#endif
+#endif // SDK_INSTRUMENT_QUOTES_H

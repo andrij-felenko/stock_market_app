@@ -112,6 +112,8 @@ namespace sdk {
     class Meta;
     class QuartelData;
     class Quotes;
+    struct QuotesDate;
+    struct QuotesTime;
     class ShortInterest;
     class Ticker;
     class Trend;
