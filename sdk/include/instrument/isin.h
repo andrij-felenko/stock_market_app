@@ -12,8 +12,12 @@ public:
     Isin& operator == (const Isin& other);
     std::strong_ordering operator <=> (const Isin& other) const;
 
+    const QByteArray full() const;
+    const QByteArray operator ~ () const;
+
     sdk::Country country() const;
     QByteArray code() const;
+    bool valid() const;
 
 private:
     sdk::Country _country = sdk::Country::Unknown;

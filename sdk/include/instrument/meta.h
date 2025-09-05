@@ -4,6 +4,7 @@
 #include "sdk.h" // IWYU pragma: keep
 #include "utilities/trackable.h"
 #include <QtCore/QJsonObject>
+#include <QtCore/QSize>
 
 class sdk::Meta : Trackable
 {
@@ -60,16 +61,12 @@ public:
     FieldTOpt setLogoLink(const QUrl& logoLink)
     { return sdk::set_if(this, _logo_url, logoLink, sdk::Meta_logo_url); }
 
-    const QByteArray& logo() const { return _logo; }
-    FieldTOpt setLogo(const QByteArray& data)
-    { return sdk::set_if(this, _logo, data, sdk::Meta_logo); }
+    const QUrl logo() const { return _logo; }
+    const QByteArray& logoFull() const;
 
-    const QByteArray& logoFull() const { return _logo_full; }
-    FieldTOpt setLogoFull(const QByteArray& data)
-    { return sdk::set_if(this, _logo_full, data, sdk::Meta_logo_full); }
-
-    void cache_logo();
-    void load_logo() const;
+    FieldTOpt   updateLogo(const Isin& isin, const QByteArray& data);
+    void          loadLogo(const Isin& isin) const;
+    static QByteArray logoFull(const Isin& isin);
     // ============================================================================================
 
 private:
@@ -86,8 +83,8 @@ private:
     int _fulltime_employees;
 
     QUrl _logo_url;
-    QByteArray _logo;
-    QByteArray _logo_full;
+    QUrl _logo;
+    QSize _logo_size;
 };
 
 #endif // SDK_INSTRUMENT_META_H

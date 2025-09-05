@@ -25,7 +25,7 @@ set (Qt_lib_gui   Qt6::Gui    Qt6::Widgets         Qt6::Svg)
 set (Qt_lib_quick Qt6::Qml    Qt6::QuickControls2  Qt6::Quick)
 set (Qt_libs ${Qt_lib_core} ${Qt_lib_gui} ${Qt_lib_quick})
 
-add_subdirectory(client)
+# add_subdirectory(client)
 add_subdirectory(sdk)
 # add_subdirectory(server)
 

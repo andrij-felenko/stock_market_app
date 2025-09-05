@@ -34,6 +34,8 @@ sdk::Isin& sdk::Isin::operator == (const Isin& other)
 sdk::Country sdk::Isin::country() const { return _country; }
 QByteArray   sdk::Isin::code()    const { return _code; }
 
+bool sdk::Isin::valid() const { return _code.size() == 10 && _country != sdk::Country::Unknown; }
+
 namespace sdk {
     QDataStream& operator << (QDataStream& s, const Isin& d) { return s << d._code << d._country; }
     QDataStream& operator >> (QDataStream& s,       Isin& d) { return s >> d._code >> d._country; }

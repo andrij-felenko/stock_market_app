@@ -1,14 +1,18 @@
 #include "instrument/meta.h"
 #include <QtCore/QBuffer>
 #include <QtGui/QImageReader>
+#include "instrument/isin.h"
+#include <QtCore/QFile>
+#include <QtCore/QStandardPaths>
+#include "api/filefetch.h"
 
-void sdk::Meta::cache_logo()
+FieldTOpt sdk::Meta::updateLogo(const Isin& isin, const QByteArray& data)
 {
-    if (_logo.isEmpty())
-        return;
+    if (data.isEmpty() || not isin.valid())
+        return std::nullopt;
 
-    QByteArray data = _logo_full;
-    QBuffer buffer(&data);
+    QBuffer buffer;
+    buffer.setData(data);
     buffer.open(QIODevice::ReadOnly);
     QImageReader reader(&buffer);
     QByteArray fmt = reader.format();
@@ -16,16 +20,22 @@ void sdk::Meta::cache_logo()
     QImage img = reader.read();
     buffer.close();
 
-    if (img.isNull()) {
-        load_logo();
-        return;
+    if (img.isNull())
+        return std::nullopt;
+
+    // save full file into
+    QFile file(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +
+               "/tickers_images/" + QString::fromLatin1(~isin));
+    if (file.open(QIODevice::Truncate | QIODevice::WriteOnly)){
+        file.write(data);
+        file.close();
     }
 
     // Масштабуємо до 64×64 зберігаючи пропорції
     QSize size = img.size();
     float coef = float(size.width()) / size.height();
     img = img.scaled(64 * coef, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    _logo_size = coef;
+    _logo_size = QSize(64 * coef, 64);
 
     // Кодуємо в потрібний формат
     QByteArray scaledData;
@@ -39,14 +49,25 @@ void sdk::Meta::cache_logo()
 
     // QML Image чудово розуміє data: URL
     QUrl temp = QStringLiteral("data:image/") + mime + QStringLiteral(";base64,") + base64;
-    if (temp == _logo_cache)
-        return;
+    if (temp == _logo)
+        return std::nullopt;
 
-    _logo_cache = temp;
-    emit logoChanged(logo());
+    return set_if(this, _logo, temp, sdk::Meta_logo);
 }
 
-void sdk::Meta::load_logo() const
+void sdk::Meta::loadLogo(const Isin& isin) const
 {
-    api::FileFetch::fetch_logo(static_cast <Instrument*> (parent())->primary_symbol(), _logo);
+    api::FileFetch::fetch_logo(~isin, _logo_url);
+}
+
+QByteArray sdk::Meta::logoFull(const Isin& isin)
+{
+    QByteArray ret;
+    QFile file(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) +
+               "/tickers_images/" + QString::fromLatin1(~isin));
+    if (file.open(QIODevice::ReadOnly)){
+        ret = file.readAll();
+        file.close();
+    }
+    return ret;
 }
