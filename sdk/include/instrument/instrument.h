@@ -154,14 +154,17 @@ double sales_ps_ttm = ttm_revenue / finance.capital().dilutedSharesTTM();
 #include "data.h"
 #include "isin.h"
 
-class sdk::Instrument
+class sdk::Instrument : Trackable
 {
 public:
     Instrument(const Isin& isin);
 
     Data* const data() const;
-    bool loaded() const;
     Data* create();
+
+    bool save() const;
+    bool loaded() const;
+    bool load();
 
     sdk::Instype type() const { return _type; }
     const Isin&   isin() const { return _isin; }
@@ -174,6 +177,11 @@ private:
     Isin _isin;
     QString _name;
     sdk::Instype _type;
+
+    friend QDataStream& operator << (QDataStream& s, const Instrument& d);
+    friend QDataStream& operator >> (QDataStream& s,       Instrument& d);
+
+    void _sort_tickers();
 };
 
 #endif // SDK_INSTRUMENT_H

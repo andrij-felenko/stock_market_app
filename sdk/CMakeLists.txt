@@ -38,14 +38,12 @@ set (sdk_h
     include/instrument/symbol.h
     include/instrument/isin.h
 
-    include/data/market.h
+    include/services/market.h
 
-    include/data/instrument.h
-
-    include/data/user.h
-    include/data/user/info.h
-    include/data/user/stock.h
-    include/data/user/transaction.h
+    include/account/account.h
+    include/account/info.h
+    include/stock/stock.h
+    include/stock/transaction.h
 
     include/geo/geo.h
 
@@ -94,14 +92,12 @@ set (sdk_cpp
     source/instrument/symbol.cpp
     source/instrument/isin.cpp
 
-    source/data/market.cpp
+    source/services/market.cpp
 
-    source/data/instrument.cpp
-
-    source/data/user.cpp
-    source/data/user/info.cpp
-    source/data/user/stock.cpp
-    source/data/user/transaction.cpp
+    source/account/account.cpp
+    source/account/info.cpp
+    source/stock/stock.cpp
+    source/stock/transaction.cpp
 
     source/geo/continent.cpp
     source/geo/country.cpp

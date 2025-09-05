@@ -9,9 +9,10 @@ namespace sdk { class Trackable; }
 class sdk::Trackable
 {
 public:
-    Trackable();
+    Trackable() : _last_updated(QDateTime()), locker(false) {}
 
     QDateTime _last_updated;
+    bool locker;
 };
 
 #endif // SDK_UTIL_TRACKABLE_H
