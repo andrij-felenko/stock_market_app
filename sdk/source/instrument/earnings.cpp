@@ -1,20 +1,9 @@
-#ifndef SDK_INSTRUMENT_QUARTEL_DATA_H
-#define SDK_INSTRUMENT_QUARTEL_DATA_H
+#include "instrument/earnings.h"
 
-#include "sdk.h" // IWYU pragma: keep
-#include "instrument/symbol.h"
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Earnings& d)
+    { return s << d._report_date << d._before_market << d._eps_actual << d._eps_estimate; }
 
-class sdk::QuartelData
-{
-public:
-    QuartelData(uint16_t year = QDate().year(), Quartel q = Quartel::Annual);
-
-    Quartel quartel() const;
-    uint16_t year() const;
-
-private:
-    uint16_t _year = QDate().year();
-    Quartel _quartel = Quartel::Annual;
-};
-
-#endif // SDK_INSTRUMENT_QUARTEL_DATE_H
+    QDataStream& operator >> (QDataStream& s, Earnings& d)
+    { return s >> d._report_date >> d._before_market >> d._eps_actual >> d._eps_estimate; }
+}

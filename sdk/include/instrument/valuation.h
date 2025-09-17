@@ -85,7 +85,8 @@ public:
     // }
 
 private:
-    //
+    friend QDataStream& operator << (QDataStream& s, const Valuation& d);
+    friend QDataStream& operator >> (QDataStream& s,       Valuation& d);
 };
 
 #endif // SDK_INSTRUMENT_VALUATION_H

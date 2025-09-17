@@ -1,32 +1,22 @@
 #include "api/api.h"
 
-api::API::API(QObject* parent) : QObject(parent), _lock(false), shift_ms(0)
-{
-    _replies.reserve(100);
-}
+using namespace api;
 
-void api::API::_handler_error(Request type, QNetworkReply::NetworkError error, QString name)
+api::API::API(QUrl url, QObject* parent) : QObject(parent), url(url), _lock(false), shift_ms(0)
 {
     //
 }
 
-void api::API::_add_reply(Request type, QNetworkReply* reply, const QString& symbol,
-                          std::function<QByteArray (QByteArray)> reader)
+bool API::_request(Request t, const QString& n,     StringMap k) { return _request(t, n, {}, k); }
+bool API::_request(Request t, const sdk::Symbol& s, StringMap k) { return _request(t, "", s, k); }
+void API::_handler_error(Reply* reply, QNetworkReply::NetworkError error) { /* */ }
+
+api::Reply* api::API::_add(api::Request type)
 {
-    Reply *r = new Reply(type, reply, symbol, this, reader);
-    _replies.push_back(r);
-
-    connect(r, &Reply::finish, this, &API::_finish);
-}
-
-void api::API::_send(Request type, QString name, StringMap keys)
-{
-    for (const auto& it : _queue)
-        if (it.type == type && it.name == name && it.keys == keys)
-            return;
-
-    _queue.emplace_back(type, name, keys);
-    _next();
+    Reply* ret = new Reply(type, this);
+    _queue.push_back(ret);
+    connect(ret, &Reply::done, this, [ret, this](){ this->_finish(ret->_reply); });
+    return ret;
 }
 
 void api::API::_finish(QNetworkReply* reply)
@@ -40,10 +30,10 @@ void api::API::_finish(QNetworkReply* reply)
         error = true;
     }
 
-    std::erase_if(_replies, [reply, this, error](Reply* r) {
+    std::erase_if(_queue, [reply, this, error](Reply* r) {
         if (r && r->_reply == reply) {
-            if (error) _handler_error (r->_type, reply->error(), r->_symbol);
-            else       _handler_answer(r->_type, r->_buffer, r->_symbol, r->_reader != nullptr);
+            if (error) _handler_error (r, reply->error());
+            else       _handler_answer(r);
             r->deleteLater();
             return true;
         }
@@ -61,17 +51,21 @@ void api::API::_finish(QNetworkReply* reply)
 bool api::API::_queue_contains(Request r) const
 {
     for (const auto& it : _queue)
-        if (it.type == r)
+        if (it->_type == r)
             return true;
     return false;
 }
 
 void api::API::_next()
 {
-    if (_queue.empty() || _lock)
+    if (_lock)
         return;
 
-    _lock = true;
-    _request(_queue[0].type, _queue[0].name, _queue[0].keys);
-    qDebug() << Q_FUNC_INFO << _queue.size();
+    for (auto& it : _queue){
+        if (it->available()){
+            _lock = true;
+            it->send();
+            return;
+        }
+    }
 }

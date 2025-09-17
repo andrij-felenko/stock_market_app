@@ -110,6 +110,9 @@ private:
     uint16_t _eps_revision_up_last_30d = 0;
     uint16_t _eps_revision_down_last_7d  = 0;
     uint16_t _eps_revision_down_last_30d = 0;
+
+    friend QDataStream& operator << (QDataStream& s, const Trend& d);
+    friend QDataStream& operator >> (QDataStream& s,       Trend& d);
 };
 
 #endif // SDK_INSTRUMENT_TREND_H

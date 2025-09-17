@@ -1,11 +1,14 @@
 #ifndef API_REPLY_H
 #define API_REPLY_H
 
+#include "instrument/symbol.h"
 #include <QtCore/QObject>
 #include <QtNetwork/QNetworkReply>
+#include <QtCore/QUrlQuery>
 
 namespace api {
     class Reply;
+    class API;
 
     enum class Request : uint8_t {
         Info,
@@ -23,6 +26,7 @@ namespace api {
 
         Tag,
         Text,
+        Logo,
     };
 }
 
@@ -30,25 +34,58 @@ class api::Reply : public QObject
 {
     Q_OBJECT
 public:
-    Reply(Request type, QNetworkReply* reply, const QString& symbol,
-          QObject*parent = nullptr,
-          std::function <QByteArray (QByteArray)> reader = nullptr);
+    Reply(Request type, API* parent);
+
+    api::Request type() const;
+    QUrl url() const;
+    QString suburl;
+
+    QNetworkRequest* request();
+    void addQueryItem(const QString& key, const QString& value);
+
+    QByteArray send_data;
+    const QByteArray& receive_data() const;
+
+    QString name;
+    sdk::Symbol symbol;
+    std::function <QByteArray (QByteArray)> reader = nullptr;
+
+    bool available();
+    void prepare();
+    void send();
+    void finish();
 
 signals:
-    void finish(QNetworkReply* reply);
+    void done();
 
 private:
-    QNetworkReply* _reply;
+    QNetworkReply* _reply = nullptr;
+    QNetworkRequest _request;
     api::Request _type;
-    QString _symbol;
-    std::function <QByteArray (QByteArray)> _reader;
+    API* api() const;
 
-    QByteArray _buffer;
+    QUrlQuery _query;
 
+    enum class Status {
+        Created,
+        InQueue,
+        Sended,
+        Finished
+    };
+    Status _status = Status::Created;
+
+    QByteArray _receive_data;
     void ready_read();
 
     friend class API;
     friend class Eod;
+    friend class FileFetch;
+    friend class OpenAI;
+    friend class AlphaVantage;
+    friend class Figi;
+    friend class Finnhub;
+    friend class TwelveData;
+    friend class MarketStack;
 };
 
 #endif

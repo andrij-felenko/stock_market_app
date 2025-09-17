@@ -7,10 +7,9 @@
 #include <QtGui/QGuiApplication>
 
 #include "loader.h"
-#include "data/market.h"
-#include "data/instrument.h"
+#include "services/market.h"
 
-api::FinnHub::FinnHub(QObject* parent) : API(parent)
+api::FinnHub::FinnHub(QObject* parent) : API(QUrl("https://finnhub.io/api/v1/"), parent)
 {
     shift_ms = 1000;
     // set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
@@ -30,49 +29,46 @@ api::FinnHub* api::FinnHub::instance()
 void api::FinnHub::update_info_by_tag(QString tag)
 {
     FinnHub* data = FinnHub::instance();
-    data->_send(Request::Info, tag);
+    data->_request(Request::Info, tag);
 }
 
-bool api::FinnHub::_request(Request type, QString name, StringMap keys)
+bool api::FinnHub::_request(Request type, const QString& name,
+                            const sdk::Symbol& tag, StringMap keys)
 {
-    QString base("https://finnhub.io/api/v1/");
+    Reply* post = _add(type);
 
-    QUrl url;
+    QString subname;
+    if (tag.us()) subname = tag.venue();
+    else          subname = tag.full();
+    if (subname.isEmpty())
+        return false;
+
     switch (type){
         case api::Request::MetricAll:
         case api::Request::MetricPrice:
         case api::Request::MetricMargin:
-        case api::Request::MetricValuation: url = base + "stock/metric"; break;
+        case api::Request::MetricValuation: post->suburl = "stock/metric"; break;
 
-        case api::Request::Info:     url = base + "stock/profile2"; break;
-        case api::Request::Peers:    url = base + "stock/peers";    break;
-        case api::Request::Quote:    url = base + "quote";          break;
-        case api::Request::Candle:   url = base + "stock/candle";   break;
-        case api::Request::Dividend: url = base + "stock/dividend"; break;
-        case api::Request::Earnings: url = base + "calendar/earnings";         break;
-        case api::Request::Reported: url = base + "stock/financials-reported"; break;
+        case api::Request::Info:     post->suburl = "stock/profile2"; break;
+        case api::Request::Peers:    post->suburl = "stock/peers";    break;
+        case api::Request::Quote:    post->suburl = "quote";          break;
+        case api::Request::Candle:   post->suburl = "stock/candle";   break;
+        case api::Request::Dividend: post->suburl = "stock/dividend"; break;
+        case api::Request::Earnings: post->suburl = "calendar/earnings";         break;
+        case api::Request::Reported: post->suburl = "stock/financials-reported"; break;
 
         case api::Request::Tag:
         default: return false;
     }
 
-    // as we work only with US marker, we nee to cut .US domen from tag
-    QString subname = name;
-    if (subname.right(3).toUpper() == ".US")
-        subname.chop(3);
-
-    if (subname.isEmpty())
-        return false;
-
-    QUrlQuery query;
-    query.addQueryItem("symbol", subname);
-    query.addQueryItem("token", settings::network()->key_fh());
+    post->addQueryItem("symbol", subname);
+    post->addQueryItem("token", settings::network()->key_fh());
 
     switch (type){
-        case api::Request::MetricAll:       query.addQueryItem("metric", "all");       break;
-        case api::Request::MetricPrice:     query.addQueryItem("metric", "price");     break;
-        case api::Request::MetricMargin:    query.addQueryItem("metric", "margin");    break;
-        case api::Request::MetricValuation: query.addQueryItem("metric", "valuation"); break;
+        case api::Request::MetricAll:       post->addQueryItem("metric", "all");       break;
+        case api::Request::MetricPrice:     post->addQueryItem("metric", "price");     break;
+        case api::Request::MetricMargin:    post->addQueryItem("metric", "margin");    break;
+        case api::Request::MetricValuation: post->addQueryItem("metric", "valuation"); break;
 
         // resolution REQUIRED
         // Supported resolution includes 1, 5, 15, 30, 60, D, W, M .
@@ -83,17 +79,17 @@ bool api::FinnHub::_request(Request type, QString name, StringMap keys)
                 !keys.contains("resolution")) // can be
                 return false;
 
-            query.addQueryItem("resolution", keys["resolution"]);
-            query.addQueryItem("from",       keys["from"]);
-            query.addQueryItem("to",         keys["to"]);
+            post->addQueryItem("resolution", keys["resolution"]);
+            post->addQueryItem("from",       keys["from"]);
+            post->addQueryItem("to",         keys["to"]);
             break;
         }
         case api::Request::Dividend: {
             if (!keys.contains("from") || !keys.contains("to"))
                 return false;
 
-            query.addQueryItem("from", keys["from"]);
-            query.addQueryItem("to",   keys["to"]);
+            post->addQueryItem("from", keys["from"]);
+            post->addQueryItem("to",   keys["to"]);
             break;
         }
         case api::Request::Info:     break;
@@ -104,49 +100,44 @@ bool api::FinnHub::_request(Request type, QString name, StringMap keys)
         default:;
     }
 
-    url.setQuery(query);
-
-    QNetworkRequest request(url);
-    API::_add_reply(type, _netmanager.get(request), name);
-    qDebug() << "request:" << url;
+    post->name = name;
+    post->prepare();
     return true;
 }
 
-void api::FinnHub::_handler_answer(Request type, QByteArray data, QString name, bool stream)
+void api::FinnHub::_handler_answer(Reply* reply)
 {
     qDebug() << "handler answer";
-    qDebug() << data;
+    qDebug() << reply->receive_data();
     // QByteArray response = m_reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    qDebug() << name << "return data" << doc;
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    qDebug() << reply->name << reply->symbol << "return data" << doc;
     // qDebug() << response;
 
-    auto finded = Nexus.market()->find(name);
-    if (!finded.has_value()){
-        // Nexus.market()->add(name);
-        finded = Nexus.market()->find(name);
-        if (!finded.has_value())
-            return;
+    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    if (ticker.ensure() == false){
+        qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
+        return;
     }
 
-    data::Ticker* t = finded.value();
-    data::Instrument* in = t->instrument();
+    sdk::Ticker* t = ticker.ticker;
+    sdk::Instrument* in = ticker.instrument;
     QJsonObject obj = doc.object();
     if (obj.isEmpty())
         return;
 
-    switch (type){
+    switch (reply->type()){
         case api::Request::Info: {
             // ticker->_currency = currency::Name::to_enum(obj.value("currency").toString());
-            t->symbol().set_venue(obj.value("exchange").toString());
-            in->identity()->setTitle(obj.value("name").toString());
-            in->identity()->setLogo(obj.value("logo").toString());
-            in->identity()->setCountry   (obj.value("country").toString());
-            in->identity()->setIndustry  (obj.value("finnhubIndustry").toString());
-            in->valuation()->setMarketCapitalization(obj.value("marketCapitalization").toDouble() * 1'000'000);
+            // t->symbol().set_venue(obj.value("exchange").toString());
+            // in->identity()->setTitle(obj.value("name").toString());
+            // in->identity()->setLogo(obj.value("logo").toString());
+            // in->identity()->setCountry   (obj.value("country").toString());
+            // in->identity()->setIndustry  (obj.value("finnhubIndustry").toString());
+            // in->valuation()->setMarketCapitalization(obj.value("marketCapitalization").toDouble() * 1'000'000);
 
-            in->identity()->setIpo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
-            in->identity()->setUrl(obj.value("weburl").toString());
+            // in->identity()->setIpo(QDate::fromString(obj.value("ipo").toString(), "YYYY-MM-DD"));
+            // in->identity()->setUrl(obj.value("weburl").toString());
             t->save();
             // ticker->count_akcij = obj.value("sharedOutstanding").toDouble() * 1'000'000;
             break;

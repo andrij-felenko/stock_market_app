@@ -20,17 +20,13 @@ public:
 
     static void update_info_by_tag(QString tag);
 
-signals:
-    void error_occurred(const QString& message);
-
 private:
     explicit FinnHub(QObject* parent = nullptr);
+    using api::API::_request;
 
-    // QString _api_key;
-
-    virtual bool _request(Request type, QString name, StringMap keys = {}) override;
-    virtual void _handler_answer(Request type, QByteArray data,
-                                 QString name, bool stream = false) override;
+    virtual bool _request(Request type, const QString& name, const sdk::Symbol& tag,
+                          StringMap keys = {}) override;
+    virtual void _handler_answer(Reply* reply) override;
 };
 
 #endif

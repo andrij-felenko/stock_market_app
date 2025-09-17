@@ -1,20 +1,25 @@
 #include "api/filefetch.h"
 #include "loader.h"
-#include "data/market.h"
+#include "services/market.h"
 #include <QNetworkRequest>
 #include <QFile>
 #include <QDir>
 #include <QStandardPaths>
+#include "instrument/isin.h"
 
-api::FileFetch::FileFetch(QObject* parent) : API(parent) {}
+api::FileFetch::FileFetch(QObject* parent) : API(QUrl(), parent) {}
 
-api::FileFetch* api::FileFetch::instance() {
+api::FileFetch* api::FileFetch::instance()
+{
     static FileFetch* self = nullptr;
     if (!self) self = new FileFetch(qApp);
     return self;
 }
 
-bool api::FileFetch::_request(Request type, QString name, StringMap keys) {
+
+bool api::FileFetch::_request(Request type, const QString& name,
+                              const sdk::Symbol& symbol, StringMap keys)
+{
     qDebug() << Q_FUNC_INFO << name;
     if (type != Request::Text) return false;
     const auto urlStr = keys.value("url");
@@ -23,36 +28,40 @@ bool api::FileFetch::_request(Request type, QString name, StringMap keys) {
     QUrl url(urlStr);
     if (!url.isValid()) return false;
 
-    QNetworkRequest req(url);
-    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
-                     QNetworkRequest::NoLessSafeRedirectPolicy);
-    req.setRawHeader("User-Agent", "StockManager/1.0");
-    req.setRawHeader("Accept", "*/*");
-
-    _add_reply(type, _netmanager.get(req), name);
+    Reply* request = _add(type);
+    request->name = name;
+    request->suburl = url.toString();
+    request->_request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                                   QNetworkRequest::NoLessSafeRedirectPolicy);
+    request->_request.setRawHeader("User-Agent", "StockManager/1.0");
+    request->_request.setRawHeader("Accept", "*/*");
+    request->prepare();
     return true;
 }
 
-void api::FileFetch::_handler_answer(Request type, QByteArray data, QString name, bool) {
-    // знайти тикер за tag (так само, як у AlphaVantage)
-    qDebug() << Q_FUNC_INFO << name;
-    auto found = Nexus.market()->find(name);
-    if (!found.has_value()) {
-        found = Nexus.market()->find(name);
-        if (!found.has_value()) return;
-    }
 
-    data::Ticker* t = found.value();
-    t->instrument()->identity()->setLogoBytes(data);
+void api::FileFetch::_handler_answer(Reply* reply)
+{
+    // знайти тикер за tag (так само, як у AlphaVantage)
+    qDebug() << Q_FUNC_INFO << reply->symbol << reply->name;
+    auto in = Nexus.market()->find_instrument(reply->name.toLatin1());
+    if (in == nullptr)
+        return;
+
+    in->create();
+    in->data()->meta.updateLogo(sdk::Isin(reply->name.toLatin1()),
+                                                  reply->receive_data());
 
     // опційне кешування на диск
     // save_cache(name, data);
 
-    t->instrument()->save();
-    t->save();
+    in->save();
+    in->release();
 }
 
-void api::FileFetch::save_cache(const QString& tag, const QByteArray& bytes, const QString& ext) {
+
+void api::FileFetch::save_cache(const QString& tag, const QByteArray& bytes, const QString& ext)
+{
     // кладемо поряд із .tdsm у AppDataLocation/stocks/logos
     QString root = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir().mkpath(root + "/stocks/logos");

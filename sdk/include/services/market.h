@@ -6,39 +6,85 @@
 #include <QtCore/QUrl>
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
+#include <vector>
 
+#include "instrument/instrument.h"
 #include "instrument/ticker.h"
 #include "instrument/meta.h"
+#include "api/eod.h"
 
+class SDK;
 namespace sdk   { class Loader; }
-namespace data  { class Market; }
 namespace model { class SearchTag; }
 
-class data::Market : public QObject
+namespace api {
+    class AlphaVantage;
+    class Figi;
+    class FinnHub;
+    class TwelveData;
+    class MarketStack;
+}
+
+class sdk::Market : public QObject
 {
     Q_OBJECT
-public:
-    std::vector <Instrument*> search_by(QString str) const;
-    std::optional <Ticker*> find(ticker::Symbol tag);
-    Instrument* const ensure(ticker::Symbol tag);
-    Instrument* const ensure(const data::Meta& meta, ticker::Symbol symbol);
+public:    
+    class TickerPtr {
+    public:
+        TickerPtr(sdk::Symbol symbol);
 
-    void detect_main_ticker();
+        sdk::Symbol symbol() { return _symbol; }
+        Ticker* ticker = nullptr;
+        Instrument* instrument = nullptr;
 
-    void load_meta();
-    void save_meta() const;
-    bool empty() const;
+        Ticker* operator->() const noexcept { return ticker; }
+        bool found() const { return ticker != nullptr; }
+        bool exist() const { return instrument != nullptr; }
 
-signals:
-    void metaLoaded();
+    private:
+        bool ensure(){
+            if (found() || not exist()) return false;
+            for (auto& it : instrument->create()->listings())
+                if (it.symbol() == _symbol){
+                    ticker = &it;
+                    return true;
+                }
+            return false;
+        }
 
-private:
+        friend class api::Eod;
+        friend class api::AlphaVantage;
+        friend class api::Figi;
+        friend class api::FinnHub;
+        friend class api::TwelveData;
+        friend class api::MarketStack;
+
+    private:
+        sdk::Symbol _symbol;
+    };
+
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;
 
-    std::vector <Instrument*>  _instruments;
+    TickerPtr   find_ticker    (const sdk::Symbol& tag);
+    Instrument* find_instrument(const sdk::Isin&  isin);
 
-    friend class sdk::Loader;
+    void save_meta() const;
+    bool empty() const;
+
+private:
+    uint16_t _last_index = 0;
+
+    std::vector <Instrument> _instruments;
+
+    void load_meta();
+
+    friend class ::SDK;
+
+    TickerPtr add_ticker(const sdk::Symbol& tag, const Isin& isin,
+                         const QString& name, Instype type);
+
+    friend void api::Eod::_handle_exchange(api::Reply* reply);
 };
 
 #endif

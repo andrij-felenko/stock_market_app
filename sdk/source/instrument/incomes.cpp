@@ -7,10 +7,6 @@ QDate Incomes::filingDate() const { return _filing_date; }
 FieldTOpt Incomes::setFilingDate(const QDate& date)
 { return sdk::set_if(this, _filing_date, date, sdk::Fundam_balance); }
 
-sdk::Currency Incomes::currency() const { return _currency; }
-FieldTOpt Incomes::setCurrency(sdk::Currency currency)
-{ return ::sdk::set_if(this, _currency, currency, sdk::Fundam_balance); }
-
 
 int64_t Incomes::to  (int32_t d) const { return int64_t(d) * sdk::currency::scale(_currency); }
 int32_t Incomes::from(int64_t d) const { return         d  / sdk::currency::scale(_currency); }
@@ -142,3 +138,61 @@ int64_t Incomes::accountingEffects() const { return to(_acctg_effects); }
 FieldTOpt Incomes::setAccountingEffects(int64_t v)
 { return set_if(_acctg_effects, from(v)); }
 // ================================================================================================
+
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Incomes& d){
+        return s << d._filing_date
+                 << d._total_revenue
+                 << d._cost_of_revenue
+
+                 << d._research_development
+                 << d._selling_general_admin
+                 << d._selling_marketing_expenses
+                 << d._other_operating_expenses
+
+                 << d._depr_amortization
+                 << d._reconciled_depreciation
+
+                 << d._interest_income
+                 << d._interest_expense
+                 << d._other_income_expense_net
+
+                 << d._income_tax_expense
+
+                 << d._net_income_cont_ops
+                 << d._discontinued_ops
+                 << d._minority_interest
+
+                 << d._net_income
+                 << d._preferred_adj
+                 << d._acctg_effects;
+    }
+
+    QDataStream& operator >> (QDataStream& s, Incomes& d){
+        return s >> d._filing_date
+                 >> d._total_revenue
+                 >> d._cost_of_revenue
+
+                 >> d._research_development
+                 >> d._selling_general_admin
+                 >> d._selling_marketing_expenses
+                 >> d._other_operating_expenses
+
+                 >> d._depr_amortization
+                 >> d._reconciled_depreciation
+
+                 >> d._interest_income
+                 >> d._interest_expense
+                 >> d._other_income_expense_net
+
+                 >> d._income_tax_expense
+
+                 >> d._net_income_cont_ops
+                 >> d._discontinued_ops
+                 >> d._minority_interest
+
+                 >> d._net_income
+                 >> d._preferred_adj
+                 >> d._acctg_effects;
+    }
+}

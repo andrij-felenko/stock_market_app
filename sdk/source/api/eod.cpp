@@ -2,13 +2,69 @@
 #include <QtCore/QDebug>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QJsonArray>
-#include "data/instrument.h"
-#include "data/market.h"
+#include "instrument/instrument.h"
 #include "loader.h"
-#include "api/alphavantage.h"
-#include "data/instrument/meta.h"
 
-api::Eod::Eod(QObject* parent) : API(parent)
+namespace json {
+    std::optional <QString> string(const QJsonObject& obj, const char* key) {
+        auto it = obj.find(key);
+        if (it == obj.end() || !it->isString()) return std::nullopt;
+        const QString v = it->toString().trimmed();
+        return v.isEmpty() ? std::nullopt : std::optional<QString>(v);
+    };
+
+    std::optional <bool> boolean(const QJsonObject& obj, const char* key) {
+        auto it = obj.find(key);
+        if (it == obj.end()) return std::nullopt;
+        if (it->isBool()) return it->toBool();
+        if (it->isString()) {
+            const auto v = it->toString().trimmed().toLower();
+            if (v == "true" || v == "1")  return true;
+            if (v == "false"|| v == "0")  return false;
+        }
+        return std::nullopt;
+    };
+
+    std::optional <QDate> date(const QJsonObject& obj, const char* key,
+                              const char* fmt = "yyyy-MM-dd") {
+        auto it = obj.find(key);
+        if (it == obj.end() || !it->isString()) return std::nullopt;
+        const QDate dt = QDate::fromString(it->toString(), fmt);
+        return dt.isValid() ? std::optional<QDate>(dt) : std::nullopt;
+    };
+
+    std::optional <QJsonObject> object(const QJsonObject& obj, const char* key) {
+        auto it = obj.find(key);
+        return (it != obj.end() && it->isObject()) ? std::optional <QJsonObject>(it->toObject())
+                                                   : std::nullopt;
+    };
+
+    std::optional <int64_t> integer(const QJsonObject& obj, const char* key) {
+        auto it = obj.find(key);
+        if (it == obj.end()) return std::nullopt;
+        if (it->isDouble()) return it->toInteger();
+        if (it->isString()) {
+            bool ok = false;
+            int v = it->toString().remove(',').toLongLong(&ok);
+            if (ok) return v;
+        }
+        return std::nullopt;
+    };
+
+    std::optional <double> real(const QJsonObject& obj, const char* key) {
+        auto it = obj.find(key);
+        if (it == obj.end()) return std::nullopt;
+        if (it->isDouble()) return it->toDouble();
+        if (it->isString()) {
+            bool ok = false;
+            double d = it->toString().toDouble(&ok);
+            if (ok) return d;
+        }
+        return std::nullopt;
+    };
+}
+
+api::Eod::Eod(QObject* parent) : API(QUrl("https://eodhd.com/api"), parent)
 {
     //
 }
@@ -25,7 +81,7 @@ api::Eod* api::Eod::instance()
 void api::Eod::get_all_tag(QString exchange)
 {
     Eod* data = Eod::instance();
-    data->_send(Request::Exchange, exchange);
+    data->_request(Request::Exchange, exchange);
 }
 
 void api::Eod::get_all_exchange_tag()
@@ -33,16 +89,15 @@ void api::Eod::get_all_exchange_tag()
     Eod* data = Eod::instance();
     QStringList list = sdk::exchange::all_exchange_venue();
     for (const auto& it : std::as_const(list))
-        data->_send(Request::Exchange, it);
+        data->_request(Request::Exchange, it);
 }
 
-void api::Eod::fundamental(data::ticker::Symbol tag)
+void api::Eod::fundamental(const sdk::Symbol& tag)
 {
-    api::StringMap params = { { "tag", tag.full() } };
-    Eod::instance()->_send(Request::Info, tag.full_venue());
+    Eod::instance()->_request(Request::Info, tag);
 }
 
-void api::Eod::historical_year(data::ticker::Symbol tag, int8_t year, char period)
+void api::Eod::historical_year(const sdk::Symbol& tag, int8_t year, char period)
 {
     qDebug() << "EOD ADD BY TAG" << tag;
     if (year >= 30 || year < 1)
@@ -56,15 +111,14 @@ void api::Eod::historical_year(data::ticker::Symbol tag, int8_t year, char perio
         { "to", date.toString("yyyy-MM-dd") },
         { "tag", tag.full() }
     };
-    Eod::instance()->_send(Request::Candle, tag.full_venue(), params);
+    Eod::instance()->_request(Request::Candle, tag, params);
 }
 
-bool api::Eod::_request(Request type, QString name, StringMap keys)
+bool api::Eod::_request(Request type, const QString& name,
+                        const sdk::Symbol& symbol, StringMap keys)
 {
-    QString base("https://eodhd.com/api");
-    // as we work only with US marker, we nee to cut .US domen from tag
+    Reply* post = _add(type);
 
-    QUrl url;
     switch (type){
         case api::Request::Text:
 
@@ -78,72 +132,62 @@ bool api::Eod::_request(Request type, QString name, StringMap keys)
         case api::Request::Tag:
         case api::Request::Dividend:
         case api::Request::Earnings:
+        case api::Request::Logo:
         case api::Request::Reported: return false;
-        case api::Request::Exchange: url = base + "/exchange-symbol-list/" + name; break;
-        case api::Request::Candle: url = base + "/eod/" + keys["tag"]; break;
-        case api::Request::Info: url = base + "/fundamentals/" + keys["tag"]; break;
+        case api::Request::Exchange: post->suburl = "/exchange-symbol-list/" + name;   break;
+        case api::Request::Candle:   post->suburl = "/eod/" + keys["tag"];             break;
+        case api::Request::Info:     post->suburl = "/fundamentals/" + symbol.full();  break;
     }
-
-    QUrlQuery query;
 
     switch (type){
         case api::Request::Exchange:
         case api::Request::Info:
         {
-            query.addQueryItem("api_token", settings::network()->key_eod());
-            query.addQueryItem("fmt", "json");
+            post->addQueryItem("api_token", settings::network()->key_eod());
+            post->addQueryItem("fmt", "json");
             break;
         }
         case api::Request::Candle: {
             // https://eodhd.com/api/eod/MCD.US?api_token=683ebb8bc59b60.11043967&fmt=json
-            query.addQueryItem("api_token", settings::network()->key_eod());
-            query.addQueryItem("period", keys.value("period", "d"));
-            query.addQueryItem("fmt", "json");
-            query.addQueryItem("from", keys.value("from"));
-            query.addQueryItem("to",   keys.value("to"));
+            post->addQueryItem("api_token", settings::network()->key_eod());
+            post->addQueryItem("period", keys.value("period", "d"));
+            post->addQueryItem("fmt", "json");
+            post->addQueryItem("from", keys.value("from"));
+            post->addQueryItem("to",   keys.value("to"));
             break;
         }
         default:;
     }
 
-    url.setQuery(query);
+    switch (type){
+        case api::Request::Exchange: post->name = name; break;
+        case api::Request::Candle:
+        case api::Request::Info: post->symbol = symbol; break;
+        default:;
+    }
 
-    QNetworkRequest request(url);
-    API::_add_reply(type, _netmanager.get(request), name);
-    qDebug() << "request:" << url << _replies.size();
+    post->prepare();
     return true;
 }
 
-void api::Eod::_handler_answer(Request type, QByteArray data, QString name, bool stream)
+void api::Eod::_handler_answer(Reply* reply)
 {
     qDebug() << "handler answer eod";
-    qDebug() << data;
-    // QByteArray response = m_reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    // qDebug() << name << "return data" << doc;
-    // qDebug() << response;
 
-    switch (type){
-    case api::Request::Exchange: {
-        _handle_exchange(doc, name);
-        break;
-    }
-    case api::Request::Candle: {
-        _handle_candle(doc, name);
-        break;
-    }
-    case api::Request::Info: {
-        _handle_info(doc, name);
-        break;
-    }
-    default:;
+    switch (reply->type()){
+        case api::Request::Exchange: { _handle_exchange(reply); break; }
+        case api::Request::Candle:   { _handle_candle  (reply); break; }
+        case api::Request::Info:     { _handle_info    (reply); break; }
+        default:;
     }
 }
 
-void api::Eod::_handler_error(Request type, QNetworkReply::NetworkError error, QString name)
+void api::Eod::_handler_error(Reply* reply, QNetworkReply::NetworkError error)
 {
-    qDebug() << Q_FUNC_INFO << static_cast <uint32_t> (type) << error << name;
-    switch (type){
+    qDebug() << Q_FUNC_INFO << static_cast <uint32_t> (reply->type()) << error
+             << reply->name << reply->symbol;
+
+    switch (reply->type()){
     case api::Request::Exchange: {
         break;
     }
@@ -152,27 +196,22 @@ void api::Eod::_handler_error(Request type, QNetworkReply::NetworkError error, Q
     }
     case api::Request::Info: {
         if (error == QNetworkReply::ContentNotFoundError){
-            qDebug() << "Info" << name;
-            auto finded = Nexus.market()->find(name);
-            if (!finded.has_value()) {
-                // Nexus.market()->add(name);
-                finded = Nexus.market()->find(name);
-                if (!finded.has_value()){
-                    qDebug() << "return ffg";
-                    return;
-                }
+            qDebug() << "Info";
+            auto ticker = Nexus.market()->find_ticker(reply->symbol);
+            if (not ticker.exist()) {
+                qDebug() << reply->symbol << "in info eod not found";
+                return;
             }
-            data::Ticker* ticker = finded.value();
-            data::Instrument* in = ticker->instrument();
+            sdk::Instrument* in = ticker->instrument();
             bool after = false;
             for (const auto& it : in->tickers()){
                 qDebug() << after << it;
                 if (after){
-                    fundamental(it.full());
+                    fundamental(it);
                     break;
                 }
                 else {
-                    if (it.full() == name)
+                    if (it == reply->symbol)
                         after = true;
                 }
             }
@@ -183,41 +222,37 @@ void api::Eod::_handler_error(Request type, QNetworkReply::NetworkError error, Q
     }
 }
 
-void api::Eod::_handle_exchange(const QJsonDocument& json, QString name)
+void api::Eod::_handle_exchange(Reply* reply)
 {
-    auto market = sdk::Loader::instance()->market();
-    QJsonArray root = json.array();
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    auto market = Nexus.market();
+    QJsonArray root = doc.array();
     for (const auto& it : std::as_const(root)){
         QJsonObject obj = it.toObject();
-        data::Meta meta;
-        meta.set_isin(obj["Isin"].toString().toLatin1());
-        meta.set_title(obj["Name"].toString());
-        meta.set_type(sdk::instype::from_string(obj["Type"].toString()));
-        data::ticker::Symbol symbol(obj["Code"].toString(), name);
-
-        Nexus.market()->ensure(meta, symbol);
+        Nexus.market()->add_ticker(sdk::Symbol(obj["Code"].toString(), reply->name),
+                                   obj["Isin"].toString().toLatin1(),
+                                   obj["Name"].toString(),
+                                   sdk::instype::from_string(obj["Type"].toString()));
     }
 
     // handle exchange queue list
-    if (not _queue_contains(Request::Exchange))
-        Nexus.market()->detect_main_ticker();
+    // TODO found main ticker function need to call
+    // if (not _queue_contains(Request::Exchange))
+        // Nexus.market()->detect_main_ticker();
 
     market->save_meta();
 }
 
-void api::Eod::_handle_candle(const QJsonDocument& json, QString name)
+void api::Eod::_handle_candle(Reply* reply)
 {
-    auto finded = Nexus.market()->find(name);
-    if (!finded.has_value()) {
-        // Nexus.market()->add(name);
-        finded = Nexus.market()->find(name);
-        if (!finded.has_value())
-            return;
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    if (ticker.ensure() == false){
+        qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
+        return;
     }
 
-    data::Ticker* ticker = finded.value();
-
-    QJsonArray array = json.array();
+    QJsonArray array = doc.array();
     for (const QJsonValue& v : std::as_const(array)){
         QJsonObject obj = v.toObject();
         QString dtime   = obj[  "date"].toString();
@@ -228,25 +263,20 @@ void api::Eod::_handle_candle(const QJsonDocument& json, QString name)
         uint64_t volume = obj["volume"].toDouble();
 
         QDate date = QDate::fromString(dtime, "yyyy-MM-dd");
-        ticker->quotes()->setData(date, open, close, high, low, volume);
+        ticker->quotes.setData(date, open, close, high, low, volume);
     }
 
-    ticker->quotes()->recalculate();
-    qDebug() << "save 1" << Q_FUNC_INFO << ticker->quotes()->raw_points().size() << ticker << name;
     ticker->save();
-    qDebug() << "save 2" << Q_FUNC_INFO << ticker->quotes()->raw_points().size() << ticker << name;
 }
 
-void api::Eod::_handle_info(const QJsonDocument& json, QString name)
+void api::Eod::_handle_info(Reply* reply)
 {
-    qDebug() << Q_FUNC_INFO << json;
-    auto finded = Nexus.market()->find(name);
-    if (!finded.has_value()) {
-        finded = Nexus.market()->find(name);
-        if (!finded.has_value()){
-            qDebug() << "not found";
-            return;
-        }
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    qDebug() << Q_FUNC_INFO;
+    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    if (ticker.ensure() == false) {
+        qDebug() << reply->symbol << "not found";
+        return;
     }
 
     // helpers ---------------------------------------------------------
@@ -265,225 +295,513 @@ void api::Eod::_handle_info(const QJsonDocument& json, QString name)
         return QDate::fromString(v.toString(), "yyyy-MM-dd");
     };
 
-    // Pick MRQ object from Financials.Balance_Sheet.quarterly (supports object-of-objects or array-of-objs)
-    auto pick_mrq = [&](const QJsonObject& finance)->QJsonObject {
-        const QJsonObject bs = finance.value("Balance_Sheet").toObject();
-        const QJsonValue quarterly = bs.value("quarterly");
-        if (quarterly.isObject()) {
-            QJsonObject q = quarterly.toObject();
-            QString best;
-            for (auto it=q.begin(); it!=q.end(); ++it) {
-                if (best.isEmpty() || it.key() > best) best = it.key();
-            }
-            return q.value(best).toObject();
-        }
-        if (quarterly.isArray()) {
-            QJsonArray arr = quarterly.toArray();
-            QString bestDate; QJsonObject bestObj;
-            for (const QJsonValue& v : std::as_const(arr)) {
-                QJsonObject o = v.toObject();
-                const QString d = o.value("date").toString();
-                if (bestDate.isEmpty() || d > bestDate) { bestDate=d; bestObj=o; }
-            }
-            return bestObj;
-        }
-        return {};
+    auto jstr = [](const QJsonValue& v) -> QString {
+        return v.isString() ? v.toString() : QString();
     };
 
-    data::Ticker* ticker = finded.value();
-    data::Instrument* in = ticker->instrument();
-    QJsonObject root = json.object();
+    sdk::Instrument* in = ticker->instrument();
+    QJsonObject root = doc.object();
 
-    QJsonObject general  = root.value("General").toObject();
-    QJsonObject high     = root.value("Highlights").toObject();
-    QJsonObject valuation= root.value("Valuation").toObject();
-    QJsonObject shares   = root.value("SharesStats").toObject();
-    QJsonObject tech     = root.value("Technicals").toObject();
-    QJsonObject finance  = root.value("Financials").toObject();
-    QJsonObject splits   = root.value("SplitsDividends").toObject();
+    sdk::Legal&           legal    = in->data()->legal;
+    sdk::Meta&            meta     = in->data()->meta;
+    sdk::Finance&         finance  = in->data()->finance;
+    sdk::Fundamental&     fund     = finance.fundamental;
+    sdk::Estimate&        est      = finance.estimates;
+    sdk::Capital&         capital  = finance.capital;
+    sdk::Dividend&        dividend = ticker->dividend;
+    sdk::Quotes&          quotes   = ticker->quotes;
+    sdk::ShortInterest&   shorts   = ticker->short_interst;
+    sdk::CorporateAction& c_action = ticker->corp_action;
+    sdk::Valuation&       val      = ticker->valuation;
 
-    qDebug() << "GENERAL RRRRRRRRRR" << general;
-    in->identity()->setIsin   (general["ISIN"].toString());
-    in->identity()->setDescrip(general["Description"].toString());
-    in->identity()->setLogo   ("https://eodhd.com" + general["LogoURL"].toString());
-    in->identity()->setUrl    (general["WebURL"].toString());
-    in->updatePrimarySymbol    (general["PrimaryTicker"].toString());
-    // in->identity()->setCountry(general["CountryName"].toString());
-    in->identity()->setIndustry(general["Industry"].toString());
-    in->identity()->setSector(general["Sector"].toString());
-    in->identity()->setHeadquart(general["Address"].toString());
-    // fix country
-    sdk::Country c_by_primary = sdk::exchange::country(in->primary_symbol(true).exchange());
-    if (in->identity()->country() == c_by_primary ||
-        in->identity()->country() == sdk::Country::Unknown)
-        return;
-    if (sdk::exchange::exist(in->identity()->country())){
-        in->identity()->setCountry(c_by_primary);
-    }
+    using namespace json;
 
-    QJsonObject mrq = pick_mrq(finance);
+    // ----------------------- General ------------------------------------------------------------
+    if (auto g = json::object(root, "General")){
+        // Legal
+        if (auto v = json::string(*g, "OpenFigi"))             legal.setOpenFigi(*v);
+        if (auto v = json::string(*g, "LEI"))                  legal.setLei(*v);
+        if (auto v = json::string(*g, "CIK"))                  legal.setCik(*v);
+        if (auto v = json::string(*g, "CUSIP"))                legal.setCusip(*v);
+        if (auto v = json::string(*g, "EmployerIdNumber"))     legal.setEmployerIdNumber(*v);
+        if (auto v = json::date   (*g, "IPODate"))             legal.setIpo(*v);
+        if (auto v = json::boolean(*g, "IsDelisted"))          legal.setDelisted(*v);
+        if (auto v = json::string (*g, "Address"))             legal.setAddress(*v);
+        if (auto v = json::object (*g, "AddressData"))         legal.setAddress(*v);
 
-    // ------- VALUATION -------
-    in->valuation()->setMarketCapitalization( jnum(high.value("MarketCapitalization")) );
-    in->valuation()->setSharesOutstanding(    jnum(shares.value("SharesOutstanding")) );
-    in->valuation()->setBookValuePsMrq(       jnum(high.value("BookValue")) );
-    in->valuation()->setEnterpriseValue(      jnum(valuation.value("EnterpriseValue")) );
+        // FiscalYearEnd: мапимо англ. назву місяця у sdk::Month локально, без дод. функцій
+        if (auto v = json::string(*g, "FiscalYearEnd"))
+            legal.setFiscalYearEnd(sdk::month::from_string(*v));
 
-    // EPS TTM (prefer DilutedEpsTTM, else EarningsShare)
-    {
-        double eps_ttm = jnum(high.value("DilutedEpsTTM"));
-        if (std::isnan(eps_ttm)) eps_ttm = jnum(high.value("EarningsShare"));
-        in->valuation()->setEarningsPerShareTtm(eps_ttm);
-    }
+        // Meta
+        if (auto v = json::string(*g, "Sector"))               meta.setSector(*v);
+        if (auto v = json::string(*g, "Industry"))             meta.setIndustry(*v);
+        if (auto v = json::string(*g, "GicSector"))            meta.setGicSector(*v);
+        if (auto v = json::string(*g, "GicGroup"))             meta.setGicGroup(*v);
+        if (auto v = json::string(*g, "GicIndustry"))          meta.setGicIndustry(*v);
+        if (auto v = json::string(*g, "GicSubIndustry"))       meta.setGicSubIndustry(*v);
+        if (auto v = json::string(*g, "HomeCategory"))         meta.setHomeCategory(*v);
+        if (auto v = json::string(*g, "Description"))          meta.setDescription(*v);
+        if (auto v = json::object(*g,  "Officers"))            meta.setOfficers(*v);
+        if (auto v = json::string(*g, "Phone"))                meta.setPhoneNumber(*v);
+        if (auto v = json::string(*g, "WebURL"))               meta.setWebsite(QUrl(*v));
+        if (auto v = json::string(*g, "LogoURL"))              meta.setLogoLink(QUrl(*v));
+        if (auto v = json::integer(*g,"FullTimeEmployees"))    meta.setFulltimeEmployees(*v);
 
-    in->valuation()->setPriceToEarningsFwd(   jnum(valuation.value("ForwardPE")) );
-    in->valuation()->setPriceToEarningsTtm(   jnum(high.value("PERatio")) );             // fallback: valuation.TrailingPE
-    in->valuation()->setPriceToBookMrq(       jnum(valuation.value("PriceBookMRQ")) );
-    in->valuation()->setPriceToSalesTtm(      jnum(valuation.value("PriceSalesTTM")) );
-    in->valuation()->setEvToSalesTtm(         jnum(valuation.value("EnterpriseValueRevenue")) );
-    in->valuation()->setEvToEbitda(           jnum(valuation.value("EnterpriseValueEbitda")) );
-
-    // ------- PROFITABILITY -------
-    in->profitability()->setRoa( jnum(high.value("ReturnOnAssetsTTM")) );
-    in->profitability()->setRoe( jnum(high.value("ReturnOnEquityTTM")) );
-
-    // Gross margin: якщо немає поля — порахувати TTM
-    {
-        double gross_margin = std::numeric_limits<double>::quiet_NaN();
-        // деякі джерела мають Highlights.GrossMarginTTM — якщо ні, рахуємо самі
-        if (high.contains("GrossMarginTTM"))
-            gross_margin = jnum(high.value("GrossMarginTTM"));
-        else {
-            const double gp  = jnum(high.value("GrossProfitTTM"));
-            const double rev = jnum(high.value("RevenueTTM"));
-            if (!std::isnan(gp) && !std::isnan(rev) && rev!=0.0)
-                gross_margin = gp / rev;
+        // Listings (додаткові лістинги)
+        if (auto Ls = json::object(*g, "Listings")) {
+            for (auto it = Ls->begin(); it != Ls->end(); ++it) {
+                if (!it->isObject()) continue;
+                const QJsonObject li = it->toObject();
+                auto code = json::string(li, "Code");
+                auto ven  = json::string(li, "Exchange");
+                if (!code || !ven) continue;
+                in->data()->addTicker(sdk::Symbol(*code, *ven));
+            }
         }
-        in->profitability()->setMarginGros(gross_margin);
+
+        // NOTE Поля без прямих сеттерів тут пропускаємо свідомо:
+        // ISIN / Name / Type / Code / Exchange / Currency* / PrimaryTicker / UpdatedAt
     }
+    // ============================================================================================
 
-    in->profitability()->setMarginOper(          jnum(high.value("OperatingMarginTTM")) );
+    // ----------------------- Highlights ---------------------------------------------------------
+    if (auto h = json::object(root, "Highlights")) {
+        auto& finance = in->data()->finance;
 
-    // Net income (спробувати Highlights.NetIncomeTTM; інакше лишити NaN)
-    {
-        double net_income = jnum(high.value("NetIncomeTTM"));
-        in->profitability()->setNetIncome(net_income);
+        // Fundamental
+        if (auto v = real(*h, "BookValue"))         fund.setBookValue(*v);
+        if (auto v = integer(*h, "EBITDA"))         fund.setEbitda(*v);
+        if (auto v = integer(*h, "RevenueTTM"))     fund.setRevenueTtm(*v);
+        if (auto v = integer(*h, "GrossProfitTTM")) fund.setGrossProfitTtm(*v);
+
+        // Dividend
+        if (auto v = real(*h, "DividendShare")) dividend.setPerShare(*v);
+        if (auto v = real(*h, "DividendYield")) dividend.setForwardAnnualYield(*v);
+
+        // Estimates
+        if (auto v = real(*h, "WallStreetTargetPrice"))     est.setWallStreetTargetPrice(*v);
+        if (auto v = real(*h, "EPSEstimateCurrentYear"))    est.setEpsEstimateCurrentYear(*v);
+        if (auto v = real(*h, "EPSEstimateNextYear"))       est.setEpsEstimateNextYear(*v);
+        if (auto v = real(*h, "EPSEstimateNextQuarter"))    est.setEpsEstimateNextQuart(*v);
+        if (auto v = real(*h, "EPSEstimateCurrentQuarter")) est.setEpsEstimateCurrentQuart(*v);
+        if (auto v = date(*h, "MostRecentQuarter"))         est.setRecentQuart(*v);
+
+        // --- TODO (свідомо не чіпаємо тут) ---
+        // MarketCapitalization / MarketCapitalizationMln, PERatio,
+        // PEGRatio → Valuation (коли зафіксуємо API)
+        // RevenuePerShareTTM, ProfitMargin, OperatingMarginTTM,
+        // ROA/ROE, QoQ/YoY growth → або Derived/Trend
+        // DilutedEpsTTM / EarningsShare → додамо,
+        // коли підтвердимо ім'я сеттера у Fundamental/Derived
     }
+    // ============================================================================================
 
-    in->profitability()->setRevenueTtm(          jnum(high.value("RevenueTTM")) );
-    in->profitability()->setGrossProfitTtm(      jnum(high.value("GrossProfitTTM")) );
-    in->profitability()->setRevenuePerShareTtm(  jnum(high.value("RevenuePerShareTTM")) );
-    in->profitability()->setProfitMargin(        jnum(high.value("ProfitMargin")) );
-    in->profitability()->setOperatingMarginTtm(  jnum(high.value("OperatingMarginTTM")) );
-
-    // EPS TTM дублюємо в profitability
-    {
-        double eps_ttm = jnum(high.value("DilutedEpsTTM"));
-        if (std::isnan(eps_ttm)) eps_ttm = jnum(high.value("EarningsShare"));
-        in->profitability()->setEpsTtm(eps_ttm);
+    // ----------------------- Valuation ----------------------------------------------------------
+    if (auto v = json::object(root, "Valuation")) {
+        // if (auto x = json::real(*v, "TrailingPE"))            val.setTrailingPe(*x);
+        // if (auto x = json::real(*v, "ForwardPE"))             val.setForwardPe(*x);
+        // if (auto x = json::real(*v, "PriceSalesTTM"))         val.setPriceSalesTtm(*x);
+        // if (auto x = json::real(*v, "PriceBookMRQ"))          val.setPriceBookMrq(*x);
+        // if (auto x = json::real(*v,"EnterpriseValue"))        val.setEnterpriseValue(*x);
+        // if (auto x = json::real(*v, "EnterpriseValueRevenue"))val.setEnterpriseValueRevenue(*x);
+        // if (auto x = json::real(*v, "EnterpriseValueEbitda")) val.setEnterpriseValueEbitda(*x);
     }
+    // ============================================================================================
 
-    in->profitability()->setEpsEstimateYear(     jnum(high.value("EPSEstimateCurrentYear")) );
-    in->profitability()->setEpsEstimateNextYear( jnum(high.value("EPSEstimateNextYear")) );
-    in->profitability()->setPegRatio(            jnum(high.value("PEGRatio")) );
-    in->profitability()->setTargetPrice(         jnum(high.value("WallStreetTargetPrice")) );
-    in->profitability()->setMostRecentQuarter(   jdate(high.value("MostRecentQuarter")) );
-    in->profitability()->setQepsGrowthYoy(       jnum(high.value("QuarterlyEarningsGrowthYOY")) );
-    in->profitability()->setQrevGrowthYoy(       jnum(high.value("QuarterlyRevenueGrowthYOY")) );
-    in->profitability()->setEbitda(              jnum(high.value("EBITDA")) );
+    // ----------------------- SharesStats --------------------------------------------------------
+    if (auto s = json::object(root, "SharesStats")) {
+        if (auto x = real(*s, "SharesOutstanding"))   capital.setSharesOutstanding(*x);
+        if (auto x = real(*s, "SharesFloat"))         capital.setSharesFloat(*x);
+        if (auto x = real(*s, "PercentInsiders"))     capital.setPercentOfInsiders(*x);
+        if (auto x = real(*s, "PercentInstitutions")) capital.setPercentOfInsitution(*x);
 
-    // ------- EARNINGS -------
-    in->earnings()->setRevenueTtm(           jnum(high.value("RevenueTTM")) );
-    in->earnings()->setRevenuePerShareTtm(   jnum(high.value("RevenuePerShareTTM")) );
-    in->earnings()->setEbitda(               jnum(high.value("EBITDA")) );
-    {
-        double eps_ttm = jnum(high.value("DilutedEpsTTM"));
-        if (std::isnan(eps_ttm)) eps_ttm = jnum(high.value("EarningsShare"));
-        in->earnings()->setDilutedEpsTtm(eps_ttm);
+        if (auto x = integer(*s, "SharesShort"))           shorts.setShortInterestShares(*x);
+        if (auto x = integer(*s, "SharesShortPriorMonth")) shorts.setSharesPriorMonth(*x);
     }
-    in->earnings()->setRevGrowthYoy(         jnum(high.value("QuarterlyRevenueGrowthYOY")) );
-    in->earnings()->setEarningsGrowthYoy(    jnum(high.value("QuarterlyEarningsGrowthYOY")) );
-    in->earnings()->setMostRecentQuarter(    jdate(high.value("MostRecentQuarter")) );
+    // ============================================================================================
 
-    // ------- SHARES -------
-    in->shares()->setSharesOutstanding(      jnum(shares.value("SharesOutstanding")) );
-    in->shares()->setSharesFloat(            jnum(shares.value("SharesFloat")) );
-    in->shares()->setSharesShort(            jnum(shares.value("SharesShort")) );
-    in->shares()->setPctInsiders(            jnum(shares.value("PercentInsiders")) );
-    in->shares()->setPctInstitutions(        jnum(shares.value("PercentInstitutions")) );
-    in->shares()->setShortRatio(             jnum(shares.value("ShortRatio")) );
-    in->shares()->setShortPctOut(            jnum(shares.value("ShortPercentOutstanding")) );
-    in->shares()->setShortPctFloat(          jnum(shares.value("ShortPercentFloat")) );
+    // ----------------------- Technicals ---------------------------------------------------------
+    // NOTE already have it in other fields
+    // ============================================================================================
 
-    // ------- BALANCE (MRQ) -------
-    double longDebt  = jnum(mrq.value("longTermDebtTotal"));
-    if (std::isnan(longDebt))  longDebt  = jnum(mrq.value("longTermDebt"));
+    // ----------------------- SplitsDividends ----------------------------------------------------
+    if (auto sd = json::object(root, "SplitsDividends")) {
+        // Dividend basics
+        if (auto v = real(*sd, "ForwardAnnualDividendRate"))  dividend.setPerShare(*v);
+        if (auto v = real(*sd, "ForwardAnnualDividendYield")) dividend.setForwardAnnualYield(*v);
+        if (auto v = real(*sd, "PayoutRatio"))                dividend.setPayoutRatio(*v);
+        if (auto v = date(*sd, "DividendDate"))               dividend.setDate(*v);
+        if (auto v = date(*sd, "ExDividendDate"))             dividend.setExDate(*v);
 
-    double shortDebt = jnum(mrq.value("shortLongTermDebtTotal"));
-    if (std::isnan(shortDebt)) shortDebt = jnum(mrq.value("shortLongTermDebt"));
-    if (std::isnan(shortDebt)) shortDebt = jnum(mrq.value("shortTermDebt"));
+        // Corporate actions (splits)
+        if (auto v = date  (*sd, "LastSplitDate")) c_action.setLastSplitDate(*v);
+        if (auto v = string(*sd, "LastSplitFactor"))
+            c_action.setLastSplitFactor((*v).split(":")[0].toInt(), (*v).split(":")[1].toInt());
 
-    double equity    = jnum(mrq.value("totalStockholderEquity"));
-    double totalDebt = (std::isnan(longDebt)?0.0:longDebt) + (std::isnan(shortDebt)?0.0:shortDebt);
-
-    double cashSti   = jnum(mrq.value("cashAndShortTermInvestments"));
-    if (std::isnan(cashSti)) cashSti = jnum(mrq.value("cashAndEquivalents"));
-    if (std::isnan(cashSti)) cashSti = jnum(mrq.value("cash"));
-
-    double netDebt   = jnum(mrq.value("netDebt"));
-    if (std::isnan(netDebt) && !std::isnan(totalDebt) && !std::isnan(cashSti))
-        netDebt = totalDebt - cashSti;
-
-    double curAssets = jnum(mrq.value("totalCurrentAssets"));
-    double curLiabs  = jnum(mrq.value("totalCurrentLiabilities"));
-    double nwc       = (!std::isnan(curAssets) && !std::isnan(curLiabs)) ? (curAssets - curLiabs)
-                                                                         : std::numeric_limits<double>::quiet_NaN();
-
-    in->balance()->setTotalDebt( totalDebt );
-    in->balance()->setCashSti(   cashSti );
-    in->balance()->setEquity(    equity );
-
-    // ------- STABILITY -------
-    in->stability()->setBeta( jnum(tech.value("Beta")) );
-
-    double de_ratio = (!std::isnan(equity) && equity!=0.0)
-                    ? (totalDebt / equity)
-                    : std::numeric_limits<double>::quiet_NaN();
-
-    in->stability()->setDebtEquity(   de_ratio );
-    in->stability()->setNetDebt(      netDebt );
-    in->stability()->setShortDebt(    shortDebt );
-    in->stability()->setLongDebt(     longDebt );
-    in->stability()->setNetWorkingCap(nwc);
-
-    // ------- DIVIDEND -------
-    {
-        // yield + per_share з Highlights, fallback — SplitsDividends
-        double dy = jnum(high.value("DividendYield"));
-        if (std::isnan(dy)) dy = jnum(splits.value("ForwardAnnualDividendYield"));
-
-        double dps = jnum(high.value("DividendShare"));
-        if (std::isnan(dps)) dps = jnum(splits.value("ForwardAnnualDividendRate"));
-
-        double payout = jnum(splits.value("PayoutRatio"));
-
-        QDate exDate   = jdate(splits.value("ExDividendDate"));
-        QDate prevDate = jdate(splits.value("DividendDate"));
-
-        in->dividend()->setYield(     dy );
-        in->dividend()->setPerShare( dps );
-        in->dividend()->setPayRatio( payout );
-        in->dividend()->setNextDate( exDate );
-        in->dividend()->setPrevDate( prevDate );
+        // TODO maybe add NumberDividendsByYear
+        // if (auto obj = json::object(*sd, "NumberDividendsByYear")) {
+        //     QMap<int,int> perYear;
+        //     for (auto it = obj->begin(); it != obj->end(); ++it) {
+        //         if (it->isObject()) {
+        //             const QJsonObject o = it->toObject();
+        //             auto y = json::integer(o, "Year");
+        //             auto c = json::integer(o, "Count");
+        //             if (y && c) perYear[*y] = *c;
+        //         }
+        //     }
+        //     if (!perYear.isEmpty())
+        //         div.setPerYear(perYear);
+        // }
     }
+    // ============================================================================================
 
-    auto list = in->tickers();
-    for (const auto& it : list){
-        if (it.us()){
-            // api::FinnHub::update_info_by_tag(it.code());
-            // api::AlphaVantage::update_info_by_tag(it.code());
+    // ----------------------- AnalystRatings -----------------------------------------------------
+    if (auto ar = json::object(root, "AnalystRatings"); ar.has_value()) {
+        auto& est = in->data()->finance.estimates;
+
+        if (auto v = real(*ar, "Rating"))      est.setAnalystConsensusRate(*v);
+        if (auto v = real(*ar, "TargetPrice")) est.setWallStreetTargetPrice(*v);
+
+        if (auto v = integer(*ar, "StrongBuy"))  est.setAnalystStrongBuy(*v);
+        if (auto v = integer(*ar, "Buy"))        est.setAnalystBuy(*v);
+        if (auto v = integer(*ar, "Hold"))       est.setAnalystHold(*v);
+        if (auto v = integer(*ar, "Sell"))       est.setAnalystSell(*v);
+        if (auto v = integer(*ar, "StrongSell")) est.setAnalystStrongSell(*v);
+    }
+    // ============================================================================================
+
+    // ----------------------- Holders ------------------------------------------------------------
+    // TODO not save for now
+    // ============================================================================================
+
+    // ----------------------- InsiderTransactions ------------------------------------------------
+    // TODO not save for now
+    // ============================================================================================
+
+    // ----------------------- ESGScores ----------------------------------------------------------
+    // NOTE i`ts trash block
+    // ============================================================================================
+
+    // ----------------------- outstandingShares --------------------------------------------------
+    if (auto os = json::object(root, "outstandingShares")){
+        if (auto q = json::object(*os, "quartely")){
+            QDate date;
+            int64_t shares;
+            for (auto it = q->begin(); it != q->end(); ++it){
+                if (!it->isObject()) continue;
+                auto d = json::date(it->toObject(), "dateFormatted");
+                auto s = json::integer(it->toObject(), "shares");
+                if (d && s)
+                    capital.setOutstandShare(*s, *d);
+            }
         }
     }
+    // ============================================================================================
+
+    // ----------------------- Earnings -----------------------------------------------------------
+    if (auto e = json::object(root, "Earnings")){
+        if (auto h = json::object(*e, "History")){
+            for (auto it = h->begin(); it != h->end(); ++it){
+                if (!it->isObject()) continue;
+                const QJsonObject o = it->toObject();
+                auto periodEnd  = json::date(o, "date");
+                if (not periodEnd) continue;
+
+                auto q = finance.quartel(*periodEnd);
+                if (auto v = date(o, "reportDate"))  q.earning.setReportDate(*v);
+                if (auto v = real(o, "epsActual"))   q.earning.setEpsActual(*v);
+                if (auto v = real(o, "epsEstimate")) q.earning.setEpsEstimate(*v);
+                if (auto v = string(o, "beforeAfterMarket"))
+                    q.earning.setBeforeMarket(*v == "BeforeMarket"); // FIXME before
+            }
+        }
+
+        if (auto t = json::object(*e, "Trend")){
+            for (auto it = t->begin(); it != t->end(); ++it){
+                if (!it->isObject()) continue;
+                const QJsonObject o = it->toObject();
+                auto periodEnd  = json::date(o, "date");
+                if (not periodEnd) continue;
+
+                auto t = finance.quartel(*periodEnd).trend;
+                if (auto v = real(o, "earningsEstimateAvg"))        t.setEarningsAvg(*v);
+                if (auto v = real(o, "earningsEstimateLow"))        t.setEarningsLow(*v);
+                if (auto v = real(o, "earningsEstimateHigh"))       t.setEarningsHigh(*v);
+                if (auto v = real(o, "earningsEstimateYearAgoEps")) t.setEarningsYearAgoEps(*v);
+                if (auto v = real(o, "earningsEstimateNumberOfAnalysts"))
+                    t.setEarningsAnalystsCount(*v);
+
+                if (auto v = real(o, "revenueEstimateAvg"))        t.setRevenueAvg(*v);
+                if (auto v = real(o, "revenueEstimateLow"))        t.setRevenueLow(*v);
+                if (auto v = real(o, "revenueEstimateHigh"))       t.setRevenueHigh(*v);
+                if (auto v = real(o, "revenueEstimateYearAgoEps")) t.setRevenueYearAgoEps(*v);
+                if (auto v = real(o, "revenueEstimateNumberOfAnalysts"))
+                    t.setRevenueAnalystsCount(*v);
+
+                if (auto v = real(o, "epsTrendCurrent"))   t.setEpsTrendCurrent(*v);
+                if (auto v = real(o, "epsTrend7daysAgo"))  t.setEpsTrend7dAgo(*v);
+                if (auto v = real(o, "epsTrend30daysAgo")) t.setEpsTrend30dAgo(*v);
+                if (auto v = real(o, "epsTrend60daysAgo")) t.setEpsTrend60dAgo(*v);
+                if (auto v = real(o, "epsTrend90daysAgo")) t.setEpsTrend90dAgo(*v);
+
+                if (auto v = real(o, "epsRevisionsUpLast7days"))   t.setEpsRevisionUpLast7d(*v);
+                if (auto v = real(o, "epsRevisionsUpLast30days"))  t.setEpsRevisionUpLast30d(*v);
+                if (auto v = real(o, "epsRevisionsDownLast7days")) t.setEpsRevisionDownLast7d(*v);
+                if (auto v = real(o, "epsRevisionsDownLast30days"))t.setEpsRevisionDownLast30d(*v);
+            }
+        }
+    }
+    // ============================================================================================
+
+    // ----------------------- Financials ---------------------------------------------------------
+    if (auto e = json::object(root, "Financials")){
+        if (auto h = json::object(*e, "Balance_Sheet")){
+            for (auto it = h->begin(); it != h->end(); ++it){
+                if (!it->isObject()) continue;
+                const QJsonObject o = it->toObject();
+                auto periodEnd  = json::date(o, "date");
+                if (not periodEnd) continue;
+
+                auto b = finance.quartel(*periodEnd).balance;
+                // meta
+                if (auto v = date(o, "filing_date")) b.setFilingDate(*v);
+
+                // assets
+                if (auto v = real(o, "totalAssets"))            b.setTotalAssets(*v);
+                if (auto v = real(o, "cash"))                   b.setCash(*v);
+                if (auto v = real(o, "cashAndEquivalents"))     b.setCashAndCashEquivalents(*v);
+                if (auto v = real(o, "shortTermInvestments"))   b.setShortTermInvestments(*v);
+                if (auto v = real(o, "netReceivables"))         b.setNetReceivables(*v);
+                if (auto v = real(o, "inventory"))              b.setInventory(*v);
+                if (auto v = real(o, "otherCurrentAssets"))     b.setOtherCurrentAssets(*v);
+                if (auto v = real(o, "totalCurrentAssets"))     b.setTotalCurrentAssets(*v);
+                if (auto v = real(o, "longTermInvestments"))    b.setLongTermInvestments(*v);
+                if (auto v = real(o, "propertyPlantEquipment")) b.setPropertyPlantAndEquipment(*v);
+                if (auto v = real(o, "propertyPlantAndEquipmentGross"))
+                    b.setPropertyPlantAndEquipmentGross(*v);
+
+                if (auto v = real(o, "propertyPlantAndEquipmentNet"))
+                    b.setPropertyPlantAndEquipmentNet(*v);
+
+                if (auto v = real(o, "accumulatedDepreciation")) b.setAccumulatedDepreciation(*v);
+                if (auto v = real(o, "intangibleAssets"))        b.setIntangibleAssets(*v);
+                if (auto v = real(o, "goodWill"))                b.setGoodwill(*v);
+                if (auto v = real(o, "otherAssets"))             b.setOtherNonCurrentAssets(*v);
+                if (auto v = real(o, "nonCurrentAssetsOther"))  b.setNonCurrentAssetsOther(*v);
+                if (auto v = real(o, "nonCurrentAssetsTotal"))   b.setNonCurrentAssetsTotal(*v);
+                if (auto v = real(o, "deferredLongTermAssetCharges"))
+                    b.setDeferredLongTermAssetCharges(*v);
+
+                if (auto v = real(o, "accumulatedAmortization")) b.setAccumulatedAmortization(*v);
+
+                if (auto v = real(o, "netTangibleAssets"))       b.setNetTangibleAssets(*v);
+
+                // liabilities
+                if (auto v = real(o, "accountsPayable"))         b.setAccountsPayable(*v);
+                if (auto v = real(o, "otherCurrentLiab"))        b.setOtherCurrentLiabilities(*v);
+                if (auto v = real(o, "totalCurrentLiabilities")) b.setTotalCurrentLiabilities(*v);
+                if (auto v = real(o, "currentDeferredRevenue"))  b.setCurrentDeferredRevenue(*v);
+                if (auto v = real(o, "shortTermDebt"))           b.setShortTermDebt(*v);
+                if (auto v = real(o, "longTermDebt"))            b.setLongTermDebt(*v);
+                if (auto v = real(o, "longTermDebtTotal"))       b.setLongTermDebtTotal(*v);
+                if (auto v = real(o, "totalLiab"))               b.setTotalLiabilities(*v);
+                if (auto v = real(o, "otherLiab"))               b.setOtherLiabilities(*v);
+                if (auto v = real(o, "capitalLeaseObligations")) b.setCapitalLeaseObligations(*v);
+                if (auto v = real(o, "warrants"))                b.setWarrants(*v);
+                if (auto v = real(o, "preferredStockRedeemable"))b.setRedeemablePreferredStock(*v);
+                if (auto v = real(o, "negativeGoodwill"))        b.setNegativeGoodwill(*v);
+                if (auto v = real(o, "deferredLongTermLiab")) b.setDeferredLongTermLiabilities(*v);
+                if (auto v = real(o, "shortLongTermDebt"))   b.setCurrentPortionOfLongTermDebt(*v);
+                if (auto v = real(o, "nonCurrentLiabilitiesOther"))
+                    b.setNonCurrentLiabilitiesOther(*v);
+
+                if (auto v = real(o, "nonCurrentLiabilitiesTotal"))
+                    b.setNonCurrentLiabilitiesTotal(*v);
+
+                // equity
+                if (auto v = real(o, "totalStockholderEquity"))   b.setTotalShareholdersEquity(*v);
+
+                if (auto v = real(o, "liabilitiesAndStockholdersEquity"))
+                    b.setLiabilitiesAndShareholdersEquity(*v);
+
+                if (auto v = real(o, "commonStock"))             b.setCommonStock(*v);
+                if (auto v = real(o, "capitalStock"))            b.setCapitalStock(*v);
+                if (auto v = real(o, "retainedEarnings"))        b.setRetainedEarnings(*v);
+                if (auto v = real(o, "otherStockholderEquity"))  b.setOtherShareholdersEquity(*v);
+                if (auto v = real(o, "commonStockTotalEquity"))  b.setCommonStockTotalEquity(*v);
+                if (auto v = real(o, "treasuryStock"))           b.setTreasuryStock(*v);
+                if (auto v = real(o, "additionalPaidInCapital")) b.setAdditionalPaidInCapital(*v);
+                if (auto v = real(o, "totalPermanentEquity"))    b.setTotalPermanentEquity(*v);
+                if (auto v = real(o, "noncontrollingInterestInConsolidatedEntity"))
+                    b.setNoncontrollingInterest(*v);
+
+                if (auto v = real(o, "temporaryEquityRedeemableNoncontrollingInterests"))
+                    b.setRedeemableNoncontrolInterests(*v);
+
+                if (auto v = real(o, "accumulatedOtherComprehensiveIncome"))
+                    b.setOtherComprehensIncomeAccumulat(*v);
+
+                if (auto v = real(o, "preferredStockTotalEquity"))
+                    b.setPreferredStockTotalEquity(*v);
+
+                if (auto v = real(o, "retainedEarningsTotalEquity"))
+                    b.setRetainedEarningsTotalEquity(*v);
+            }
+        }
+
+        if (auto cf = json::object(root, "Cash_Flow")) {
+            if (auto q = json::object(*cf, "quarterly")) {
+                for (auto it = q->begin(); it != q->end(); ++it) {
+                    if (!it->isObject()) continue;
+                    const QJsonObject o = it->toObject();
+
+                    auto periodEnd = json::date(o, "date");
+                    if (!periodEnd) continue;
+
+                    auto& c = finance.quartel(*periodEnd).cashflow;
+
+                    // meta
+                    if (auto v = json::date(o, "filing_date")) c.setFilingDate(*v);
+
+                    // investing
+                    if (auto v = integer(o, "investments")) c.setInverstinNetsInvestment(*v);
+                    if (auto v = integer(o, "totalCashflowsFromInvestingActivities"))
+                        c.setInvestingTotal(*v);
+
+                    if (auto v = integer(o, "capitalExpenditures"))
+                        c.setInvestingCapitalSpending(*v);
+
+                    if (auto v = integer(o, "otherCashflowsFromInvestingActivities"))
+                        c.setInvestingOther(*v);
+
+                    // operating
+                    if (auto v = integer(o, "depreciation")) c.setDepreciation(*v);
+                    if (auto v = integer(o, "netIncome")) c.setNetIncome(*v);
+                    if (auto v = integer(o, "totalCashFromOperatingActivities"))
+                        c.setOperatingTotal(*v);
+
+                    if (auto v = integer(o, "stockBasedCompensation"))
+                        c.setStockBasedCompensation(*v);
+
+                    if (auto v = integer(o, "changeToOperatingActivities"))
+                        c.setOperatingOtherAdjustments(*v);
+
+                    if (auto v = integer(o, "changeToLiabilities"))
+                        c.setOperatingChangeLiabilities(*v);
+
+                    if (auto v = integer(o, "changeToInventory"))
+                        c.setOperatingChangeInventory(*v);
+
+                    if (auto v = integer(o, "changeToAccountReceivables"))
+                        c.setOperatingChangeReceivables(*v);
+
+                    if (auto v = integer(o, "changeReceivables"))
+                        c.setOperatingChangeReceivables(*v);// alias
+
+                    if (auto v = integer(o, "cashFlowsOtherOperating")) c.setOperatingOther(*v);
+                    if (auto v = integer(o, "otherNonCashItems")) c.setOperatingNoncashOther(*v);
+                    if (auto v = integer(o, "changeToNetincome"))
+                        c.setOperatingNetIncomeAdjust(*v);
+
+                    // financing
+                    if (auto v = integer(o, "netBorrowings"))      c.setFinancingNetBorrowings(*v);
+                    if (auto v = integer(o, "salePurchaseOfStock"))c.setFinancingBuybackNet(*v);
+                    if (auto v = integer(o, "dividendsPaid"))      c.setFinancingDividendsPaid(*v);
+                    if (auto v = integer(o, "issuanceOfCapitalStock"))
+                        c.setFinancingEquityIssuance(*v);
+
+                    if (auto v = integer(o, "otherCashflowsFromFinancingActivities"))
+                        c.setFinancingOther(*v);
+
+                    // derived / getters-only у CashFlow → НЕ сетимо:
+                    // - changeInCash / cashBegin / cashEnd / cashEquivalentsChange /
+                    // fxEffectOnCash / workingCapitalChange / financingTotal
+                    // :contentReference[oaicite:2]{index=2}
+
+                    // додатково (необов'язково): вхідні begin/end cash, FCF
+                    if (auto v = integer(o, "freeCashFlow")) c.setFreeCash(*v);
+                    // beginPeriodCashFlow / endPeriodCashFlow присутні в JSON,
+                    // але сеттерів немає (тільки гетери)  :contentReference[oaicite:3]{index=3}
+                }
+            }
+        }
+
+        if (auto is = json::object(root, "Income_Statement"); is.has_value()) {
+            if (auto q = json::object(*is, "quarterly"); q.has_value()) {
+                for (auto it = q->begin(); it != q->end(); ++it) {
+                    if (!it->isObject()) continue;
+                    const QJsonObject o = it->toObject();
+
+                    auto periodEnd = json::date(o, "date");
+                    if (!periodEnd) continue;
+
+                    auto& inc = finance.quartel(*periodEnd).incomes;
+
+                    // meta
+                    if (auto v = json::date(o, "filing_date")) inc.setFilingDate(*v);
+
+                    // revenue / cogs / gross
+                    if (auto v = integer(o, "totalRevenue"))  inc.setTotalRevenue(*v);
+                    if (auto v = integer(o, "costOfRevenue")) inc.setCostOfRevenue(*v);
+
+                    // opex
+                    if (auto v = integer(o, "researchDevelopment"))
+                        inc.setResearchDevelopment(*v);
+
+                    if (auto v = integer(o, "sellingGeneralAdministrative"))
+                        inc.setSellingGeneralAdmin(*v);
+
+                    if (auto v = integer(o, "sellingAndMarketingExpenses"))
+                        inc.setSellingMarketingExpenses(*v);
+
+                    if (auto v = integer(o, "otherOperatingExpenses"))
+                        inc.setOtherOperatingExpenses(*v);
+
+                    // D&A
+                    if (auto v = integer(o, "depreciationAndAmortization"))
+                        inc.setDeprAmortization(*v);
+
+                    if (auto v = integer(o, "reconciledDepreciation"))
+                        inc.setReconciledDepreciation(*v);
+
+                    // interest & other income/expense
+                    if (auto v = integer(o, "interestIncome"))  inc.setInterestIncome(*v);
+                    if (auto v = integer(o, "interestExpense")) inc.setInterestExpense(*v);
+
+                    if (auto v = integer(o, "totalOtherIncomeExpenseNet"))
+                        inc.setOtherIncomeExpenseNet(*v);
+                    else if (auto v = integer(o, "nonOperatingIncomeNetOther"))
+                        inc.setOtherIncomeExpenseNet(*v);
+
+                    // tax
+                    if (auto v = integer(o, "incomeTaxExpense"))  inc.setIncomeTaxExpense(*v);
+                    else if (auto v = integer(o, "taxProvision")) inc.setIncomeTaxExpense(*v);
+
+                    // bottom line
+                    if (auto v = integer(o, "netIncomeFromContinuingOps"))
+                        inc.setNetIncomeContOps(*v);
+
+                    if (auto v = integer(o, "discontinuedOperations"))
+                        inc.setDiscontinuedOps(*v);
+
+                    if (auto v = integer(o, "minorityInterest"))
+                        inc.setMinorityInterest(*v);
+
+                    if (auto v = integer(o, "netIncome"))
+                        inc.setNetIncome(*v);
+
+                    // adjustments
+                    if (auto v = integer(o, "preferredStockAndOtherAdjustments"))
+                        inc.setPreferredAdjustments(*v);
+
+                    if (auto v = integer(o, "effectOfAccountingCharges"))
+                        inc.setAccountingEffects(*v);
+                }
+            }
+        }
+    }
+    // ============================================================================================
 
     ticker->save();
 }

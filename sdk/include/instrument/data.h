@@ -7,6 +7,8 @@
 #include "meta.h"
 #include "finance.h"
 
+namespace api { class Eod; }
+
 class sdk::Data : Trackable
 {
 public:
@@ -18,6 +20,8 @@ public:
     void save() const;
     void load();
 
+    std::vector <sdk::Symbol> tickersSymbolList() const;
+
     // ----------------------- Listings -----------------------------------------------------------
     // блокуємо копії, можна рухати (за бажанням і move забороніть)
     Data(const Data&)           = delete;
@@ -25,15 +29,8 @@ public:
     Data& operator = (const Data&)           = delete;
     Data& operator = (      Data&&) noexcept = default;
 
-    // ---- додавання лістингів (видалення ззовні неможливе) ----
-    template<class... Args>
-    Ticker& emplaceListing(Args&&... args) {
-        _list.emplace_back(std::forward<Args>(args)...);
-        return _list.back();
-    }
-
-    Ticker& addListing(const Ticker& t);
-    void reserveListings(std::size_t n);
+    // Ticker& addListing(const Ticker& t);
+    // void reserveListings(std::size_t n);
     std::size_t listingsCount() const noexcept;
 
     // ---- ітерабельний вигляд без доступу до контейнерних mutator'ів ----
@@ -42,11 +39,19 @@ public:
     // ============================================================================================
 
 private:
-    Data() = default;
+    Data(uint16_t parent);
     ~Data() = default;
-    friend Instrument;
+    friend class sdk::Instrument;
+    friend class sdk::Market;
+    friend class api::Eod;
 
-    std::vector<Ticker> _list; // приховано: зовні нема erase/clear/shrink_to_fit
+    uint16_t _parent;
+    std::vector <Ticker> _list; // приховано: зовні нема erase/clear/shrink_to_fit
+    void update_parent();
+    Ticker& addTicker(const sdk::Symbol& symbol);
+
+    friend QDataStream& operator << (QDataStream& s, const Data& d);
+    friend QDataStream& operator >> (QDataStream& s,       Data& d);
 };
 
 #endif // SDK_DATA_H

@@ -59,14 +59,17 @@ private:
     QString _open_figi;
     QString _lei;
     QString _cik;
-    sdk::Month _fiscal_yearend;
     QString _ein; // employer identification number
     QString _cusip; // унікальний код цінного паперу у США
     QDate _ipo;
     sdk::HomeCategory _internationalDomestic;
+    sdk::Month _fiscal_yearend;
     bool _delisted;
     QString _address;
     QJsonObject _address_json;
+
+    friend QDataStream& operator << (QDataStream& s, const Legal& d);
+    friend QDataStream& operator >> (QDataStream& s,       Legal& d);
 };
 
 #endif // SDK_INSTRUMENT_LEGAL_H

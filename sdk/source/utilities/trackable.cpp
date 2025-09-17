@@ -1,6 +1,6 @@
-#ifndef SDK_INSTRUMENT_CAPITAL_H
-#define SDK_INSTRUMENT_CAPITAL_H
+#include "utilities/trackable.h"
 
-// namespace
-
-#endif // SDK_INSTRUMENT_CAPITAL_H
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Trackable& d) { return s << d._last_updated; }
+    QDataStream& operator >> (QDataStream& s,       Trackable& d) { return s >> d._last_updated; }
+}

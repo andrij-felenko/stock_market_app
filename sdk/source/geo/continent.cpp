@@ -9,7 +9,7 @@ namespace sdk::continent {
     const std::vector <Meta>& metadata();
 }
 
-namespace geo {
+namespace sdk {
     QDataStream& operator << (QDataStream& out, const Continent& tag)
     { return out << uint8_t(static_cast <uint16_t> (tag) >> 8); }
 

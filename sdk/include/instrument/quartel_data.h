@@ -29,6 +29,9 @@ private:
     sdk::Currency _currency;
     uint16_t _year = QDate().year();
     Quartel _quartel = Quartel::Annual;
+
+    friend QDataStream& operator << (QDataStream& s, const QuartelData& d);
+    friend QDataStream& operator >> (QDataStream& s,       QuartelData& d);
 };
 
 #endif // SDK_INSTRUMENT_QUARTEL_DATE_H

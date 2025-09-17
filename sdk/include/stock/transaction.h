@@ -5,9 +5,9 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-namespace data { class Transaction; }
+#include "sdk.h"
 
-class data::Transaction : public QObject
+class sdk::Transaction : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool  buy   READ buy   CONSTANT)

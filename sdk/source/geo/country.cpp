@@ -19,7 +19,7 @@ namespace sdk::country {
     const std::vector <Meta>& metadata();
 }
 
-namespace geo {
+namespace sdk {
     QDataStream& operator << (QDataStream& out, const Country& tag)
     { return out << static_cast <uint16_t > (tag); }
 

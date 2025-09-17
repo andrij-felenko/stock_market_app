@@ -52,6 +52,9 @@ private:
     double _payout_ratio;
     QDate _date;
     QDate _ex_date;
+
+    friend QDataStream& operator << (QDataStream& s, const Dividend& d);
+    friend QDataStream& operator >> (QDataStream& s,       Dividend& d);
 };
 
 #endif // SDK_INSTRUMENT_DIVIDEND_H

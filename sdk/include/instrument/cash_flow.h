@@ -225,6 +225,9 @@ private:
     int32_t _operating_total;
     int32_t _depreciation;
     int32_t _stock_based_compensation;
+
+    friend QDataStream& operator << (QDataStream& s, const CashFlow& d);
+    friend QDataStream& operator >> (QDataStream& s,       CashFlow& d);
 };
 
 #endif // SDK_INSTRUMENT_CASHFLOW_H

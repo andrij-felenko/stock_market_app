@@ -276,6 +276,7 @@ private:
     int32_t _accumulatedDepreciation;
     int32_t _intangibleAssets;
     int32_t _goodwill;
+
     int32_t _otherNonCurrentAssets;
     int32_t _nonCurrentAssetsOther;
     int32_t _nonCurrentAssetsTotal;
@@ -317,6 +318,9 @@ private:
     int32_t _redeemablePreferredStock;
     int32_t _negativeGoodwill;
     int32_t _capitalSurplus;
+
+    friend QDataStream& operator << (QDataStream& s, const Balance& d);
+    friend QDataStream& operator >> (QDataStream& s,       Balance& d);
 };
 
 #endif // SDK_INSTRUMENT_BALANCE_H

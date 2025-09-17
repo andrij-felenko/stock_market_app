@@ -1,14 +1,14 @@
-#include "data/user/stock.h"
+#include "stock/stock.h"
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 #include "loader.h"
-#include "data/market.h"
-#include "data/instrument.h"
+#include "services/market.h"
+#include "instrument/instrument.h"
 #include "utilities/features.h"
 
-using namespace data;
+using namespace sdk;
 
-data::Stock::Stock(QObject* parent) : QObject(parent), _ticker(nullptr)
+Stock::Stock(QObject* parent) : QObject(parent), _ticker(nullptr)
 {
     //
 }
@@ -20,22 +20,20 @@ float   Stock::value()  const { return _value;  }
 
 Instrument* Stock::instrument() const { return _ticker->instrument(); }
 
-namespace data {
+namespace sdk {
     QDataStream& operator << (QDataStream& s, const Stock& d) {
-        util::list_to_stream(s, d._list);
+        sdk::list_to_stream(s, d._list);
         return s << d._count << d._price << d._value
-                 << d.instrument()->primary_ticker(true)->symbol();
+                 << d.instrument()->isin();
     }
 
     QDataStream& operator >> (QDataStream& s, Stock& d) {
-        util::list_from_stream(s, d._list);
+        sdk::list_from_stream(s, d._list);
         s >> d._count >> d._price >> d._value;
 
-        QString tag;
-        s >> tag;
-        auto t = Nexus.market()->find(tag);
-        if (t.has_value())
-            d._ticker = t.value();
+        Isin isin;
+        s >> isin;
+        auto t = Nexus.market()->find_instrument(isin);
 
         return s;
     }

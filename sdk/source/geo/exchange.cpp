@@ -20,7 +20,7 @@ namespace sdk::exchange {
     inline quint8 bits(Exchange e) { return static_cast<quint8>(e); }
 }
 
-namespace geo {
+namespace sdk {
     QDataStream& operator << (QDataStream& out, const Exchange& tag)
     { return out << static_cast <uint8_t > (tag); }
 

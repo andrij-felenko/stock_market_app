@@ -8,11 +8,11 @@
 #include <QJsonDocument>
 #include <QUrlQuery>
 #include "api/api.h"
-#include "data/instrument/symbol.h"
+#include "instrument/symbol.h"
 
 namespace api { class Eod; }
 
-class api::Eod : public API {
+class api::Eod final : public API {
     Q_OBJECT
 public:
     static Eod* instance();
@@ -24,8 +24,8 @@ public:
 
     // void fetch_ticker_data(const QString& ticker);
 
-    static void fundamental(data::ticker::Symbol tag);
-    static void historical_year(data::ticker::Symbol tag, int8_t year = -1, char period = 'd');
+    static void fundamental(const sdk::Symbol& tag);
+    static void historical_year(const sdk::Symbol& tag, int8_t year = -1, char period = 'd');
 
 signals:
     void data_ready(const QJsonObject& data);
@@ -33,17 +33,18 @@ signals:
 private:
     explicit Eod(QObject* parent = nullptr);
 
-    // QString _api_key;
+    using api::API::_request;
+    friend class sdk::Market;
+    friend class sdk::Instrument;
 
-    virtual bool _request(Request type, QString name, StringMap keys = {}) override;
-    virtual void _handler_answer(Request type, QByteArray data,
-                                 QString name, bool stream = false) override;
-    virtual void _handler_error(Request type, QNetworkReply::NetworkError error,
-                                QString name) override;
+    virtual bool _request(Request type, const QString& name, const sdk::Symbol& symbol,
+                          StringMap keys = {}) override;
+    virtual void _handler_answer(Reply* reply) override;
+    virtual void _handler_error(Reply* reply, QNetworkReply::NetworkError error) override;
 
-    void _handle_exchange(const QJsonDocument& json, QString name);
-    void _handle_candle  (const QJsonDocument& json, QString name);
-    void _handle_info    (const QJsonDocument& json, QString name);
+    void _handle_exchange(Reply* reply);
+    void _handle_candle  (Reply* reply);
+    void _handle_info    (Reply* reply);
 };
 
 #endif

@@ -105,6 +105,9 @@ set (sdk_cpp
     source/geo/exchange.cpp
     source/geo/region.cpp
     source/geo/instype.cpp
+    source/geo/month.cpp
+    source/geo/quartel.cpp
+    source/geo/home_category.cpp
 
     source/settings/network.cpp
 

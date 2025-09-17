@@ -5,36 +5,32 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
+#include "sdk.h"
 #include "../instrument/ticker.h"
 #include "transaction.h"
 
-namespace data {
-    class Stock;
-    class Instrument;
-}
-
-class data::Stock : public QObject
+class sdk::Stock : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(data::Ticker* ticker READ ticker CONSTANT)
-    Q_PROPERTY(float count READ count CONSTANT)
-    Q_PROPERTY(float price READ price CONSTANT)
-    Q_PROPERTY(float value READ value CONSTANT)
+    // Q_PROPERTY(data::Ticker* ticker READ ticker CONSTANT)
+    // Q_PROPERTY(float count READ count CONSTANT)
+    // Q_PROPERTY(float price READ price CONSTANT)
+    // Q_PROPERTY(float value READ value CONSTANT)
 public:
     Stock(QObject* parent = nullptr);
 
-    data::Ticker* ticker() const;
+    Ticker* ticker() const;
     float   count()  const;
     float   price()  const;
     float   value()  const;
 
-    data::Instrument* instrument() const;
+    Instrument* instrument() const;
 
 signals:
     void signal_update();
 
 private:
-    data::Ticker* _ticker;
+    Ticker* _ticker;
     float   _count;
     float   _price;
     float   _value;

@@ -9,8 +9,9 @@ public:
     Isin(const QByteArray& isin = "");
     Isin(const QByteArray& code, sdk::Country country);
 
-    Isin& operator == (const Isin& other);
+    Isin& operator = (const Isin& other);
     std::strong_ordering operator <=> (const Isin& other) const;
+    bool operator == (const Isin& other) const;
 
     const QByteArray full() const;
     const QByteArray operator ~ () const;

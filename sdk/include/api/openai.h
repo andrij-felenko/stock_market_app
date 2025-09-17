@@ -19,7 +19,7 @@ public:
     void set_model(QString new_model);
 
 public slots:
-    void recheck_tag(QString tag);
+    void recheck_tag(const sdk::Symbol& tag);
 
 signals:
     void reply_complete(const QString& full_text);
@@ -30,9 +30,9 @@ private:
     // QString _api_key;
     QString _model;
 
-    virtual bool _request(Request type, QString name, StringMap keys = {}) override;
-    virtual void _handler_answer(Request type, QByteArray data,
-                                 QString name, bool stream = false) override;
+    virtual bool _request(Request type, const QString& name, const sdk::Symbol& symbol,
+                          StringMap keys = {}) override;
+    virtual void _handler_answer(Reply* reply) override;
 };
 
 #endif // API_OPENAI_H

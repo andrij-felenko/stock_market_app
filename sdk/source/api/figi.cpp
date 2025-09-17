@@ -7,8 +7,8 @@
 #include <QtGui/QGuiApplication>
 #include <QJsonArray>
 
-#include "data/market.h"
-#include "data/instrument.h"
+#include "services/market.h"
+#include "instrument/instrument.h"
 #include "loader.h"
 
 /**
@@ -18,7 +18,7 @@
  * \link https://www.openfigi.com/api/documentation OpenFIGI Mapping API \endlink
  */
 
-api::Figi::Figi(QObject* parent) : API(parent)
+api::Figi::Figi(QObject* parent) : API(QUrl("https://api.openfigi.com/"), parent)
 {
     //
 }
@@ -32,21 +32,21 @@ api::Figi* api::Figi::instance()
     return _instance;
 }
 
-void api::Figi::update_info_by_tag(QString tag)
+void api::Figi::update_info_by_tag(const sdk::Symbol& tag)
 {
-    Figi* data = Figi::instance();
-    data->_send(Request::Info, tag);
+    Figi::instance()->_request(Request::Info, tag);
 }
 
-bool api::Figi::_request(Request type, QString name, StringMap keys)
+bool api::Figi::_request(Request type, const QString& name, const sdk::Symbol& symbol,
+                         StringMap keys)
 {
-    QString base("https://api.openfigi.com/");
-    // as we work only with US marker, we nee to cut .US domen from tag
-    QString subname = name;
-    if (subname.right(3).toUpper() == ".US")
-        subname.chop(3);
+    Reply* post = _add(type);
 
-    QUrl url;
+    // as we work only with US marker, we nee to cut .US domen from tag
+    QString subname;
+    if (symbol.us()) subname = symbol.venue();
+    else             subname = symbol.full();
+
     switch (type){
         // case api::Request::Text: return false;
 
@@ -55,7 +55,7 @@ bool api::Figi::_request(Request type, QString name, StringMap keys)
         // case api::Request::MetricMargin:
         // case api::Request::MetricValuation: url = base + "stock/metric"; break;
 
-        case api::Request::Info:     url = base + "v3/mapping"; break;
+        case api::Request::Info:    post->suburl = "v3/mapping"; break;
         // case api::Request::Peers:    url = base + "stock/peers";    break;
         // case api::Request::Quote:    url = base + "quote";          break;
         // case api::Request::Tag:
@@ -66,9 +66,8 @@ bool api::Figi::_request(Request type, QString name, StringMap keys)
         default:;
     }
 
-    QNetworkRequest request(url);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader("X-OPENFIGI-APIKEY", settings::network()->key_figi().toUtf8());
+    post->_request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    post->_request.setRawHeader("X-OPENFIGI-APIKEY", settings::network()->key_figi().toUtf8());
     QJsonObject to_send;
 
     switch (type){
@@ -125,43 +124,38 @@ bool api::Figi::_request(Request type, QString name, StringMap keys)
 
     // QNetworkRequest request(url);
     QJsonArray array( { to_send } );
-    qDebug() << "next:::::" << array << to_send;
+    qDebug() << "next:::" << array << to_send;
     QByteArray data = QJsonDocument(array).toJson();
 
-    API::_add_reply(type, _netmanager.post(request, data), name);
-    qDebug() << "request:" << url;
+    post->send_data = data;
+    post->prepare();
     return true;
 }
 
-void api::Figi::_handler_answer(Request type, QByteArray data, QString name, bool stream)
+void api::Figi::_handler_answer(Reply* reply)
 {
     qDebug() << "handler answer";
-    qDebug() << data;
-    QJsonDocument doc = QJsonDocument::fromJson(data);
-    qDebug() << name << "return data" << doc;
+    qDebug() << reply->receive_data();
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    qDebug() << reply->name << reply->symbol << "return data" << doc;
     return;
 
-    auto finded = Nexus.market()->find(name);
-    if (!finded.has_value()){
-        // Nexus.market()->add(name);
-        finded = Nexus.market()->find(name);
-        if (!finded.has_value())
-            return;
-    }
+    auto t = Nexus.market()->find_ticker(reply->symbol);
+    if (t.ensure() == false)
+        return;
 
-    data::Ticker* t = finded.value();
-    data::Instrument* in = t->instrument();
+    sdk::Instrument* in = t->instrument();
+    in->create();
     QJsonObject obj = doc.object();
-    switch (type){
+    switch (reply->type()){
     case api::Request::Info: {
-        in->identity()->setTitle(obj.value("Name").toString());
-        in->identity()->setDescrip(obj.value("Description").toString());
-        in->identity()->setCountry(obj.value("Country").toString());
-        in->identity()->setSector(obj.value("Sector").toString());
-        in->identity()->setIndustry(obj.value("Industry").toString());
-        in->identity()->setHeadquart(obj.value("Address").toString());
-        in->identity()->setUrl(obj.value("OfficialSite").toString());
-        in->identity()->setIpo(QDate::fromString(obj.value("LatestQuarter").toString(), "yyyy-MM-dd"));
+        in->data()->meta.setDescription(obj.value("Description").toString());
+        in->data()->meta.setSector(obj.value("Sector").toString());
+        in->data()->meta.setIndustry(obj.value("Industry").toString());
+        in->data()->legal.setAddress(obj.value("Address").toString());
+        in->data()->meta.setWebsite(obj.value("OfficialSite").toString());
+        in->data()->legal.setIpo(QDate::fromString(obj.value("LatestQuarter").toString(),
+                                                   "yyyy-MM-dd"));
 
         // TODO Figi
         // in->valuation()->setMarketCapitalization(obj.value("MarketCapitalization").toDouble());
@@ -171,19 +165,22 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
         // in->valuation()->set_book_value(obj.value("BookValue").toDouble());
         // in->valuation()->set_share_count(obj.value("SharesOutstanding").toDouble());
 
-        in->profitability()->setRoa(obj.value("ReturnOnAssetsTTM").toDouble());
-        in->profitability()->setRoe(obj.value("ReturnOnEquityTTM").toDouble());
-        in->profitability()->setMarginGros(obj.value("GrossProfitTTM").toDouble() / obj.value("RevenueTTM").toDouble());
-        in->profitability()->setMarginOper(obj.value("OperatingMarginTTM").toDouble());
-        in->profitability()->setNetIncome(obj.value("ProfitMargin").toDouble());
+        // in->profitability()->setRoa(obj.value("ReturnOnAssetsTTM").toDouble());
+        // in->profitability()->setRoe(obj.value("ReturnOnEquityTTM").toDouble());
+        // in->profitability()->setMarginGros(obj.value("GrossProfitTTM").toDouble() /
+        //                                    obj.value("RevenueTTM").toDouble());
+        // in->profitability()->setMarginOper(obj.value("OperatingMarginTTM").toDouble());
+        // in->profitability()->setNetIncome(obj.value("ProfitMargin").toDouble());
 
-        in->dividend()->setYield(obj.value("DividendYield").toDouble());
-        in->dividend()->setPerShare(obj.value("DividendPerShare").toDouble());
-        in->dividend()->setNextDate(QDate::fromString(obj.value("DividendDate").toString(), "yyyy-MM-dd"));
-        in->dividend()->setPrevDate(QDate::fromString(obj.value("ExDividendDate").toString(), "yyyy-MM-dd"));
+        // in->dividend()->setYield(obj.value("DividendYield").toDouble());
+        // in->dividend()->setPerShare(obj.value("DividendPerShare").toDouble());
+        // in->dividend()->setNextDate(QDate::fromString(obj.value("DividendDate").toString(),
+        //                                               "yyyy-MM-dd"));
+        // in->dividend()->setPrevDate(QDate::fromString(obj.value("ExDividendDate").toString(),
+        //                                               "yyyy-MM-dd"));
 
-        in->stability()->setBeta(obj.value("Beta").toDouble());
-        in->profitability()->setRevenueTtm(obj.value("RevenueTTM").toDouble());
+        // in->stability()->setBeta(obj.value("Beta").toDouble());
+        // in->profitability()->setRevenueTtm(obj.value("RevenueTTM").toDouble());
 
         t->save();
         break;
@@ -203,14 +200,14 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
             float close = candle.value("4. close" ).toString().toFloat();
             quint64 vol = candle.value("5. volume").toString().toULongLong();
 
-            t->quotes()->setData(date, open, close, high, low, vol);
+            t->quotes.setData(date, open, close, high, low, vol);
         }
 
         QJsonObject time_minute = root.value("Time Series (1min)").toObject();
         if (! time_minute.isEmpty()){
             QJsonObject meta = root.value("Meta Data").toObject();
             QString str = meta.value("Last Refreshed").toString().first(10);
-            t->quotes()->setIntraday(QDate::fromString(str, "yyyy-MM-dd"));
+            t->quotes.setIntraday(QDate::fromString(str, "yyyy-MM-dd"));
         }
         for (auto it = time_minute.begin(); it != time_minute.end(); ++it) {
             QString dateStr = it.key();
@@ -223,10 +220,9 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
             float close = candle.value("4. close" ).toString().toFloat();
             quint64 vol = candle.value("5. volume").toString().toULongLong();
 
-            t->quotes()->setData(time, open, close, high, low, vol);
+            t->quotes.setData(time, open, close, high, low, vol);
         }
 
-        t->quotes()->recalculate();
         t->save();
         break;
     }
@@ -248,12 +244,14 @@ void api::Figi::_handler_answer(Request type, QByteArray data, QString name, boo
         QJsonArray array = root.value("data").toArray();
         for (const auto& it : std::as_const(array)){
             QJsonObject obj = it.toObject();
-            in->dividend()->setHistory(QDate::fromString(obj.value("ex_dividend_date").toString(),
-                                                          "yyy-MM-dd"),
-                                        obj.value("amount").toDouble());
+            // TODO Dividend
+            // in->dividend()->setHistory(QDate::fromString(obj.value("ex_dividend_date").toString(),
+                                                          // "yyy-MM-dd"),
+                                        // obj.value("amount").toDouble());
         }
         break;
     }
     default:;
     }
+    in->release();
 }

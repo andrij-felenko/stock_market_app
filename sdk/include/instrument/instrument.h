@@ -8,14 +8,12 @@
 \section overview Коротка структура
 
 Instrument
-└─ Listing = vector<Ticker> (per-ticker дані)
-   ├─ dividend
-   ├─ quotes
-   ├─ short_interest
-   ├─ corporate_action
-   └─ valuation              // перелікове, залежить від біржі/ціни
-
-Instrument
+├─ Listing = vector<Ticker> (per-ticker дані)
+│  ├─ dividend
+│  ├─ quotes
+│  ├─ short_interest
+│  ├─ corporate_action
+│  └─ valuation              // перелікове, залежить від біржі/ціни
 ├─ Legal                     // юр. інформація: країна, форма, регулятор
 ├─ Meta                      // назва, опис, сектор, індустрія, регіон
 └─ Finance
@@ -27,8 +25,8 @@ Instrument
    │  └─ Trend               // консенсуси/ревізії/тренди
    ├─ Fundamental            // «сирі» звіти IS/BS/CF по періодах (джерело істини)
    ├─ Capital                // shares_outstanding, float, insider%, institutions%
-   └─ Estimates              // прогнози: EPS next, Revenue next, Target price, Rating...
-//  └─ Derived               // ОКРЕМИЙ КЛАС ВІДСУТНІЙ: похідні функції живуть прямо у Finance
+   ├─ Estimates              // прогнози: EPS next, Revenue next, Target price, Rating...
+   └─ ~ Derived              // ОКРЕМИЙ КЛАС ВІДСУТНІЙ: похідні функції живуть прямо у Finance
 
 \section shortnotes Короткі пояснення
 
@@ -154,16 +152,21 @@ double sales_ps_ttm = ttm_revenue / finance.capital().dilutedSharesTTM();
 #include "data.h"
 #include "isin.h"
 
+namespace api { class Eod; }
+
 class sdk::Instrument : Trackable
 {
 public:
-    Instrument(const Isin& isin);
+    Instrument(const Isin& isin, uint16_t index);
+
+    Instrument(Instrument&&) noexcept;
 
     Data* const data() const;
     Data* create();
+    void release();
+    bool has_data() const;
 
     bool save() const;
-    bool loaded() const;
     bool load();
 
     sdk::Instype type() const { return _type; }
@@ -171,17 +174,42 @@ public:
     const QString& name() const { return _name; }
     sdk::Country country() const;
 
+    std::vector <sdk::Symbol> tickers() const;
+    bool contains(const sdk::Symbol& symbol) const;
+
+    Data* operator->() const noexcept { return data(); }
+
 private:
-    Data* _data = nullptr;
+    Instrument(uint16_t index); // only for Market
+    Instrument(const Instrument&) = delete;
+    Instrument& operator = (const Instrument&) = delete;
+    Instrument& operator = (Instrument&&) noexcept = delete;
+
+    union {
+        std::vector <sdk::Symbol>* _tickers;
+        Data* _data = nullptr;
+    };
+    void unload();
+
+    uint16_t _index = 0;
+    std::atomic <uint32_t> _usages = 0; // 0 - bit is union flag
 
     Isin _isin;
     QString _name;
     sdk::Instype _type;
 
+    void findBetterName(const QString& str);
+
+    Instrument& operator ++ () noexcept;
+    Instrument& operator -- () noexcept;
+
     friend QDataStream& operator << (QDataStream& s, const Instrument& d);
     friend QDataStream& operator >> (QDataStream& s,       Instrument& d);
 
+    friend class sdk::Market;
+
     void _sort_tickers();
+    Ticker* _add_ticker(const sdk::Symbol& symbol);
 };
 
 #endif // SDK_INSTRUMENT_H

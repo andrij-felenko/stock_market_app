@@ -2,6 +2,7 @@
 #define API_FILELOADER_H
 
 #include "api/api.h"
+#include "instrument/isin.h"
 
 namespace api { class FileFetch; }
 
@@ -11,17 +12,18 @@ public:
     static FileFetch* instance();
 
     // Зручний статичний виклик
-    static void fetch_logo(QString tag, const QUrl& url) {
+    static void fetch_logo(const sdk::Isin& isin, const QUrl& url) {
         StringMap k; k["url"] = url.toString();
-        instance()->_send(Request::Text, std::move(tag), std::move(k));
+        instance()->_request(Request::Logo, QString::fromLatin1(~isin), std::move(k));
     }
 
 private:
     explicit FileFetch(QObject* parent = nullptr);
+    using api::API::_request;
 
-    bool _request(Request type, QString name, StringMap keys = {}) override;
-    void _handler_answer(Request type, QByteArray data,
-                         QString name, bool stream = false) override;
+    bool _request(Request type, const QString& name, const sdk::Symbol& symbol,
+                  StringMap keys = {}) override;
+    void _handler_answer(Reply* reply) override;
 
     // Опційно: зберегти копію в кеш-файлі (AppDataLocation/logos)
     static void save_cache(const QString& tag, const QByteArray& bytes, const QString& ext = "png");

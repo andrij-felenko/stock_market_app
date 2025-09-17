@@ -317,3 +317,140 @@ FieldTOpt Balance::setNegativeGoodwill(double v)
 double    Balance::   capitalSurplus() const { return to(_capitalSurplus); }
 FieldTOpt Balance::setCapitalSurplus(double v)
 { return set_if(_capitalSurplus, v); }
+
+
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Balance& d){
+        return s << d._filing_date
+                 << d._totalAssets
+                 << d._totalLiabilities
+                 << d._totalShareholdersEquity
+                 << d._liabilitiesAndShareholdersEquity
+
+                 << d._cash
+                 << d._cashAndCashEquivalents
+                 << d._shortTermInvestments
+
+                 << d._netReceivables
+                 << d._inventory
+                 << d._otherCurrentAssets
+                 << d._totalCurrentAssets
+
+                 << d._longTermInvestments
+                 << d._propertyPlantAndEquipment
+                 << d._propertyPlantAndEquipmentGross
+                 << d._propertyPlantAndEquipmentNet
+                 << d._accumulatedDepreciation
+                 << d._intangibleAssets
+                 << d._goodwill
+
+                 << d._otherNonCurrentAssets
+                 << d._nonCurrentAssetsOther
+                 << d._nonCurrentAssetsTotal
+                 << d._deferredLongTermAssetCharges
+                 << d._accumulatedAmortization
+                 << d._netTangibleAssets
+
+                 << d._accountsPayable
+                 << d._otherCurrentLiabilities
+                 << d._totalCurrentLiabilities
+                 << d._currentDeferredRevenue
+
+                 << d._shortTermDebt
+                 << d._currentPortionOfLongTermDebt
+                 << d._longTermDebt
+                 << d._longTermDebtTotal
+                 << d._totalDebt
+
+                 << d._commonStock
+                 << d._capitalStock
+                 << d._retainedEarnings
+                 << d._otherShareholdersEquity
+                 << d._commonStockTotalEquity
+                 << d._preferredStockTotalEquity
+                 << d._retainedEarningsTotalEquity
+                 << d._treasuryStock
+                 << d._additionalPaidInCapital
+                 << d._totalPermanentEquity
+                 << d._noncontrollingInterest
+                 << d._redeemableNoncontrolInterests
+                 << d._otherComprehensIncomeAccumulat
+
+                 << d._deferredLongTermLiabilities
+                 << d._otherLiabilities
+                 << d._nonCurrentLiabilitiesOther
+                 << d._nonCurrentLiabilitiesTotal
+                 << d._capitalLeaseObligations
+                 << d._warrants
+                 << d._redeemablePreferredStock
+                 << d._negativeGoodwill
+                 << d._capitalSurplus;
+    }
+
+    QDataStream& operator >> (QDataStream& s, Balance& d){
+        return s >> d._filing_date
+                 >> d._totalAssets
+                 >> d._totalLiabilities
+                 >> d._totalShareholdersEquity
+                 >> d._liabilitiesAndShareholdersEquity
+
+                 >> d._cash
+                 >> d._cashAndCashEquivalents
+                 >> d._shortTermInvestments
+
+                 >> d._netReceivables
+                 >> d._inventory
+                 >> d._otherCurrentAssets
+                 >> d._totalCurrentAssets
+
+                 >> d._longTermInvestments
+                 >> d._propertyPlantAndEquipment
+                 >> d._propertyPlantAndEquipmentGross
+                 >> d._propertyPlantAndEquipmentNet
+                 >> d._accumulatedDepreciation
+                 >> d._intangibleAssets
+                 >> d._goodwill
+
+                 >> d._otherNonCurrentAssets
+                 >> d._nonCurrentAssetsOther
+                 >> d._nonCurrentAssetsTotal
+                 >> d._deferredLongTermAssetCharges
+                 >> d._accumulatedAmortization
+                 >> d._netTangibleAssets
+
+                 >> d._accountsPayable
+                 >> d._otherCurrentLiabilities
+                 >> d._totalCurrentLiabilities
+                 >> d._currentDeferredRevenue
+
+                 >> d._shortTermDebt
+                 >> d._currentPortionOfLongTermDebt
+                 >> d._longTermDebt
+                 >> d._longTermDebtTotal
+                 >> d._totalDebt
+
+                 >> d._commonStock
+                 >> d._capitalStock
+                 >> d._retainedEarnings
+                 >> d._otherShareholdersEquity
+                 >> d._commonStockTotalEquity
+                 >> d._preferredStockTotalEquity
+                 >> d._retainedEarningsTotalEquity
+                 >> d._treasuryStock
+                 >> d._additionalPaidInCapital
+                 >> d._totalPermanentEquity
+                 >> d._noncontrollingInterest
+                 >> d._redeemableNoncontrolInterests
+                 >> d._otherComprehensIncomeAccumulat
+
+                 >> d._deferredLongTermLiabilities
+                 >> d._otherLiabilities
+                 >> d._nonCurrentLiabilitiesOther
+                 >> d._nonCurrentLiabilitiesTotal
+                 >> d._capitalLeaseObligations
+                 >> d._warrants
+                 >> d._redeemablePreferredStock
+                 >> d._negativeGoodwill
+                 >> d._capitalSurplus;
+    }
+}

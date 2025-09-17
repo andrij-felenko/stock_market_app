@@ -14,7 +14,7 @@ namespace sdk::instype {
     const std::vector <Meta>& metadata();
 }
 
-namespace geo {
+namespace sdk {
     QDataStream& operator << (QDataStream& out, const Instype& e)
     { return out << static_cast <uint8_t > (e); }
 

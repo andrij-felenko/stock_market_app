@@ -10,7 +10,7 @@
 namespace sdk {
 enum class Quartel : uint8_t {
     First, Second, Third, Fourth,
-    Annual = Fourth
+    Annual
 };
 constexpr uint8_t operator + (Quartel m) { return static_cast <uint8_t>(m); }
 namespace quartel {
@@ -32,11 +32,12 @@ enum class Month : uint8_t {
     Unknown = 0,
     January, February, March,
     April,   May,      June,
-    Jule,    August,   September,
+    July,    August,   September,
     October, November, December
 };
 constexpr uint8_t operator + (Month m) { return static_cast <uint8_t>(m); }
 namespace month {
+    uint8_t to_int   (Month m);
     QString to_string(Month m);
     Month from_string(const QString& s);
 

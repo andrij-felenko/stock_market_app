@@ -35,6 +35,10 @@ public:
     FieldTOpt setGicSubIndustry(const QString& industry)
     { return sdk::set_if(this, _gic_subinddustry, industry, sdk::Meta_gic_subindustry); }
 
+    const QString& homeCategory() const { return _category; }
+    FieldTOpt setHomeCategory(const QString& category)
+    { return sdk::set_if(this, _category, category, sdk::Meta_home_category); }
+
     const QString& description() const { return _description; }
     FieldTOpt setDescription(const QString& description)
     { return sdk::set_if(this, _description, description, sdk::Meta_description); }
@@ -76,6 +80,7 @@ private:
     QString _gic_group;
     QString _gic_industry;
     QString _gic_subinddustry;
+    QString _category;
     QString _description;
     QJsonObject _officers;
     QString _phone_number;
@@ -85,6 +90,9 @@ private:
     QUrl _logo_url;
     QUrl _logo;
     QSize _logo_size;
+
+    friend QDataStream& operator << (QDataStream& s, const Meta& d);
+    friend QDataStream& operator >> (QDataStream& s,       Meta& d);
 };
 
 #endif // SDK_INSTRUMENT_META_H

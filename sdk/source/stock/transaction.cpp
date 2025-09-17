@@ -1,21 +1,19 @@
-#include "data/user/transaction.h"
+#include "stock/transaction.h"
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 
-using namespace data;
-
-data::Transaction::Transaction(QObject* parent) : QObject(parent)
+sdk::Transaction::Transaction(QObject* parent) : QObject(parent)
 {
     //
 }
 
-bool  Transaction::buy()   const { return _buy;   }
-float Transaction::price() const { return _price; }
-float Transaction::count() const { return _count; }
-QString   Transaction::broker() const { return _broker; }
-QDateTime Transaction::dtime()  const { return _dtime;  }
+bool  sdk::Transaction::buy()   const { return _buy;   }
+float sdk::Transaction::price() const { return _price; }
+float sdk::Transaction::count() const { return _count; }
+QString   sdk::Transaction::broker() const { return _broker; }
+QDateTime sdk::Transaction::dtime()  const { return _dtime;  }
 
-namespace data {
+namespace sdk {
     QDataStream& operator << (QDataStream& s, const Transaction& d) {
         return s << d._broker << d._buy << d._count << d._price << d._dtime;
     }

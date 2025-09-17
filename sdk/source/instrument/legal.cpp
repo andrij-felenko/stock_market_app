@@ -1,4 +1,15 @@
-#ifndef SDK_INSTRUMENT_VALUATION_H
-#define SDK_INSTRUMENT_VALUATION_H
+#include "instrument/legal.h"
 
-#endif // SDK_INSTRUMENT_VALUATION_H
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Legal& d){
+        return s << d._open_figi << d._lei << d._cik << d._ein << d._cusip
+                 << d._ipo << d._internationalDomestic << d._fiscal_yearend
+                 << d._delisted << d._address << d._address_json;
+    }
+
+    QDataStream& operator >> (QDataStream& s, Legal& d){
+        return s >> d._open_figi >> d._lei >> d._cik >> d._ein >> d._cusip
+                 >> d._ipo >> d._internationalDomestic >> d._fiscal_yearend
+                 >> d._delisted >> d._address >> d._address_json;
+    }
+}

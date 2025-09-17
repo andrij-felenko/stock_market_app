@@ -1,14 +1,12 @@
-#include "data/instrument/quotes.h"
+#include "instrument/quotes.h"
 #include "utilities/features.h"
 
-using namespace data;
-
-data::Quotes::Quotes(QObject* parent) : QObject(parent)
+sdk::Quotes::Quotes()
 {
     //
 }
 
-data::Quotes& Quotes::operator =(const Quotes& other)
+sdk::Quotes& sdk::Quotes::operator =(const Quotes& other)
 {
     if (this == &other) return *this;
 
@@ -16,44 +14,15 @@ data::Quotes& Quotes::operator =(const Quotes& other)
     _intraday      = other._intraday;
     _points        = other._points;
 
-    for (QObject* obj : std::as_const(_result))
-        obj->deleteLater();
-    _result.clear();
-
-    recalculate();
     return *this;
 }
 
-const std::vector <QuotesDate>& Quotes::raw_points() const
+const std::vector <sdk::QuotesDate>& sdk::Quotes::raw_points() const
 {
     return _points;
 }
 
-QVector<QObject*> Quotes::points()
-{
-    for (QObject* o : std::as_const(_result))
-        o->deleteLater();
-    _result.clear();
-
-    for (const QuotesDate& p : std::as_const(_points)) {
-        QObject* obj = new QObject(this);
-        obj->setProperty("date", p.date);
-        obj->setProperty("open", p.open);
-        obj->setProperty("close", p.close);
-        obj->setProperty("high", p.high);
-        obj->setProperty("low", p.low);
-        obj->setProperty("volume", p.volume);
-        _result.append(obj);
-    }
-    return _result;
-}
-
-void Quotes::recalculate()
-{
-    emit pointsChanged();
-}
-
-void Quotes::setData(QDate d, float open, float close, float high, float low, quint64  v)
+void sdk::Quotes::setData(QDate d, float open, float close, float high, float low, quint64  v)
 {
     for (auto& p : _points)
         if (d == p.date){
@@ -77,7 +46,7 @@ void Quotes::setData(QDate d, float open, float close, float high, float low, qu
     _points.push_back(p);
 }
 
-void Quotes::setData(QTime t, float open, float close, float high, float low, quint64 v)
+void sdk::Quotes::setData(QTime t, float open, float close, float high, float low, quint64 v)
 {
     for (auto& p : _intraday)
         if (t == p.time){
@@ -101,13 +70,13 @@ void Quotes::setData(QTime t, float open, float close, float high, float low, qu
     _intraday.push_back(p);
 }
 
-void Quotes::setIntraday(QDate date)
+void sdk::Quotes::setIntraday(QDate date)
 {
     _intraday.clear();
     _last_intraday = date;
 }
 
-float Quotes::yearMax() const
+float sdk::Quotes::yearMax() const
 {
     float max = 0;
     for (const auto& it : _points)
@@ -121,7 +90,7 @@ float Quotes::yearMax() const
     return max;
 }
 
-float Quotes::yearMin() const
+float sdk::Quotes::yearMin() const
 {
     float min = std::numeric_limits <float>::max();
     for (const auto& it : _points)
@@ -135,7 +104,7 @@ float Quotes::yearMin() const
     return min;
 }
 
-float Quotes::current() const
+float sdk::Quotes::current() const
 {
     float ret = 0.0;
     QDate date = QDate::fromJulianDay(0);
@@ -157,12 +126,12 @@ float Quotes::current() const
     return ret;
 }
 
-bool Quotes::empty()
+bool sdk::Quotes::empty()
 {
     return _points.empty();
 }
 
-namespace data {
+namespace sdk {
 // --------------------------------------------------------------------------------------
     QDataStream& operator << (QDataStream& s, const QuotesDate& q)
     { return s << q.date << q.open << q.close << q.high << q.low << q.volume; }
@@ -177,17 +146,17 @@ namespace data {
     { return s >> q.time >> q.open >> q.close >> q.high >> q.low >> q.volume; }
 // --------------------------------------------------------------------------------------
     QDataStream& operator << (QDataStream& s, const Quotes& q) {
-        util::list_to_stream(s, q._points);
-        util::list_to_stream(s, q._intraday);
-        return s << q._last_intraday;
+        sdk::list_to_stream(s, q._points);
+        sdk::list_to_stream(s, q._intraday);
+        return s << q._last_intraday << q._beta;
     }
 
     QDataStream& operator >> (QDataStream& s, Quotes& q) {
         q._points.clear();
-        util::list_from_stream(s, q._points);
-        util::list_from_stream(s, q._intraday);
-        q.recalculate();
-        return s >> q._last_intraday;
+        q._intraday.clear();
+        sdk::list_from_stream(s, q._points);
+        sdk::list_from_stream(s, q._intraday);
+        return s >> q._last_intraday >> q._beta;
     }
 // --------------------------------------------------------------------------------------
 }

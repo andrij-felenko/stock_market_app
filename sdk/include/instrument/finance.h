@@ -16,8 +16,10 @@ public:
     Estimate estimates;
     Fundamental fundamental;
     QuartelData& quartel(uint16_t year, Quartel q);
+    QuartelData& quartel(const QDate& date);
 
     bool hasQuartel(uint16_t year, Quartel q) const;
+    bool hasQuartel(const QDate& date) const;
 
     // TODO Прибуток на акцію (EPS). NetIncomeTTM / SharesOutstanding
     // Розраховується як чистий прибуток компанії за останні 12 місяців, поділений на к-сть акцій.
@@ -57,6 +59,9 @@ public:
 
 private:
     std::vector <QuartelData> _quartel_data;
+
+    friend QDataStream& operator << (QDataStream& s, const Finance& d);
+    friend QDataStream& operator >> (QDataStream& s,       Finance& d);
 };
 
 #endif // SDK_INSTRUMENT_FINANCE_H

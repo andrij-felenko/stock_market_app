@@ -53,3 +53,29 @@ FieldTOpt sdk::Estimate::setAnalystStrongSell(uint16_t count)
 
 const sdk::Estimate::Analyst& sdk::Estimate::analyst() const { return _analyst; }
 // ================================================================================================
+
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Estimate& d){
+        return s << d._wallStreetTargetPrice
+                 << d._epsEstimateCurrentYear << d._epsEstimateNextYear
+                 << d._epsEstimateCurrentQuart << d._epsEstimateNextQuart
+                 << d._recentQuart
+
+                 << d._analyst.consensus_rate
+                 << d._analyst.target_price
+                 << d._analyst.strongbuy << d._analyst.buy << d._analyst.hold
+                 << d._analyst.sell << d._analyst.strongsell;
+    }
+
+    QDataStream& operator >> (QDataStream& s, Estimate& d){
+        return s >> d._wallStreetTargetPrice
+                 >> d._epsEstimateCurrentYear >> d._epsEstimateNextYear
+                 >> d._epsEstimateCurrentQuart >> d._epsEstimateNextQuart
+                 >> d._recentQuart
+
+                 >> d._analyst.consensus_rate
+                 >> d._analyst.target_price
+                 >> d._analyst.strongbuy >> d._analyst.buy >> d._analyst.hold
+                 >> d._analyst.sell >> d._analyst.strongsell;
+    }
+}

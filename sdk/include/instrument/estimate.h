@@ -56,6 +56,9 @@ private:
     QDate _recentQuart;
 
     Analyst _analyst;
+
+    friend QDataStream& operator << (QDataStream& s, const Estimate& d);
+    friend QDataStream& operator >> (QDataStream& s,       Estimate& d);
 };
 
 #endif // SDK_INSTRUMENT_ESTIMATE_H

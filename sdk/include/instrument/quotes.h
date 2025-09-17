@@ -48,7 +48,6 @@ public:
 
     const std::vector <QuotesDate>& raw_points() const;
 
-    void recalculate();
     void setData(QDate d, float open, float close, float high, float low, quint64  v);
     void setData(QTime t, float open, float close, float high, float low, quint64  v);
     void setIntraday(QDate date);

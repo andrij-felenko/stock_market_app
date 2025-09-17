@@ -24,3 +24,11 @@ void sdk::QuartelData::setCurrency(sdk::Currency new_c)
     incomes._currency = new_c;
     trend._currency = new_c;
 }
+
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const QuartelData& d)
+    { return s << d._year << d._quartel << d._currency; }
+
+    QDataStream& operator >> (QDataStream& s, QuartelData& d)
+    { return s >> d._year >> d._quartel >> d._currency; }
+}

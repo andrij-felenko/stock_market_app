@@ -19,7 +19,7 @@ enum FieldType {
     Meta_gic_group,
     Meta_gic_industry,
     Meta_gic_subindustry,
-    Meta_home_domestic,
+    Meta_home_category,
     Meta_description,
     Meta_officers,
     Meta_phone_number,
@@ -89,6 +89,12 @@ enum FieldType {
 
     Corp_last_split_factor,
     Corp_split_date,
+
+    Earnings_q,
+    Balance_q,
+    CashFlow_q,
+    Incomes_q,
+    Trend_q,
 };
 }
 
@@ -108,18 +114,24 @@ namespace sdk {
     class Fundamental;
     class Incomes;
     class Instrument;
+    class Isin;
     class Legal;
     class Meta;
+    class Market;
     class QuartelData;
+
     class Quotes;
     struct QuotesDate;
     struct QuotesTime;
+
     class ShortInterest;
     class Ticker;
+    class Transaction;
     class Trend;
+    class User;
     class Valuation;
+    class Stock;
     class Symbol;
-    class Isin;
 
     // Utilities
     class ResDir;

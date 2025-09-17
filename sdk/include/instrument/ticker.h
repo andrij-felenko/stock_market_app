@@ -19,45 +19,36 @@
 class sdk::Ticker
 {
 public:
-    Quotes* quotes() const;
-    sdk::Currency currency() const;
-    QString currency_str() const;
-    QString exchange() const;
-    QString country() const;
     sdk::Symbol symbol() const;
-    QString symbol_str() const;
-    bool is_primary() const;
+    Instrument* parent() const;
+    Instrument* instrument() const;
 
-    void set_symbol(sdk::Symbol symbol);
+    CorporateAction corp_action;
+    Dividend        dividend;
+    Quotes          quotes;
+    ShortInterest   short_interst;
+    Valuation       valuation;
 
     void save();
 
-public slots:
-    void setSymbol(QString new_symbol);
-
-    void set_symbol(QString new_symbol);
-    void set_symbol(QString code, QString exch);
-    void set_symbol(QString code, sdk::Exchange e);
-
 private:
-    Ticker();
+    Ticker(uint16_t parent = 0);
+    Ticker(const sdk::Symbol& symbol, uint16_t parent = 0);
 
-    Dividend _dividend;
-    Quotes _quotes;
-    ShortInterest _short_interst;
-    CorporateAction _corp_action;
-    Valuation _valuation;
     sdk::Symbol _symbol;
 
-    friend class Instrument;
+    uint16_t _parent;
+    friend class sdk::Data;
+    friend class sdk::Instrument;
+    friend class sdk::Market;
 
     template <typename T, typename... Args>
     requires (std::is_pointer_v <T> ? sdk::DataStreamReadable <std::remove_pointer_t <T>>
                                     : sdk::DataStreamReadable <T>)
     friend QDataStream& sdk::list_from_stream(QDataStream& s, std::vector <T>& d, Args&&...args);
 
-    Ticker(const Ticker&) = delete;        // still disallow copy-construct
-    Ticker& operator = (Ticker&&) = delete;  // and moving, if you prefer
+    // Ticker(const Ticker&) = delete;        // still disallow copy-construct
+    // Ticker& operator = (Ticker&&) = delete;  // and moving, if you prefer
     Ticker& operator = (const Ticker& other);
 
     friend QDataStream& operator << (QDataStream& s, const Ticker& d);

@@ -17,3 +17,15 @@ bool sdk::Finance::hasQuartel(uint16_t year, Quartel q) const
             return true;
     return false;
 }
+
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Finance& d){
+        sdk::list_to_stream(s, d._quartel_data);
+        return s << d.capital << d.estimates << d.fundamental;
+    }
+
+    QDataStream& operator >> (QDataStream& s, Finance& d){
+        sdk::list_from_stream(s, d._quartel_data);
+        return s >> d.capital >> d.estimates >> d.fundamental;
+    }
+}

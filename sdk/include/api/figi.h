@@ -16,14 +16,15 @@ class api::Figi : public API {
 public:
     static Figi* instance();
 
-    static void update_info_by_tag(QString tag);
+    static void update_info_by_tag(const sdk::Symbol& tag);
 
 private:
     explicit Figi(QObject* parent = nullptr);
+    using api::API::_request;
 
-    virtual bool _request(Request type, QString name, StringMap keys = {}) override;
-    virtual void _handler_answer(Request type, QByteArray data,
-                                 QString name, bool stream = false) override;
+    virtual bool _request(Request type, const QString& name, const sdk::Symbol& symbol,
+                          StringMap keys = {}) override;
+    virtual void _handler_answer(Reply* reply) override;
 };
 
 #endif

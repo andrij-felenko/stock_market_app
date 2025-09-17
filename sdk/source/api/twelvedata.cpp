@@ -7,10 +7,10 @@
 #include <QJsonArray>
 #include <QtGui/QGuiApplication>
 
-#include "data/market.h"
+#include "services/market.h"
 #include "loader.h"
 
-api::TwelveData::TwelveData(QObject* parent) : API(parent)
+api::TwelveData::TwelveData(QObject* parent) : API(QUrl("https://api.twelvedata.com/"), parent)
 {
     // set_api_key("f9b33ba1139a4b5e8c0572bcd1e11258");
 }
@@ -28,41 +28,35 @@ api::TwelveData* api::TwelveData::instance()
     // m_api_key = key;
 // }
 
-bool api::TwelveData::_request(Request type, QString name, StringMap keys)
+bool api::TwelveData::_request(Request type, const QString& name, const sdk::Symbol& tag,
+                               StringMap keys)
 {
-    QString base = "https://api.twelvedata.com/";
+    Reply* post = _add(type);
 
-    QString subname = name;
-    while (subname.right(3).toUpper() == ".US")
-        subname.chop(3);
-    qDebug() << name << subname;
-
-    QUrl url;
-    QUrlQuery query;
+    QString subname;
+    if (tag.us()) subname = tag.venue();
+    else          subname = tag.full();
 
     switch (type) {
         case api::Request::Candle:
-            url = base + "time_series";
+            post->suburl = "time_series";
             if (!keys.contains("start_date") ||
                 !keys.contains("end_date") ||
                 !keys.contains("interval"))
                 return false;
 
-            query.addQueryItem("symbol", subname);
-            query.addQueryItem("interval", keys["interval"]);
-            query.addQueryItem("start_date", keys["start_date"]);
-            query.addQueryItem("end_date", keys["end_date"]);
-            query.addQueryItem("apikey", settings::network()->key_td());
+            post->addQueryItem("symbol", subname);
+            post->addQueryItem("interval", keys["interval"]);
+            post->addQueryItem("start_date", keys["start_date"]);
+            post->addQueryItem("end_date", keys["end_date"]);
+            post->addQueryItem("apikey", settings::network()->key_td());
             break;
         default:
             return false;
     }
 
-    url.setQuery(query);
-
-    QNetworkRequest request(url);
-    API::_add_reply(type, m_manager.get(request), name);
-    qDebug() << "request:" << url;
+    post->name = name;
+    post->prepare();
     return true;
 }
 
@@ -79,14 +73,14 @@ void api::TwelveData::add_by_tag(QString tag)
         { "start_date", QDate(2004, 06, 6).toString("yyyy-MM-dd") },
         { "end_date", QDate(2025, 06, 6).toString("yyyy-MM-dd") }
     };
-    _send(Request::Candle, tag, params);
+    _request(Request::Candle, tag, params);
 }
 
-void api::TwelveData::_handler_answer(Request type, QByteArray data, QString name, bool stream)
+void api::TwelveData::_handler_answer(Reply* reply)
 {
     qDebug() << "handler answer";
-    qDebug() << data;
-    QJsonDocument doc = QJsonDocument::fromJson(data);
+    qDebug() << reply->receive_data();
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
     QJsonObject obj = doc.object();
     qDebug() << 1;
 
@@ -96,20 +90,14 @@ void api::TwelveData::_handler_answer(Request type, QByteArray data, QString nam
     }
     qDebug() << 2;
 
-    auto finded = Nexus.market()->find(name);
-    if (!finded.has_value()) {
-        // Nexus.market()->add(name);
-        finded = Nexus.market()->find(name);
-        qDebug() << finded.has_value();
-        if (!finded.has_value())
-            return;
-    }
+    auto t = Nexus.market()->find_ticker(reply->name);
+    if (t.ensure() == false)
+        return;
+
     qDebug() << 3;
 
-    data::Ticker* t = finded.value();
-
     qDebug() << 4;
-    if (type == api::Request::Candle && obj.contains("values")) {
+    if (reply->type() == api::Request::Candle && obj.contains("values")) {
         QJsonArray values = obj["values"].toArray();
         qDebug() << 5;
         for (const QJsonValue& v : std::as_const(values)) {
@@ -124,14 +112,11 @@ void api::TwelveData::_handler_answer(Request type, QByteArray data, QString nam
             QDate date = QDate::fromString(datetime, "yyyy-MM-dd");
             // або time, залежно від granularності
 
-            t->quotes()->setData(date, open, close, high, low, volume);
+            t->quotes.setData(date, open, close, high, low, volume);
             qDebug() << "=====================================" << date;
         }
         qDebug() << 6;
 
-        t->quotes()->recalculate();
-        emit t->save();
-        qDebug() << 7;
         t->save();
         qDebug() << 8;
     }

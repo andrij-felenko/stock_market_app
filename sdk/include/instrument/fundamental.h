@@ -29,6 +29,9 @@ private:
     double _book_value;
     double _revenue_ttm = 0.0;
     double _gross_profit_ttm = 0.0;
+
+    friend QDataStream& operator << (QDataStream& s, const Fundamental& d);
+    friend QDataStream& operator >> (QDataStream& s,       Fundamental& d);
 };
 
 #endif // SDK_INSTRUMENT_FUNDAMENTAL_H

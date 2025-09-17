@@ -8,10 +8,11 @@
 #include <QtGui/QGuiApplication>
 #include <QJsonArray>
 
-#include "data/market.h"
-#include "data/instrument.h"
+#include "services/market.h"
+#include "instrument/instrument.h"
 
-api::AlphaVantage::AlphaVantage(QObject* parent) : API(parent)
+api::AlphaVantage::AlphaVantage(QObject* parent)
+    : API(QUrl("https://www.alphavantage.co/query/"), parent)
 {
     shift_ms = 15'100;
 }
@@ -25,93 +26,89 @@ api::AlphaVantage* api::AlphaVantage::instance()
     return _instance;
 }
 
-void api::AlphaVantage::update_info_by_tag(QString tag)
+void api::AlphaVantage::update_info_by_tag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
-    data->_send(Request::Info, tag);
+    data->_request(Request::Info, tag);
 }
 
-void api::AlphaVantage::daily_candle_by_tag(QString tag)
+void api::AlphaVantage::daily_candle_by_tag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
     api::StringMap params;
     params["func"] = "TIME_SERIES_DAILY";
-    data->_send(Request::Candle, tag, params);
+    data->_request(Request::Candle, tag, params);
 }
 
-void api::AlphaVantage::today_candle_by_tag(QString tag)
+void api::AlphaVantage::today_candle_by_tag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
     api::StringMap params;
     params["func"] = "TIME_SERIES_INTRADAY";
-    data->_send(Request::Candle, tag, params);
+    data->_request(Request::Candle, tag, params);
 }
 
 void api::AlphaVantage::find_symbol(QString str) { find_tag(str); }
 void api::AlphaVantage::find_tag   (QString str)
 {
     AlphaVantage* data = AlphaVantage::instance();
-    data->_send(Request::Tag, str);
+    data->_request(Request::Tag, str);
 }
 
-bool api::AlphaVantage::_request(Request type, QString name, StringMap keys)
+bool api::AlphaVantage::_request(Request type, const QString& name,
+                                 const sdk::Symbol& tag, StringMap keys)
 {
-    QString base("https://www.alphavantage.co/query/");
-    // as we work only with US marker, we nee to cut .US domen from tag
-    QString subname = name;
-    if (subname.right(3).toUpper() == ".US")
-        subname.chop(3);
+    Reply* post = _add(type);
 
-    QUrl url;
+    QString subname;
+    if (tag.us()) subname = tag.venue();
+    else          subname = tag.full();
+
     switch (type){
-        case api::Request::Text: return false;
-
-        case api::Request::MetricAll:
-        case api::Request::MetricPrice:
-        case api::Request::MetricMargin:
-        case api::Request::MetricValuation: url = base + "stock/metric"; break;
-
-        case api::Request::Info:     url = base + "stock/profile2"; break;
-        case api::Request::Peers:    url = base + "stock/peers";    break;
-        case api::Request::Quote:    url = base + "quote";          break;
-        case api::Request::Tag:
-        case api::Request::Candle:   url = base + "";   break;
-        case api::Request::Dividend: url = base + "stock/dividend"; break;
-        case api::Request::Earnings: url = base + "calendar/earnings";         break;
-        case api::Request::Reported: url = base + "stock/financials-reported"; break;
+        case Request::Logo:
+        case Request::Text: return false;
+        case Request::MetricAll:
+        case Request::MetricPrice:
+        case Request::MetricMargin:
+        case Request::MetricValuation: post->suburl = "stock/metric"; break;
+        case Request::Info:     post->suburl = "stock/profile2"; break;
+        case Request::Peers:    post->suburl = "stock/peers";    break;
+        case Request::Quote:    post->suburl = "quote";          break;
+        case Request::Tag:
+        case Request::Dividend: post->suburl = "stock/dividend"; break;
+        case Request::Earnings: post->suburl = "calendar/earnings";         break;
+        case Request::Reported: post->suburl = "stock/financials-reported"; break;
         case Request::Exchange:
-            break;
+        case Request::Candle: break;
     }
 
-    QUrlQuery query;
-
     switch (type){
-        case api::Request::MetricAll:       query.addQueryItem("metric", "all");       break;
-        case api::Request::MetricPrice:     query.addQueryItem("metric", "price");     break;
-        case api::Request::MetricMargin:    query.addQueryItem("metric", "margin");    break;
-        case api::Request::MetricValuation: query.addQueryItem("metric", "valuation"); break;
+        case api::Request::MetricAll:       post->addQueryItem("metric", "all");       break;
+        case api::Request::MetricPrice:     post->addQueryItem("metric", "price");     break;
+        case api::Request::MetricMargin:    post->addQueryItem("metric", "margin");    break;
+        case api::Request::MetricValuation: post->addQueryItem("metric", "valuation"); break;
         case api::Request::Candle: {
             if (!keys.contains("func"))
                 return false;
 
-            query.addQueryItem("function", keys["func"]);
-            query.addQueryItem("symbol", subname);
+            post->addQueryItem("function", keys["func"]);
+            post->addQueryItem("symbol", subname);
             if (keys["func"] == "TIME_SERIES_INTRADAY")
-                query.addQueryItem("interval", "1min");
-            query.addQueryItem("outputsize", "full");
-            query.addQueryItem("apikey", settings::network()->key_av());
+                post->addQueryItem("interval", "1min");
+            post->addQueryItem("outputsize", "full");
+            post->addQueryItem("apikey", settings::network()->key_av());
             break;
         }
         case api::Request::Dividend: {
-            query.addQueryItem("function", "DIVIDENDS");
-            query.addQueryItem("symbol", subname);
-            query.addQueryItem("apikey", settings::network()->key_av());
+            post->addQueryItem("function", "DIVIDENDS");
+            post->addQueryItem("symbol", subname);
+            post->addQueryItem("apikey", settings::network()->key_av());
             break;
         }
         case api::Request::Info: {
-            query.addQueryItem("function", "OVERVIEW");
-            query.addQueryItem("symbol", subname);
-            query.addQueryItem("apikey", settings::network()->key_av());
+            post->addQueryItem("function", "OVERVIEW");
+            post->addQueryItem("symbol", subname);
+            post->addQueryItem("apikey", settings::network()->key_av());
             break;
         }
         case api::Request::Peers:    break;
@@ -119,57 +116,50 @@ bool api::AlphaVantage::_request(Request type, QString name, StringMap keys)
         case api::Request::Earnings: break;
         case api::Request::Reported: break;
         case api::Request::Tag: {
-            query.addQueryItem("function", "SYMBOL_SEARCH");
-            query.addQueryItem("keywords", subname);
-            query.addQueryItem("apikey", settings::network()->key_av());
+            post->addQueryItem("function", "SYMBOL_SEARCH");
+            post->addQueryItem("keywords", subname);
+            post->addQueryItem("apikey", settings::network()->key_av());
+            post->name = name;
             break;
         }
         default:;
     }
 
-    url.setQuery(query);
-
-    QNetworkRequest request(url);
-    API::_add_reply(type, _netmanager.get(request), name);
-    qDebug() << "request:" << url;
+    post->prepare();
     return true;
 }
 
-void api::AlphaVantage::_handler_answer(Request type, QByteArray data, QString name, bool stream)
+void api::AlphaVantage::_handler_answer(Reply* reply)
 {
     qDebug() << "handler answer";
 
-    auto finded = Nexus.market()->find(name);
-    if (!finded.has_value()){
-        finded = Nexus.market()->find(name);
-        if (!finded.has_value())
-            return;
-    }
-
-    data::Ticker* t = finded.value();
-    QJsonObject obj = QJsonDocument::fromJson(data).object();
-    switch (type){
-        case api::Request::Info:     _handle_info(obj, name, t); break;
-        case api::Request::Candle:   _handle_candle(obj, t);     break;
-        case api::Request::Tag:      _handle_tag(obj);           break;
-        case api::Request::Dividend: _handle_dividend(obj, t);   break;
+    switch (reply->type()){
+        case api::Request::Info:     _handle_info    (reply); break;
+        case api::Request::Candle:   _handle_candle  (reply); break;
+        case api::Request::Tag:      _handle_tag     (reply); break;
+        case api::Request::Dividend: _handle_dividend(reply); break;
         default:;
     }
 }
 
-void api::AlphaVantage::_handle_info(const QJsonObject& root, QString name, data::Ticker* t)
+void api::AlphaVantage::_handle_info(Reply* reply)
 {
-    data::Instrument* in = t->instrument();
-    in->identity()->setTitle(root.value("Name").toString());
-    in->identity()->setDescrip(root.value("Description").toString());
+    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    if (ticker.ensure() == false){
+        qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
+        return;
+    }
+    QJsonObject root = QJsonDocument::fromJson(reply->receive_data()).object();
+    // in->identity()->setTitle(root.value("Name").toString());
+    // in->identity()->setDescrip(root.value("Description").toString());
 
-    in->identity()->setCountry(root.value("Country").toString());
-    in->identity()->setSector(root.value("Sector").toString());
-    in->identity()->setIndustry(root.value("Industry").toString());
-    in->identity()->setHeadquart(root.value("Address").toString());
-    in->identity()->setUrl(root.value("OfficialSite").toString());
-    in->identity()->setIpo(QDate::fromString(root.value("LatestQuarter").toString(),
-                                              "yyyy-MM-dd"));
+    // in->identity()->setCountry(root.value("Country").toString());
+    // in->identity()->setSector(root.value("Sector").toString());
+    // in->identity()->setIndustry(root.value("Industry").toString());
+    // in->identity()->setHeadquart(root.value("Address").toString());
+    // in->identity()->setUrl(root.value("OfficialSite").toString());
+    // in->identity()->setIpo(QDate::fromString(root.value("LatestQuarter").toString(),
+    //                                           "yyyy-MM-dd"));
 
     // TODO Alpha vintage update
     // in->valuation()->setMarketCapitalization(root.value("MarketCapitalization").toDouble());
@@ -179,29 +169,36 @@ void api::AlphaVantage::_handle_info(const QJsonObject& root, QString name, data
     // in->valuation()->set_book_value(root.value("BookValue").toDouble());
     // in->shares()->setSharesOutstanding(root.value("SharesOutstanding").toDouble());
 
-    in->profitability()->setRoa(root.value("ReturnOnAssetsTTM").toDouble());
-    in->profitability()->setRoe(root.value("ReturnOnEquityTTM").toDouble());
-    in->profitability()->setMarginOper(root.value("OperatingMarginTTM").toDouble());
-    in->profitability()->setNetIncome(root.value("ProfitMargin").toDouble());
-    in->profitability()->setMarginGros(root.value("GrossProfitTTM").toDouble() /
-                                         root.value("RevenueTTM").toDouble());
+    // in->profitability()->setRoa(root.value("ReturnOnAssetsTTM").toDouble());
+    // in->profitability()->setRoe(root.value("ReturnOnEquityTTM").toDouble());
+    // in->profitability()->setMarginOper(root.value("OperatingMarginTTM").toDouble());
+    // in->profitability()->setNetIncome(root.value("ProfitMargin").toDouble());
+    // in->profitability()->setMarginGros(root.value("GrossProfitTTM").toDouble() /
+    //                                      root.value("RevenueTTM").toDouble());
 
 
-    in->dividend()->setYield(root.value("DividendYield").toDouble());
-    in->dividend()->setPerShare(root.value("DividendPerShare").toDouble());
-    in->dividend()->setNextDate(QDate::fromString(root.value("DividendDate").toString(),
-                                                    "yyyy-MM-dd"));
-    in->dividend()->setPrevDate(QDate::fromString(root.value("ExDividendDate").toString(),
-                                                    "yyyy-MM-dd"));
+    // in->dividend()->setYield(root.value("DividendYield").toDouble());
+    // in->dividend()->setPerShare(root.value("DividendPerShare").toDouble());
+    // in->dividend()->setNextDate(QDate::fromString(root.value("DividendDate").toString(),
+    //                                                 "yyyy-MM-dd"));
+    // in->dividend()->setPrevDate(QDate::fromString(root.value("ExDividendDate").toString(),
+    //                                                 "yyyy-MM-dd"));
 
-    in->stability()->setBeta(root.value("Beta").toDouble());
-    in->profitability()->setRevenueTtm(root.value("RevenueTTM").toDouble());
+    // in->stability()->setBeta(root.value("Beta").toDouble());
+    // in->profitability()->setRevenueTtm(root.value("RevenueTTM").toDouble());
 
-    t->save();
+    ticker->save();
+    ticker->instrument()->release();
 }
 
-void api::AlphaVantage::_handle_candle(const QJsonObject& root, data::Ticker* t)
+void api::AlphaVantage::_handle_candle(Reply* reply)
 {
+    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    if (ticker.ensure() == false){
+        qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
+        return;
+    }
+    QJsonObject root = QJsonDocument::fromJson(reply->receive_data()).object();
     QJsonObject time_daily = root.value("Time Series (Daily)").toObject();
     for (auto it = time_daily.begin(); it != time_daily.end(); ++it) {
         QString dateStr = it.key();
@@ -214,14 +211,14 @@ void api::AlphaVantage::_handle_candle(const QJsonObject& root, data::Ticker* t)
         float close = candle.value("4. close" ).toString().toFloat();
         quint64 vol = candle.value("5. volume").toString().toULongLong();
 
-        t->quotes()->setData(date, open, close, high, low, vol);
+        ticker->quotes.setData(date, open, close, high, low, vol);
     }
 
     QJsonObject time_minute = root.value("Time Series (1min)").toObject();
     if (! time_minute.isEmpty()){
         QJsonObject meta = root.value("Meta Data").toObject();
         QString str = meta.value("Last Refreshed").toString().first(10);
-        t->quotes()->setIntraday(QDate::fromString(str, "yyyy-MM-dd"));
+        ticker->quotes.setIntraday(QDate::fromString(str, "yyyy-MM-dd"));
     }
     for (auto it = time_minute.begin(); it != time_minute.end(); ++it) {
         QString dateStr = it.key();
@@ -234,15 +231,16 @@ void api::AlphaVantage::_handle_candle(const QJsonObject& root, data::Ticker* t)
         float close = candle.value("4. close" ).toString().toFloat();
         quint64 vol = candle.value("5. volume").toString().toULongLong();
 
-        t->quotes()->setData(time, open, close, high, low, vol);
+        ticker->quotes.setData(time, open, close, high, low, vol);
     }
 
-    t->quotes()->recalculate();
-    t->save();
+    ticker->save();
+    ticker->instrument()->release();
 }
 
-void api::AlphaVantage::_handle_tag(const QJsonObject& root)
+void api::AlphaVantage::_handle_tag(Reply* reply)
 {
+    QJsonObject root = QJsonDocument::fromJson(reply->receive_data()).object();
     QJsonArray list = root.value("bestMatches").toArray();
     // Nexus.search_tag()->clear();
     // for (const auto& it : std::as_const(list)){
@@ -253,13 +251,20 @@ void api::AlphaVantage::_handle_tag(const QJsonObject& root)
     // }
 }
 
-void api::AlphaVantage::_handle_dividend(const QJsonObject& root, data::Ticker* t)
+void api::AlphaVantage::_handle_dividend(Reply* reply)
 {
+    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    if (ticker.ensure() == false){
+        qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
+        return;
+    }
+    QJsonObject root = QJsonDocument::fromJson(reply->receive_data()).object();
     QJsonArray array = root.value("data").toArray();
     for (const auto& it : std::as_const(array)){
         QJsonObject obj = it.toObject();
-        t->instrument()->dividend()->setHistory(QDate::fromString(obj.value("ex_dividend_date")
-                                                                   .toString(), "yyyy-MM-dd"),
-                                                 obj.value("amount").toDouble());
+        ticker->dividend.setPerShare(obj.value("amount").toDouble());
+        ticker->dividend.setDate(QDate::fromString(obj.value("ex_dividend_date").toString(),
+                                                   "yyyy-MM-dd"));
     }
+    ticker->instrument()->release();
 }

@@ -19,12 +19,16 @@ sdk::Isin::Isin(const QByteArray& code, sdk::Country country)
 
 std::strong_ordering sdk::Isin::operator <=> (const Isin& other) const
 {
-    if (auto cmp = _code <=> other._code; cmp != 0)
-        return cmp;
-    return _country <=> other._country;
+    const int c = _code.compare(other._code, Qt::CaseSensitive);
+    if (c < 0)  return std::strong_ordering::less;
+    if (c > 0)  return std::strong_ordering::greater;
+    return _country <=> other._country; // enum class порівнюється як int
 }
 
-sdk::Isin& sdk::Isin::operator == (const Isin& other)
+bool sdk::Isin::operator == (const Isin& other) const
+{ return _code == other._code && _country == other._country; }
+
+sdk::Isin& sdk::Isin::operator = (const Isin& other)
 {
     _code = other._code;
     _country = other._country;

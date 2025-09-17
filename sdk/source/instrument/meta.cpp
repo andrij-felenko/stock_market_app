@@ -57,7 +57,7 @@ FieldTOpt sdk::Meta::updateLogo(const Isin& isin, const QByteArray& data)
 
 void sdk::Meta::loadLogo(const Isin& isin) const
 {
-    api::FileFetch::fetch_logo(~isin, _logo_url);
+    api::FileFetch::fetch_logo(isin, _logo_url);
 }
 
 QByteArray sdk::Meta::logoFull(const Isin& isin)
@@ -70,4 +70,22 @@ QByteArray sdk::Meta::logoFull(const Isin& isin)
         file.close();
     }
     return ret;
+}
+
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Meta& d){
+        return s << d._sector << d._industry
+                 << d._gic_sector << d._gic_group << d._gic_industry << d._gic_subinddustry
+                 << d._description << d._officers << d._phone_number
+                 << d._website << d._fulltime_employees
+                 << d._logo_url << d._logo << d._logo_size;
+    }
+
+    QDataStream& operator >> (QDataStream& s, Meta& d){
+        return s >> d._sector >> d._industry
+                 >> d._gic_sector >> d._gic_group >> d._gic_industry >> d._gic_subinddustry
+                 >> d._description >> d._officers >> d._phone_number
+                 >> d._website >> d._fulltime_employees
+                 >> d._logo_url >> d._logo << d._logo_size;
+    }
 }

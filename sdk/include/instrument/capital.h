@@ -71,6 +71,12 @@ private:
         return +a.quartel < +b.quartel;
     }
     std::vector <SharesPoint> _outstand_shares;
+
+    friend QDataStream& operator << (QDataStream& s, const Capital& d);
+    friend QDataStream& operator >> (QDataStream& s,       Capital& d);
+
+    friend QDataStream& operator << (QDataStream& s, const SharesPoint& d);
+    friend QDataStream& operator >> (QDataStream& s,       SharesPoint& d);
 };
 
 /**

@@ -3,6 +3,7 @@
 
 // #include "sdk.h" // IWYU pragma: keep
 #include <QtCore/QDateTime>
+#include <QtCore/QDataStream>
 
 namespace sdk { class Trackable; }
 
@@ -13,6 +14,9 @@ public:
 
     QDateTime _last_updated;
     bool locker;
+
+    friend QDataStream& operator << (QDataStream& s, const Trackable& d);
+    friend QDataStream& operator >> (QDataStream& s,       Trackable& d);
 };
 
 #endif // SDK_UTIL_TRACKABLE_H

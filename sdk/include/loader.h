@@ -3,48 +3,49 @@
 
 #include <QtCore/QObject>
 
-#include "data/user.h"
-#include "data/market.h"
+#include "sdk.h"
+#include "services/market.h"
+// #include "data/user.h"
+// #include "data/market.h"
 #include "settings/network.h"
 
-namespace sdk { class Loader; }
 
-class sdk::Loader final : public QObject
+class SDK final : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(data::User*   user   READ account CONSTANT)
-    Q_PROPERTY(data::Market* market READ market  CONSTANT)
+//     Q_PROPERTY(data::User*   user   READ account CONSTANT)
+    Q_PROPERTY(sdk::Market* market READ market  CONSTANT)
     Q_PROPERTY(settings::Network*   settings_network READ network CONSTANT)
-public:    
-    static Loader* const instance();
-    static Loader&      reference();
+public:
+    static SDK* const instance();
+    static SDK&      reference();
 
     void init();
 
-    data::User* account() const;
-    data::Market* market() const;
+//     data::User* account() const;
+    sdk::Market* market() const;
     settings::Network* network() const;
 
 signals:
     void prepared();
 
-protected:
-    void prepare();
-    void start();
+// protected:
+//     void prepare();
+//     void start();
 
-    void load_pre_data();
-    void load_data();
-    void load_user();
+//     void load_pre_data();
+//     void load_data();
+//     void load_user();
 
-    void update_data();
+//     void update_data();
 
 private:
-    Loader();
+    SDK();
 
-    data::User* _user;
-    data::Market* _market;
+//     data::User* _user;
+    sdk::Market* _market;
 };
 
-inline sdk::Loader& Nexus = sdk::Loader::reference();
+inline SDK& Nexus = SDK::reference();
 
 #endif // STOCK_MANAGER_SDK_LOADER_H
