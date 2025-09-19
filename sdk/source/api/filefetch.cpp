@@ -58,16 +58,3 @@ void api::FileFetch::_handler_answer(Reply* reply)
     in->save();
     in->release();
 }
-
-
-void api::FileFetch::save_cache(const QString& tag, const QByteArray& bytes, const QString& ext)
-{
-    // кладемо поряд із .tdsm у AppDataLocation/stocks/logos
-    QString root = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir().mkpath(root + "/stocks/logos");
-    QFile f(root + "/stocks/logos/" + tag + "." + ext);
-    if (f.open(QIODevice::WriteOnly)) {
-        f.write(bytes);
-        f.close();
-    }
-}

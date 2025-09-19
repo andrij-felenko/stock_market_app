@@ -1,5 +1,5 @@
 // exchange.cpp
-#include "geo/geo.h"
+#include "enum/enum.h"
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QDataStream>

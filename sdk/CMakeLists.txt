@@ -45,7 +45,7 @@ set (sdk_h
     include/stock/stock.h
     include/stock/transaction.h
 
-    include/geo/geo.h
+    include/enum/enum.h
 
     include/settings/network.h
 
@@ -99,15 +99,15 @@ set (sdk_cpp
     source/stock/stock.cpp
     source/stock/transaction.cpp
 
-    source/geo/continent.cpp
-    source/geo/country.cpp
-    source/geo/currency.cpp
-    source/geo/exchange.cpp
-    source/geo/region.cpp
-    source/geo/instype.cpp
-    source/geo/month.cpp
-    source/geo/quartel.cpp
-    source/geo/home_category.cpp
+    source/enum/continent.cpp
+    source/enum/country.cpp
+    source/enum/currency.cpp
+    source/enum/exchange.cpp
+    source/enum/region.cpp
+    source/enum/instype.cpp
+    source/enum/month.cpp
+    source/enum/quartel.cpp
+    source/enum/home_category.cpp
 
     source/settings/network.cpp
 

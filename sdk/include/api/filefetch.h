@@ -24,9 +24,6 @@ private:
     bool _request(Request type, const QString& name, const sdk::Symbol& symbol,
                   StringMap keys = {}) override;
     void _handler_answer(Reply* reply) override;
-
-    // Опційно: зберегти копію в кеш-файлі (AppDataLocation/logos)
-    static void save_cache(const QString& tag, const QByteArray& bytes, const QString& ext = "png");
 };
 
 #endif // API_FILELOADER_H

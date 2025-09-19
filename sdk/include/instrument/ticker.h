@@ -6,7 +6,7 @@
 #include <QtCore/QUrl>
 
 #include "../instrument/quotes.h"
-#include "geo/geo.h"
+#include "enum/enum.h"
 #include "symbol.h"
 #include "dividend.h"
 #include "quotes.h"
