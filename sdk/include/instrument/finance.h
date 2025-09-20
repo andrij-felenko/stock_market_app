@@ -15,6 +15,7 @@ public:
     Capital capital;
     Estimate estimates;
     Fundamental fundamental;
+
     QuartelData& quartel(uint16_t year, Quartel q);
     QuartelData& quartel(const QDate& date);
 

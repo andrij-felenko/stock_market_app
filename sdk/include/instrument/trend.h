@@ -79,14 +79,13 @@ public:
     FieldTOpt setEpsRevisionDownLast30d(uint16_t v);
 
 private:
-    sdk::Currency _currency;
-    friend class QuartelData;
-
     double to_eps(int32_t v) const;
     double to_rev(int32_t v) const;
 
     int32_t from_eps(double v) const;
     int32_t from_rev(double v) const;
+
+    Currency _currency = Currency::None;
 
     int32_t  _earnings_avg  = 0;
     int32_t  _earnings_low  = 0;
@@ -111,6 +110,7 @@ private:
     uint16_t _eps_revision_down_last_7d  = 0;
     uint16_t _eps_revision_down_last_30d = 0;
 
+    friend class QuartelData;
     friend QDataStream& operator << (QDataStream& s, const Trend& d);
     friend QDataStream& operator >> (QDataStream& s,       Trend& d);
 };

@@ -7,15 +7,24 @@ set (sdk_h
     include/sdk_def.h
 
     include/api/api.h
-    include/api/alphavantage.h
-    include/api/eod.h
-    include/api/figi.h
-    include/api/finnhub.h
-    include/api/openai.h
     include/api/reply.h
-    include/api/twelvedata.h
-    include/api/marketstack.h
     include/api/filefetch.h
+    include/api/syncer.h
+
+    include/api/ai/openai.h
+
+    include/api/eod/alphavantage.h
+    include/api/eod/eod.h
+    include/api/eod/figi.h
+    include/api/eod/finnhub.h
+    include/api/eod/twelvedata.h
+    include/api/eod/marketstack.h
+    include/api/eod/yahoo.h
+
+    include/api/broker/ibkr.h
+    include/api/broker/tradernet.h
+
+    include/currency/forex.h
 
     include/instrument/data.h
     include/instrument/trend.h
@@ -44,7 +53,16 @@ set (sdk_h
     include/services/market.h
 
     include/account/account.h
-    include/account/info.h
+    include/account/session.h
+    include/account/profile.h
+
+    include/ledger/pending.h
+    include/ledger/portfolio.h
+    include/ledger/screener.h
+    include/ledger/targets.h
+    include/ledger/watchlist.h
+    include/ledger/ledger.h
+
     include/stock/stock.h
     include/stock/transaction.h
 
@@ -62,15 +80,18 @@ set (sdk_h
 
 set (sdk_cpp
     source/api/api.cpp
-    source/api/alphavantage.cpp
-    source/api/eod.cpp
-    source/api/figi.cpp
-    source/api/finnhub.cpp
-    source/api/openai.cpp
     source/api/reply.cpp
-    source/api/twelvedata.cpp
-    source/api/marketstack.cpp
     source/api/filefetch.cpp
+    source/api/syncer.cpp
+
+    source/api/ai/openai.cpp
+
+    source/api/eod/alphavantage.cpp
+    source/api/eod/eod.cpp
+    source/api/eod/figi.cpp
+    source/api/eod/finnhub.cpp
+    source/api/eod/twelvedata.cpp
+    source/api/eod/marketstack.cpp
 
     source/instrument/data.cpp
     source/instrument/trend.cpp
@@ -99,7 +120,16 @@ set (sdk_cpp
     source/services/market.cpp
 
     source/account/account.cpp
-    source/account/info.cpp
+    source/account/session.cpp
+    source/account/profile.cpp
+
+    source/ledger/pending.cpp
+    source/ledger/portfolio.cpp
+    source/ledger/screener.cpp
+    source/ledger/targets.cpp
+    source/ledger/watchlist.cpp
+    source/ledger/ledger.cpp
+
     source/stock/stock.cpp
     source/stock/transaction.cpp
 

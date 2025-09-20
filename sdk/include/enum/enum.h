@@ -51,28 +51,6 @@ QString operator ~ (Month m);
 
 QDataStream& operator << (QDataStream& out, const Month& m);
 QDataStream& operator >> (QDataStream& in,        Month& m);
-// ================================================================================================
-
-
-
-
-enum class HomeCategory : uint8_t {
-    Unknown,
-    Domestic,
-    Foreign
-};
-constexpr uint8_t operator + (HomeCategory m) { return static_cast <uint8_t>(m); }
-namespace home_category {
-    QString        to_string(HomeCategory m);
-    HomeCategory from_string(const QString& s);
-
-    QStringList all_names();
-    std::vector <HomeCategory> all();
-}
-QString operator ~ (HomeCategory m);
-
-QDataStream& operator << (QDataStream& out, const Month& m);
-QDataStream& operator >> (QDataStream& in,        Month& m);
 // ---------------------------                  ---------------------------------------------------
 // =========================== ^ Date section ^ ===================================================
 // ================================================================================================
@@ -879,6 +857,25 @@ QString operator ~ (Instype e);
 
 QDataStream& operator << (QDataStream& out, const Instype& tag);
 QDataStream& operator >> (QDataStream& in,        Instype& tag);
+
+
+enum class HomeCategory : uint8_t {
+    Unknown,
+    Domestic,
+    Foreign
+};
+constexpr uint8_t operator + (HomeCategory m) { return static_cast <uint8_t>(m); }
+namespace home_category {
+    QString        to_string(HomeCategory m);
+    HomeCategory from_string(const QString& s);
+
+    QStringList all_names();
+    std::vector <HomeCategory> all();
+}
+QString operator ~ (HomeCategory m);
+
+QDataStream& operator << (QDataStream& out, const HomeCategory& m);
+QDataStream& operator >> (QDataStream& in,        HomeCategory& m);
 // -------------------------                     --------------------------------------------------
 // ========================= ^ Economy section ^ ==================================================
 // ================================================================================================

@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Valuation : Trackable
+class sdk::Valuation //: Trackable
 {
 public:
     Valuation();
@@ -85,8 +85,8 @@ public:
     // }
 
 private:
-    friend QDataStream& operator << (QDataStream& s, const Valuation& d);
-    friend QDataStream& operator >> (QDataStream& s,       Valuation& d);
+    // friend QDataStream& operator << (QDataStream& s, const Valuation& d);
+    // friend QDataStream& operator >> (QDataStream& s,       Valuation& d);
 };
 
 #endif // SDK_INSTRUMENT_VALUATION_H

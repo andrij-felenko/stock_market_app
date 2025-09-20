@@ -235,90 +235,92 @@ public:
     /** @brief Гроші + короткострокові інвестиції. Рахується на льоту. */
     double cashAndShortTermInvestments() const;
 
-    /** @brief Чистий борг = Загальний борг − Гроші та їх еквіваленти. Рахується на льоту. */
+    /** @brief Чистий борг = Загальний борг − Гроші та їх еквіваленти.
+     *  Рахується на льоту. */
     double netDebt() const;
 
-    /** @brief Чистий оборотний капітал = Оборотні активи − Поточні зобов’язання. Рахується на льоту. */
+    /** @brief Чистий оборотний капітал = Оборотні активи − Поточні зобов’язання.
+     *  Рахується на льоту. */
     double netWorkingCapital() const;
 
-    /** @brief Інвестований капітал (спрощено) = Загальний борг + Власний капітал − Гроші та їх еквіваленти. */
+    /** @brief
+     *  Інвестований капітал = Загальний борг + Власний капітал − Гроші та їх еквіваленти. */
     double netInvestedCapital() const;
 
 private:
-    sdk::Currency _currency;
-    friend class QuartelData;
-
-    QDate _filing_date;
-
     double  to (int32_t d) const;
     int32_t from(double d) const;
 
-    std::optional<sdk::FieldType> set_if(int32_t& field, const double& value);
+    std::optional <FieldType> set_if(int32_t& field, const double& value);
 
-    int32_t _total_assets;
-    int32_t _total_liabilities;
-    int32_t _total_shareholders_equity;
-    int32_t _liabilities_and_shareholders_equity;
+    Currency _currency = Currency::None;
+    QDate _filing_date = QDate();
 
-    int32_t _cash;
-    int32_t _cash_and_cash_equivalents;
-    int32_t _short_term_investments;
+    int32_t _total_assets = 0;
+    int32_t _total_liabilities = 0;
+    int32_t _total_shareholders_equity = 0;
+    int32_t _liabilities_and_shareholders_equity = 0;
 
-    int32_t _net_receivables;
-    int32_t _inventory;
-    int32_t _other_current_assets;
-    int32_t _total_current_assets;
+    int32_t _cash = 0;
+    int32_t _cash_and_cash_equivalents = 0;
+    int32_t _short_term_investments = 0;
 
-    int32_t _long_term_investments;
-    int32_t _property_plant_and_equipment;
-    int32_t _property_plant_and_equipment_gross;
-    int32_t _property_plant_and_equipment_net;
-    int32_t _accumulated_depreciation;
-    int32_t _intangible_assets;
-    int32_t _goodwill;
+    int32_t _net_receivables = 0;
+    int32_t _inventory = 0;
+    int32_t _other_current_assets = 0;
+    int32_t _total_current_assets = 0;
 
-    int32_t _other_non_current_assets;
-    int32_t _non_current_assets_other;
-    int32_t _non_current_assets_total;
-    int32_t _deferred_long_term_asset_charges;
-    int32_t _accumulated_amortization;
-    int32_t _net_tangible_assets;
+    int32_t _long_term_investments = 0;
+    int32_t _property_plant_and_equipment = 0;
+    int32_t _property_plant_and_equipment_gross = 0;
+    int32_t _property_plant_and_equipment_net = 0;
+    int32_t _accumulated_depreciation = 0;
+    int32_t _intangible_assets = 0;
+    int32_t _goodwill = 0;
 
-    int32_t _accounts_payable;
-    int32_t _other_current_liabilities;
-    int32_t _total_current_liabilities;
-    int32_t _current_deferred_revenue;
+    int32_t _other_non_current_assets = 0;
+    int32_t _non_current_assets_other = 0;
+    int32_t _non_current_assets_total = 0;
+    int32_t _deferred_long_term_asset_charges = 0;
+    int32_t _accumulated_amortization = 0;
+    int32_t _net_tangible_assets = 0;
 
-    int32_t _short_term_debt;
-    int32_t _current_portion_of_long_term_debt;
-    int32_t _long_term_debt;
-    int32_t _long_term_debt_total;
-    int32_t _total_debt;
+    int32_t _accounts_payable = 0;
+    int32_t _other_current_liabilities = 0;
+    int32_t _total_current_liabilities = 0;
+    int32_t _current_deferred_revenue = 0;
 
-    int32_t _common_stock;
-    int32_t _capital_stock;
-    int32_t _retained_earnings;
-    int32_t _other_shareholders_equity;
-    int32_t _common_stock_total_equity;
-    int32_t _preferred_stock_total_equity;
-    int32_t _retained_earnings_total_equity;
-    int32_t _treasury_stock;
-    int32_t _additional_paid_in_capital;
-    int32_t _total_permanent_equity;
-    int32_t _noncontrolling_interest;
-    int32_t _redeemable_noncontrol_interests;
-    int32_t _other_comprehens_income_accumulat;
+    int32_t _short_term_debt = 0;
+    int32_t _current_portion_of_long_term_debt = 0;
+    int32_t _long_term_debt = 0;
+    int32_t _long_term_debt_total = 0;
+    int32_t _total_debt = 0;
 
-    int32_t _deferred_long_term_liabilities;
-    int32_t _other_liabilities;
-    int32_t _non_current_liabilities_other;
-    int32_t _non_current_liabilities_total;
-    int32_t _capital_lease_obligations;
-    int32_t _warrants;
-    int32_t _redeemable_preferred_stock;
-    int32_t _negative_goodwill;
-    int32_t _capital_surplus;
+    int32_t _common_stock = 0;
+    int32_t _capital_stock = 0;
+    int32_t _retained_earnings = 0;
+    int32_t _other_shareholders_equity = 0;
+    int32_t _common_stock_total_equity = 0;
+    int32_t _preferred_stock_total_equity = 0;
+    int32_t _retained_earnings_total_equity = 0;
+    int32_t _treasury_stock = 0;
+    int32_t _additional_paid_in_capital = 0;
+    int32_t _total_permanent_equity = 0;
+    int32_t _noncontrolling_interest = 0;
+    int32_t _redeemable_noncontrol_interests = 0;
+    int32_t _other_comprehens_income_accumulat = 0;
 
+    int32_t _deferred_long_term_liabilities = 0;
+    int32_t _other_liabilities = 0;
+    int32_t _non_current_liabilities_other = 0;
+    int32_t _non_current_liabilities_total = 0;
+    int32_t _capital_lease_obligations = 0;
+    int32_t _warrants = 0;
+    int32_t _redeemable_preferred_stock = 0;
+    int32_t _negative_goodwill = 0;
+    int32_t _capital_surplus = 0;
+
+    friend class QuartelData;
     friend QDataStream& operator << (QDataStream& s, const Balance& d);
     friend QDataStream& operator >> (QDataStream& s,       Balance& d);
 };

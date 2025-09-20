@@ -27,7 +27,7 @@ namespace sdk {
                  << d.dividend
                  << d.quotes
                  << d.short_interst
-                 << d.valuation
+                 // << d.valuation
                  << d._symbol;
     }
 
@@ -36,7 +36,7 @@ namespace sdk {
                  >> d.dividend
                  >> d.quotes
                  >> d.short_interst
-                 >> d.valuation
+                 // >> d.valuation
                  >> d._symbol;
     }
 }

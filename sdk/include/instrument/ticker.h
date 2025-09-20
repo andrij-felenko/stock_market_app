@@ -27,7 +27,7 @@ public:
     Dividend        dividend;
     Quotes          quotes;
     ShortInterest   short_interst;
-    Valuation       valuation;
+    // Valuation       valuation;
 
     void save();
 
