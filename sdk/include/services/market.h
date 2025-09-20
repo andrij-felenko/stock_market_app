@@ -31,6 +31,7 @@ public:
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;
 
+    void        findTicker    (Finder& finder);
     Finder      findTicker    (const sdk::Symbol& tag);
     Instrument* findInstrument(const sdk::Isin&  isin);
 

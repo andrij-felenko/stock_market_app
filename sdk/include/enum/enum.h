@@ -972,6 +972,40 @@ enum FieldType {
     CashFlow_q,
     Incomes_q,
     Trend_q,
+
+    Stock_new,
+    Stock_count,
+    Stock_price,
+    Stock_list,
+
+    Transaction_is_buy,
+    Transaction_price,
+    Transaction_count,
+    Transaction_broker,
+    Transaction_dtime,
+};
+
+enum class DataType {
+    InstrumentData,
+    Legal,
+    Meta,
+    Fundamental,
+    Capital,
+    Estimates,
+
+    // Ticker inside
+    Dividend,
+    Quotes,
+    ShortInterest,
+    CorporateAction,
+    Valuation,
+
+    // quartel
+    Balance,
+    CashFlow,
+    Earnings,
+    Incomes,
+    Trend,
 };
 }
 #endif // SDK_ENUM_H

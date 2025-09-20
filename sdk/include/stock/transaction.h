@@ -1,5 +1,5 @@
-#ifndef DATA_TRANSACTION_H
-#define DATA_TRANSACTION_H
+#ifndef SDK_STOCK_TRANSACTION_H
+#define SDK_STOCK_TRANSACTION_H
 
 #include <QtCore/QObject>
 #include <QtCore/QDate>
@@ -7,35 +7,41 @@
 
 #include "sdk_def.h"
 
-class sdk::Transaction : public QObject
+class sdk::Transaction : Trackable
 {
-    Q_OBJECT
-    Q_PROPERTY(bool  buy   READ buy   CONSTANT)
-    Q_PROPERTY(float price READ price CONSTANT)
-    Q_PROPERTY(float count READ count CONSTANT)
-    Q_PROPERTY(QString   broker READ broker CONSTANT)
-    Q_PROPERTY(QDateTime dtime  READ dtime  CONSTANT)
 public:
-    Transaction(QObject* parent = nullptr);
+    Transaction(float price, float count, const QDateTime& dt, const QString& broker);
 
-    bool buy() const;
+    bool isBuy() const;
     float price() const;
     float count() const;
-    QString broker() const;
+    float value() const;
     QDateTime dtime() const;
+    QString broker() const;
 
-signals:
-    void signal_update();
+    virtual void fieldChanged(FieldType type) {}
 
 private:
-    bool  _buy;
+    Transaction();
     float _price;
     float _count;
     QString   _broker;
     QDateTime _dtime;
 
+    friend class Stock;
+    FieldTOpt setPrice(float price) { return set_if(this, _price, price, Transaction_price); }
+    FieldTOpt setCount(float count) { return set_if(this, _count, count, Transaction_count); }
+    FieldTOpt setDTime(const QDateTime& dt) { return set_if(this, _dtime, dt, Transaction_dtime); }
+    FieldTOpt setBroker(const QString& broker)
+    { return set_if(this, _broker, broker, Transaction_broker); }
+
     friend QDataStream& operator << (QDataStream& s, const Transaction& d);
     friend QDataStream& operator >> (QDataStream& s,       Transaction& d);
+
+    template <typename T, typename... Args>
+    requires (std::is_pointer_v <T> ? sdk::DataStreamReadable <std::remove_pointer_t <T>>
+                                    : sdk::DataStreamReadable <T>)
+    friend QDataStream& sdk::list_from_stream(QDataStream& s, std::vector <T>& d, Args&&...args);
 };
 
-#endif // DATA_TRANSACTION_H
+#endif // SDK_STOCK_TRANSACTION_H

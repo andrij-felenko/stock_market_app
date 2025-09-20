@@ -1,44 +1,41 @@
-#ifndef DATA_STOCK_H
-#define DATA_STOCK_H
+#ifndef SDK_STOCK_STOCK_H
+#define SDK_STOCK_STOCK_H
 
 #include <QtCore/QObject>
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
 #include "sdk_def.h"
-#include "../instrument/ticker.h"
 #include "transaction.h"
+#include "instrument/symbol.h"
 
-class sdk::Stock : public QObject
+class sdk::Stock : Trackable
 {
-    Q_OBJECT
-    // Q_PROPERTY(data::Ticker* ticker READ ticker CONSTANT)
-    // Q_PROPERTY(float count READ count CONSTANT)
-    // Q_PROPERTY(float price READ price CONSTANT)
-    // Q_PROPERTY(float value READ value CONSTANT)
 public:
-    Stock(QObject* parent = nullptr);
+    Stock(const sdk::Symbol& symbol);
 
-    Ticker* ticker() const;
-    float   count()  const;
-    float   price()  const;
-    float   value()  const;
+    const sdk::Symbol& symbol() const;
+    float count() const;
+    float price() const;
+    float value() const;
 
-    Instrument* instrument() const;
+    void buy (float price, float count, const QDateTime& dt, const QString& broker);
+    void sell(float price, float count, const QDateTime& dt, const QString& broker);
 
-signals:
-    void signal_update();
+    void updateCount (Transaction& t, float count);
+    void updatePrice (Transaction& t, float count);
+    void updateDTime (Transaction& t, const QDateTime& dt);
+    void updateBroker(Transaction& t, const QString& broker);
+
+    virtual void fieldChanged(FieldType type) {}
 
 private:
-    Ticker* _ticker;
-    float   _count;
-    float   _price;
-    float   _value;
+    sdk::Symbol _tag;
 
-    std::vector <Transaction*> _list;
+    std::vector <Transaction> _list;
 
     friend QDataStream& operator << (QDataStream& s, const Stock& d);
     friend QDataStream& operator >> (QDataStream& s,       Stock& d);
 };
 
-#endif // DATA_STOCK_H
+#endif // SDK_STOCK_STOCK_H
