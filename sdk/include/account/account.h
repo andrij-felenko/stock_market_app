@@ -9,7 +9,7 @@
 
 #include "instrument/instrument.h"
 // #include "user/stock.h"
-#include "sdk.h"
+#include "sdk_def.h"
 
 class sdk::User
 {

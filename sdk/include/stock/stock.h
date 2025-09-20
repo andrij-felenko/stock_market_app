@@ -5,7 +5,7 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 
-#include "sdk.h"
+#include "sdk_def.h"
 #include "../instrument/ticker.h"
 #include "transaction.h"
 

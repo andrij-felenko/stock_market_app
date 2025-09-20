@@ -14,20 +14,20 @@ namespace api { class TwelveData; }
 class api::TwelveData : public API {
     Q_OBJECT
 public:
-    static TwelveData* instance();    
+    static TwelveData* instance();
 
-    static void update_by_tag(QString tag);
+    static void updateByTag(QString tag);
 
 public slots:
-    void add_by_tag(QString tag);
+    void addByTag(QString tag);
 
 private:
     explicit TwelveData(QObject* parent = nullptr);
-    using api::API::_request;
+    using api::API::request;
 
-    virtual bool _request(Request type, const QString& name, const sdk::Symbol& tag,
-                          StringMap keys = {}) override;
-    virtual void _handler_answer(Reply* reply) override;
+    virtual bool request(Request type, const QString& name, const sdk::Symbol& tag,
+                         StringMap keys = {}) override;
+    virtual void handlerAnswer(Reply* reply) override;
 };
 
 #endif // API_TWELVEDATA_H

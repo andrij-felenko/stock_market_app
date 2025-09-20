@@ -82,8 +82,8 @@ int64_t Incomes::sellingGeneralAdmin() const { return to(_selling_general_admin)
 FieldTOpt Incomes::setSellingGeneralAdmin(int64_t v)
 { return set_if(_selling_general_admin, from(v)); }
 
-int64_t Incomes::sellingMarketingExpenses() const { return to(_selling_marketing_expenses); }
-FieldTOpt Incomes::setSellingMarketingExpenses(int64_t v)
+int64_t Incomes::sellingMarketingExpens() const { return to(_selling_marketing_expenses); }
+FieldTOpt Incomes::setSellingMarketingExpens(int64_t v)
 { return set_if(_selling_marketing_expenses, from(v)); }
 
 int64_t Incomes::otherOperatingExpenses() const { return to(_other_operating_expenses); }

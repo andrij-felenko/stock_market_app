@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_BALANCE_H
 #define SDK_INSTRUMENT_BALANCE_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 
 class sdk::Balance : Trackable
 {
@@ -255,69 +255,69 @@ private:
 
     std::optional<sdk::FieldType> set_if(int32_t& field, const double& value);
 
-    int32_t _totalAssets;
-    int32_t _totalLiabilities;
-    int32_t _totalShareholdersEquity;
-    int32_t _liabilitiesAndShareholdersEquity;
+    int32_t _total_assets;
+    int32_t _total_liabilities;
+    int32_t _total_shareholders_equity;
+    int32_t _liabilities_and_shareholders_equity;
 
     int32_t _cash;
-    int32_t _cashAndCashEquivalents;
-    int32_t _shortTermInvestments;
+    int32_t _cash_and_cash_equivalents;
+    int32_t _short_term_investments;
 
-    int32_t _netReceivables;
+    int32_t _net_receivables;
     int32_t _inventory;
-    int32_t _otherCurrentAssets;
-    int32_t _totalCurrentAssets;
+    int32_t _other_current_assets;
+    int32_t _total_current_assets;
 
-    int32_t _longTermInvestments;
-    int32_t _propertyPlantAndEquipment;
-    int32_t _propertyPlantAndEquipmentGross;
-    int32_t _propertyPlantAndEquipmentNet;
-    int32_t _accumulatedDepreciation;
-    int32_t _intangibleAssets;
+    int32_t _long_term_investments;
+    int32_t _property_plant_and_equipment;
+    int32_t _property_plant_and_equipment_gross;
+    int32_t _property_plant_and_equipment_net;
+    int32_t _accumulated_depreciation;
+    int32_t _intangible_assets;
     int32_t _goodwill;
 
-    int32_t _otherNonCurrentAssets;
-    int32_t _nonCurrentAssetsOther;
-    int32_t _nonCurrentAssetsTotal;
-    int32_t _deferredLongTermAssetCharges;
-    int32_t _accumulatedAmortization;
-    int32_t _netTangibleAssets;
+    int32_t _other_non_current_assets;
+    int32_t _non_current_assets_other;
+    int32_t _non_current_assets_total;
+    int32_t _deferred_long_term_asset_charges;
+    int32_t _accumulated_amortization;
+    int32_t _net_tangible_assets;
 
-    int32_t _accountsPayable;
-    int32_t _otherCurrentLiabilities;
-    int32_t _totalCurrentLiabilities;
-    int32_t _currentDeferredRevenue;
+    int32_t _accounts_payable;
+    int32_t _other_current_liabilities;
+    int32_t _total_current_liabilities;
+    int32_t _current_deferred_revenue;
 
-    int32_t _shortTermDebt;
-    int32_t _currentPortionOfLongTermDebt;
-    int32_t _longTermDebt;
-    int32_t _longTermDebtTotal;
-    int32_t _totalDebt;
+    int32_t _short_term_debt;
+    int32_t _current_portion_of_long_term_debt;
+    int32_t _long_term_debt;
+    int32_t _long_term_debt_total;
+    int32_t _total_debt;
 
-    int32_t _commonStock;
-    int32_t _capitalStock;
-    int32_t _retainedEarnings;
-    int32_t _otherShareholdersEquity;
-    int32_t _commonStockTotalEquity;
-    int32_t _preferredStockTotalEquity;
-    int32_t _retainedEarningsTotalEquity;
-    int32_t _treasuryStock;
-    int32_t _additionalPaidInCapital;
-    int32_t _totalPermanentEquity;
-    int32_t _noncontrollingInterest;
-    int32_t _redeemableNoncontrolInterests;
-    int32_t _otherComprehensIncomeAccumulat;
+    int32_t _common_stock;
+    int32_t _capital_stock;
+    int32_t _retained_earnings;
+    int32_t _other_shareholders_equity;
+    int32_t _common_stock_total_equity;
+    int32_t _preferred_stock_total_equity;
+    int32_t _retained_earnings_total_equity;
+    int32_t _treasury_stock;
+    int32_t _additional_paid_in_capital;
+    int32_t _total_permanent_equity;
+    int32_t _noncontrolling_interest;
+    int32_t _redeemable_noncontrol_interests;
+    int32_t _other_comprehens_income_accumulat;
 
-    int32_t _deferredLongTermLiabilities;
-    int32_t _otherLiabilities;
-    int32_t _nonCurrentLiabilitiesOther;
-    int32_t _nonCurrentLiabilitiesTotal;
-    int32_t _capitalLeaseObligations;
+    int32_t _deferred_long_term_liabilities;
+    int32_t _other_liabilities;
+    int32_t _non_current_liabilities_other;
+    int32_t _non_current_liabilities_total;
+    int32_t _capital_lease_obligations;
     int32_t _warrants;
-    int32_t _redeemablePreferredStock;
-    int32_t _negativeGoodwill;
-    int32_t _capitalSurplus;
+    int32_t _redeemable_preferred_stock;
+    int32_t _negative_goodwill;
+    int32_t _capital_surplus;
 
     friend QDataStream& operator << (QDataStream& s, const Balance& d);
     friend QDataStream& operator >> (QDataStream& s,       Balance& d);

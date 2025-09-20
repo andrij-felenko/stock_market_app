@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_ISIN_H
 #define SDK_INSTRUMENT_ISIN_H
 
-#include "sdk.h"
+#include "sdk_def.h"
 
 class sdk::Isin
 {

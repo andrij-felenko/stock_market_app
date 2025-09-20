@@ -16,13 +16,13 @@ public:
     static OpenAI* instance();
 
     // void set_api_key(const QString& key);
-    void set_model(QString new_model);
+    void setModel(const QString& new_model);
 
 public slots:
-    void recheck_tag(const sdk::Symbol& tag);
+    void recheckTag(const sdk::Symbol& tag);
 
 signals:
-    void reply_complete(const QString& full_text);
+    void replyComplete(const QString& full_text);
 
 private:
     explicit OpenAI(QObject* parent = nullptr);
@@ -30,9 +30,9 @@ private:
     // QString _api_key;
     QString _model;
 
-    virtual bool _request(Request type, const QString& name, const sdk::Symbol& symbol,
-                          StringMap keys = {}) override;
-    virtual void _handler_answer(Reply* reply) override;
+    virtual bool request(Request type, const QString& name, const sdk::Symbol& symbol,
+                         StringMap keys = {}) override;
+    virtual void handlerAnswer(Reply* reply) override;
 };
 
 #endif // API_OPENAI_H

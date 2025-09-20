@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_LEGAL_H
 #define SDK_INSTRUMENT_LEGAL_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 #include <QtCore/QDate>
 #include <QtCore/QJsonObject>
 
@@ -38,9 +38,9 @@ public:
     FieldTOpt setIpo(const QDate& date)
     { return sdk::set_if(this, _ipo, date, sdk::Legal_ipoDate); }
 
-    sdk::HomeCategory internationalDomestic() const { return _internationalDomestic; }
+    sdk::HomeCategory internationalDomestic() const { return _international_domestic; }
     FieldTOpt setInternationalDomestic(sdk::HomeCategory domestic)
-    { return sdk::set_if(this, _internationalDomestic, domestic,
+    { return sdk::set_if(this, _international_domestic, domestic,
                          sdk::Legal_internationalDomestic); }
 
     bool delisted() const { return _delisted; }
@@ -62,7 +62,7 @@ private:
     QString _ein; // employer identification number
     QString _cusip; // унікальний код цінного паперу у США
     QDate _ipo;
-    sdk::HomeCategory _internationalDomestic;
+    sdk::HomeCategory _international_domestic;
     sdk::Month _fiscal_yearend;
     bool _delisted;
     QString _address;

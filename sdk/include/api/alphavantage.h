@@ -18,26 +18,26 @@ class api::AlphaVantage : public API {
 public:
     static AlphaVantage* instance();
 
-    static void update_info_by_tag (const sdk::Symbol& tag);
-    static void daily_candle_by_tag(const sdk::Symbol& tag);
-    static void today_candle_by_tag(const sdk::Symbol& tag);
-    static void find_tag(QString str);
+    static void updateInfoByTag (const sdk::Symbol& tag);
+    static void dailyCandleByTag(const sdk::Symbol& tag);
+    static void todayCandleByTag(const sdk::Symbol& tag);
+    static void findTag(QString str);
 
 public slots:
-    void find_symbol(QString str);
+    void findSymbol(QString str);
 
 private:
     explicit AlphaVantage(QObject* parent = nullptr);
-    using api::API::_request;
+    using api::API::request;
 
-    virtual bool _request(Request type, const QString& name, const sdk::Symbol& tag,
-                          StringMap keys = {}) override;
-    virtual void _handler_answer(Reply* reply) override;
+    virtual bool request(Request type, const QString& name, const sdk::Symbol& tag,
+                         StringMap keys = {}) override;
+    virtual void handlerAnswer(Reply* reply) override;
 
-    void _handle_info    (Reply* reply);
-    void _handle_candle  (Reply* reply);
-    void _handle_tag     (Reply* reply);
-    void _handle_dividend(Reply* reply);
+    void handleInfo    (Reply* reply);
+    void handleCandle  (Reply* reply);
+    void handleTag     (Reply* reply);
+    void handleDividend(Reply* reply);
 };
 
 #endif

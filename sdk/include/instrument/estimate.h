@@ -1,13 +1,13 @@
 #ifndef SDK_INSTRUMENT_ESTIMATE_H
 #define SDK_INSTRUMENT_ESTIMATE_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 #include <QtCore/QDate>
 
 class sdk::Estimate : Trackable
 {
 public:
-    Estimate();
+    Estimate() = default;
 
     // ----------------------- Ananlyst -----------------------------------------------------------
     struct Analyst {
@@ -48,12 +48,12 @@ public:
     FieldTOpt setRecentQuart(const QDate& date);
 
 private:
-    double _wallStreetTargetPrice = 0.0;
-    double _epsEstimateCurrentYear = 0.0;
-    double _epsEstimateNextYear = 0.0;
-    double _epsEstimateCurrentQuart = 0.0;
-    double _epsEstimateNextQuart = 0.0;
-    QDate _recentQuart;
+    double _wall_street_target_price = 0.0;
+    double _eps_estimate_current_year = 0.0;
+    double _eps_estimate_next_year = 0.0;
+    double _eps_estimate_current_quart = 0.0;
+    double _eps_estimate_next_quart = 0.0;
+    QDate _recent_quart;
 
     Analyst _analyst;
 

@@ -19,6 +19,14 @@ sdk::Instrument::Instrument(Instrument&& o) noexcept
     o._data = nullptr;
 }
 
+sdk::Instrument::Instrument(const Isin& isin, uint16_t index) : _isin(isin), _index(index)
+{
+    _tickers = new std::vector <sdk::Symbol>();
+}
+
+sdk::Data* const sdk::Instrument::data() const { return _data; }
+
+// --------------------------- Atomic section -----------------------------------------------------
 sdk::Instrument& sdk::Instrument::operator ++() noexcept
 {
     if (_usages.fetch_add(2, std::memory_order_acq_rel) == 0)
@@ -34,13 +42,6 @@ sdk::Instrument& sdk::Instrument::operator --() noexcept
 
     return *this;
 }
-
-sdk::Instrument::Instrument(const Isin& isin, uint16_t index) : _isin(isin), _index(index)
-{
-    _tickers = new std::vector <sdk::Symbol>();
-}
-
-sdk::Data* const sdk::Instrument::data() const { return _data; }
 
 bool sdk::Instrument::has_data() const
 { return (_usages.load(std::memory_order_acquire) & 1) != 0; }
@@ -70,6 +71,8 @@ void sdk::Instrument::release()
     if (auto n = _usages.load(std::memory_order_acquire); n == 1)
         unload();
 }
+// ================================================================================================
+
 
 sdk::Country sdk::Instrument::country() const { return _isin.country(); }
 
@@ -88,7 +91,7 @@ bool sdk::Instrument::contains(const sdk::Symbol& symbol) const
     return false;
 }
 
-void sdk::Instrument::_sort_tickers()
+void sdk::Instrument::_sortTickers()
 {
     auto weight = [&](sdk::Exchange ex) {
         if (sdk::exchange::otc(ex))       return 20;
@@ -116,7 +119,7 @@ void sdk::Instrument::_sort_tickers()
     // });
 }
 
-sdk::Ticker* sdk::Instrument::_add_ticker(const Symbol& symbol)
+sdk::Ticker* sdk::Instrument::_addTicker(const Symbol& symbol)
 {
     if (has_data())
         return &_data->addTicker(symbol);

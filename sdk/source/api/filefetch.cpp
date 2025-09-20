@@ -17,8 +17,8 @@ api::FileFetch* api::FileFetch::instance()
 }
 
 
-bool api::FileFetch::_request(Request type, const QString& name,
-                              const sdk::Symbol& symbol, StringMap keys)
+bool api::FileFetch::request(Request type, const QString& name,
+                             const sdk::Symbol& symbol, StringMap keys)
 {
     qDebug() << Q_FUNC_INFO << name;
     if (type != Request::Text) return false;
@@ -28,29 +28,28 @@ bool api::FileFetch::_request(Request type, const QString& name,
     QUrl url(urlStr);
     if (!url.isValid()) return false;
 
-    Reply* request = _add(type);
+    Reply* request = add(type);
     request->name = name;
     request->suburl = url.toString();
-    request->_request.setAttribute(QNetworkRequest::RedirectPolicyAttribute,
-                                   QNetworkRequest::NoLessSafeRedirectPolicy);
-    request->_request.setRawHeader("User-Agent", "StockManager/1.0");
-    request->_request.setRawHeader("Accept", "*/*");
+    request->request()->setAttribute(QNetworkRequest::RedirectPolicyAttribute,
+                                     QNetworkRequest::NoLessSafeRedirectPolicy);
+    request->request()->setRawHeader("User-Agent", "StockManager/1.0");
+    request->request()->setRawHeader("Accept", "*/*");
     request->prepare();
     return true;
 }
 
 
-void api::FileFetch::_handler_answer(Reply* reply)
+void api::FileFetch::handlerAnswer(Reply* reply)
 {
     // знайти тикер за tag (так само, як у AlphaVantage)
     qDebug() << Q_FUNC_INFO << reply->symbol << reply->name;
-    auto in = Nexus.market()->find_instrument(reply->name.toLatin1());
+    auto in = Nexus.market()->findInstrument(reply->name.toLatin1());
     if (in == nullptr)
         return;
 
     in->create();
-    in->data()->meta.updateLogo(sdk::Isin(reply->name.toLatin1()),
-                                                  reply->receive_data());
+    in->data()->meta.updateLogo(sdk::Isin(reply->name.toLatin1()), reply->receiveData());
 
     // опційне кешування на диск
     // save_cache(name, data);

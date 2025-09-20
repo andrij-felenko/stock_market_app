@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_INCOMES_H
 #define SDK_INSTRUMENT_INCOMES_H
 
-#include "sdk.h"
+#include "sdk_def.h"
 
 class sdk::Incomes : Trackable
 {
@@ -32,8 +32,8 @@ public:
     FieldTOpt setSellingGeneralAdmin(int64_t v);
 
     /// \brief Витрати на маркетинг і продажі (якщо виділяються окремо).
-    int64_t sellingMarketingExpenses() const;
-    FieldTOpt setSellingMarketingExpenses(int64_t v);
+    int64_t sellingMarketingExpens() const;
+    FieldTOpt setSellingMarketingExpens(int64_t v);
 
     /// \brief Інші операційні витрати, не включені до SG&A/R&D.
     int64_t otherOperatingExpenses() const;

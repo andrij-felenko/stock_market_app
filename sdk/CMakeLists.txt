@@ -4,6 +4,8 @@ project(sdk)
 # app -------------------------------------------------------------------------
 set (sdk_h
     include/sdk.h
+    include/sdk_def.h
+
     include/api/api.h
     include/api/alphavantage.h
     include/api/eod.h
@@ -38,6 +40,7 @@ set (sdk_h
     include/instrument/symbol.h
     include/instrument/isin.h
 
+    include/services/finder.h
     include/services/market.h
 
     include/account/account.h
@@ -92,6 +95,7 @@ set (sdk_cpp
     source/instrument/symbol.cpp
     source/instrument/isin.cpp
 
+    source/services/finder.cpp
     source/services/market.cpp
 
     source/account/account.cpp

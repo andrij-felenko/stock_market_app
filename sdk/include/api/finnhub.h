@@ -18,15 +18,15 @@ public:
 
     // void set_api_key(const QString& key);
 
-    static void update_info_by_tag(QString tag);
+    static void updateInfoByTag(QString tag);
 
 private:
     explicit FinnHub(QObject* parent = nullptr);
-    using api::API::_request;
+    using api::API::request;
 
-    virtual bool _request(Request type, const QString& name, const sdk::Symbol& tag,
-                          StringMap keys = {}) override;
-    virtual void _handler_answer(Reply* reply) override;
+    virtual bool request(Request type, const QString& name, const sdk::Symbol& tag,
+                         StringMap keys = {}) override;
+    virtual void handlerAnswer(Reply* reply) override;
 };
 
 #endif

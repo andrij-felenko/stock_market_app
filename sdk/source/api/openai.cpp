@@ -23,15 +23,15 @@ api::OpenAI::OpenAI(QObject* parent)
 
 // void api::OpenAI::set_api_key(const QString& key) { _api_key = key; }
 
-void api::OpenAI::set_model(QString new_model) { _model = new_model; }
+void api::OpenAI::setModel(const QString& new_model) { _model = new_model; }
 
-bool api::OpenAI::_request(Request type, const QString& text,
-                           const sdk::Symbol& symbol, StringMap keys)
+bool api::OpenAI::request(Request type, const QString& text,
+                          const sdk::Symbol& symbol, StringMap keys)
 {
-    Reply* post = _add(type);
-    post->_request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    post->_request.setRawHeader("Authorization",
-                                "Bearer " + settings::network()->key_oai().toUtf8());
+    Reply* post = add(type);
+    post->request()->setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    post->request()->setRawHeader("Authorization",
+                                  "Bearer " + settings::network()->key_oai().toUtf8());
 
     int max_chars = keys.value("max", "50").toInt();
     bool stream = keys.value("stream", "false") == "true";
@@ -90,9 +90,9 @@ bool api::OpenAI::_request(Request type, const QString& text,
     return true;
 }
 
-void api::OpenAI::recheck_tag(const sdk::Symbol& tag)
+void api::OpenAI::recheckTag(const sdk::Symbol& tag)
 {
-    _request(Request::Tag,
+    request(Request::Tag,
         "Знайди компанію за частковою або повною назвою, або категорією, або за відомим брендом, "
         "підрозділом чи пошуковим запитом, який повʼязаний із компанією. "
         "Наприклад, якщо користувач запитує \"Google\" — має бути знайдена Alphabet Inc. "
@@ -118,8 +118,8 @@ void api::OpenAI::recheck_tag(const sdk::Symbol& tag)
     );
 }
 
-void api::OpenAI::_handler_answer(Reply* reply)
+void api::OpenAI::handlerAnswer(Reply* reply)
 {
-    qDebug() << "OPENAI result" << reply->receive_data();
-    emit reply_complete(reply->_receive_data);
+    qDebug() << "OPENAI result" << reply->receiveData();
+    emit replyComplete(reply->receiveData());
 }

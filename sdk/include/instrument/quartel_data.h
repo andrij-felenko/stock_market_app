@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_QUARTEL_DATA_H
 #define SDK_INSTRUMENT_QUARTEL_DATA_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 #include "earnings.h"
 #include "balance.h"
 #include "cash_flow.h"

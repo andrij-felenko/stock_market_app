@@ -3,29 +3,29 @@
 using namespace sdk;
 
 // --------------------------- Main Estimate ------------------------------------------------------
-double    sdk::Estimate::   wallStreetTargetPrice() const { return _wallStreetTargetPrice; }
+double    sdk::Estimate::   wallStreetTargetPrice() const { return _wall_street_target_price; }
 FieldTOpt sdk::Estimate::setWallStreetTargetPrice(double v)
-{ return  sdk::set_if(this, _wallStreetTargetPrice, v, sdk::Est_wallstr_target_price, 1e-6); }
+{ return  sdk::set_if(this, _wall_street_target_price, v, sdk::Est_wallstr_target_price, 1e-6); }
 
-double    sdk::Estimate::   epsEstimateCurrentYear() const { return _epsEstimateCurrentYear; }
+double    sdk::Estimate::   epsEstimateCurrentYear() const { return _eps_estimate_current_year; }
 FieldTOpt sdk::Estimate::setEpsEstimateCurrentYear(double v)
-{ return  sdk::set_if(this, _epsEstimateCurrentYear, v, sdk::Est_eps_curr_year, 1e-6); }
+{ return  sdk::set_if(this, _eps_estimate_current_year, v, sdk::Est_eps_curr_year, 1e-6); }
 
-double    sdk::Estimate::   epsEstimateNextYear() const { return _epsEstimateNextYear; }
+double    sdk::Estimate::   epsEstimateNextYear() const { return _eps_estimate_next_year; }
 FieldTOpt sdk::Estimate::setEpsEstimateNextYear(double v)
-{ return  sdk::set_if(this, _epsEstimateNextYear, v, sdk::Est_eps_next_year, 1e-6); }
+{ return  sdk::set_if(this, _eps_estimate_next_year, v, sdk::Est_eps_next_year, 1e-6); }
 
-double    sdk::Estimate::   epsEstimateCurrentQuart() const { return _epsEstimateCurrentQuart; }
+double    sdk::Estimate::   epsEstimateCurrentQuart() const { return _eps_estimate_current_quart; }
 FieldTOpt sdk::Estimate::setEpsEstimateCurrentQuart(double v)
-{ return  sdk::set_if(this, _epsEstimateCurrentQuart, v, sdk::Est_eps_curr_quart, 1e-6); }
+{ return  sdk::set_if(this, _eps_estimate_current_quart, v, sdk::Est_eps_curr_quart, 1e-6); }
 
-double    sdk::Estimate::   epsEstimateNextQuart() const { return _epsEstimateNextQuart; }
+double    sdk::Estimate::   epsEstimateNextQuart() const { return _eps_estimate_next_quart; }
 FieldTOpt sdk::Estimate::setEpsEstimateNextQuart(double v)
-{ return  sdk::set_if(this, _epsEstimateNextQuart, v, sdk::Est_eps_next_quart, 1e-6); }
+{ return  sdk::set_if(this, _eps_estimate_next_quart, v, sdk::Est_eps_next_quart, 1e-6); }
 
-const QDate& sdk::Estimate::   recentQuart() const { return _recentQuart; }
+const QDate& sdk::Estimate::   recentQuart() const { return _recent_quart; }
 FieldTOpt    sdk::Estimate::setRecentQuart(const QDate& date)
-{ return     sdk::set_if(this, _recentQuart, date, sdk::Fundam_recent_quart); }
+{ return     sdk::set_if(this, _recent_quart, date, sdk::Fundam_recent_quart); }
 // ================================================================================================
 
 
@@ -56,10 +56,10 @@ const sdk::Estimate::Analyst& sdk::Estimate::analyst() const { return _analyst; 
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, const Estimate& d){
-        return s << d._wallStreetTargetPrice
-                 << d._epsEstimateCurrentYear << d._epsEstimateNextYear
-                 << d._epsEstimateCurrentQuart << d._epsEstimateNextQuart
-                 << d._recentQuart
+        return s << d._wall_street_target_price
+                 << d._eps_estimate_current_year << d._eps_estimate_next_year
+                 << d._eps_estimate_current_quart << d._eps_estimate_next_quart
+                 << d._recent_quart
 
                  << d._analyst.consensus_rate
                  << d._analyst.target_price
@@ -68,10 +68,10 @@ namespace sdk {
     }
 
     QDataStream& operator >> (QDataStream& s, Estimate& d){
-        return s >> d._wallStreetTargetPrice
-                 >> d._epsEstimateCurrentYear >> d._epsEstimateNextYear
-                 >> d._epsEstimateCurrentQuart >> d._epsEstimateNextQuart
-                 >> d._recentQuart
+        return s >> d._wall_street_target_price
+                 >> d._eps_estimate_current_year >> d._eps_estimate_next_year
+                 >> d._eps_estimate_current_quart >> d._eps_estimate_next_quart
+                 >> d._recent_quart
 
                  >> d._analyst.consensus_rate
                  >> d._analyst.target_price

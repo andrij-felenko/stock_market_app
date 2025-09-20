@@ -44,7 +44,7 @@ public:
     void addQueryItem(const QString& key, const QString& value);
 
     QByteArray send_data;
-    const QByteArray& receive_data() const;
+    const QByteArray& receiveData() const;
 
     QString name;
     sdk::Symbol symbol;
@@ -75,17 +75,9 @@ private:
     Status _status = Status::Created;
 
     QByteArray _receive_data;
-    void ready_read();
+    void readyRead();
 
     friend class API;
-    friend class Eod;
-    friend class FileFetch;
-    friend class OpenAI;
-    friend class AlphaVantage;
-    friend class Figi;
-    friend class Finnhub;
-    friend class TwelveData;
-    friend class MarketStack;
 };
 
 #endif

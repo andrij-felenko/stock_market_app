@@ -28,10 +28,10 @@ api::TwelveData* api::TwelveData::instance()
     // m_api_key = key;
 // }
 
-bool api::TwelveData::_request(Request type, const QString& name, const sdk::Symbol& tag,
-                               StringMap keys)
+bool api::TwelveData::request(Request type, const QString& name, const sdk::Symbol& tag,
+                              StringMap keys)
 {
-    Reply* post = _add(type);
+    Reply* post = add(type);
 
     QString subname;
     if (tag.us()) subname = tag.venue();
@@ -60,12 +60,12 @@ bool api::TwelveData::_request(Request type, const QString& name, const sdk::Sym
     return true;
 }
 
-void api::TwelveData::update_by_tag(QString tag)
+void api::TwelveData::updateByTag(QString tag)
 {
     // TwelveData* data = TwelveData::instance();
 }
 
-void api::TwelveData::add_by_tag(QString tag)
+void api::TwelveData::addByTag(QString tag)
 {
     qDebug() << "ADD BY TAG" << tag;
     api::StringMap params = {
@@ -73,24 +73,24 @@ void api::TwelveData::add_by_tag(QString tag)
         { "start_date", QDate(2004, 06, 6).toString("yyyy-MM-dd") },
         { "end_date", QDate(2025, 06, 6).toString("yyyy-MM-dd") }
     };
-    _request(Request::Candle, tag, params);
+    request(Request::Candle, tag, params);
 }
 
-void api::TwelveData::_handler_answer(Reply* reply)
+void api::TwelveData::handlerAnswer(Reply* reply)
 {
     qDebug() << "handler answer";
-    qDebug() << reply->receive_data();
-    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    qDebug() << reply->receiveData();
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
     QJsonObject obj = doc.object();
     qDebug() << 1;
 
     if (obj.contains("status") && obj["status"].toString() == "error") {
-        emit error_occurred(obj["message"].toString());
+        emit errorOccurred(obj["message"].toString());
         return;
     }
     qDebug() << 2;
 
-    auto t = Nexus.market()->find_ticker(reply->name);
+    auto t = Nexus.market()->findTicker(reply->name);
     if (t.ensure() == false)
         return;
 

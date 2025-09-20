@@ -148,7 +148,7 @@ double sales_ps_ttm = ttm_revenue / finance.capital().dilutedSharesTTM();
 
 */
 
-#include "sdk.h"
+#include "sdk_def.h"
 #include "data.h"
 #include "isin.h"
 
@@ -208,8 +208,8 @@ private:
 
     friend class sdk::Market;
 
-    void _sort_tickers();
-    Ticker* _add_ticker(const sdk::Symbol& symbol);
+    void _sortTickers();
+    Ticker* _addTicker(const sdk::Symbol& symbol);
 };
 
 #endif // SDK_INSTRUMENT_H

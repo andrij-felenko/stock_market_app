@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_TREND_H
 #define SDK_INSTRUMENT_TREND_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 
 class sdk::Trend : Trackable
 {

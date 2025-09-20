@@ -1,7 +1,7 @@
 #ifndef SDK_DATA_H
 #define SDK_DATA_H
 
-#include "sdk.h"
+#include "sdk_def.h"
 #include "ticker.h"
 #include "legal.h"
 #include "meta.h"
@@ -25,12 +25,10 @@ public:
     // ----------------------- Listings -----------------------------------------------------------
     // блокуємо копії, можна рухати (за бажанням і move забороніть)
     Data(const Data&)           = delete;
-    Data(      Data&&) noexcept = default;
+    Data(      Data&&) noexcept = delete;
     Data& operator = (const Data&)           = delete;
-    Data& operator = (      Data&&) noexcept = default;
+    Data& operator = (      Data&&) noexcept = delete;
 
-    // Ticker& addListing(const Ticker& t);
-    // void reserveListings(std::size_t n);
     std::size_t listingsCount() const noexcept;
 
     // ---- ітерабельний вигляд без доступу до контейнерних mutator'ів ----
@@ -41,12 +39,14 @@ public:
 private:
     Data(uint16_t parent);
     ~Data() = default;
+
     friend class sdk::Instrument;
     friend class sdk::Market;
     friend class api::Eod;
 
     uint16_t _parent;
-    std::vector <Ticker> _list; // приховано: зовні нема erase/clear/shrink_to_fit
+    std::vector <Ticker> _list;
+
     void update_parent();
     Ticker& addTicker(const sdk::Symbol& symbol);
 

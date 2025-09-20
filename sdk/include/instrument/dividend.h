@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_DIVIDEND_H
 #define SDK_INSTRUMENT_DIVIDEND_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 
 class sdk::Dividend : Trackable
 {

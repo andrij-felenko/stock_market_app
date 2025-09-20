@@ -1,55 +1,31 @@
 #ifndef SDK_INSTRUMENT_CAPITAL_H
 #define SDK_INSTRUMENT_CAPITAL_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 
 class sdk::Capital : Trackable
 {
 public:
-    Capital();
+    Capital() = default;
 
-    uint64_t sharesOutstanding() const { return _shares_outstanding; }
-    FieldTOpt setSharesOutstanding(int64_t value)
-    { return sdk::set_if(this, _shares_outstanding, value, sdk::Cap_shares_outstand); }
+    uint64_t sharesOutstanding() const;
+    FieldTOpt setSharesOutstanding(int64_t value);
 
-    uint64_t sharesFloat() const { return _shares_float; }
-    FieldTOpt setSharesFloat(int64_t value)
-    { return sdk::set_if(this, _shares_float, value, sdk::Cap_shares_float); }
+    uint64_t sharesFloat() const;
+    FieldTOpt setSharesFloat(int64_t value);
 
-    double percentOfInsiders() const { return _percent_of_insiders; }
-    FieldTOpt setPercentOfInsiders(double perc)
-    { return sdk::set_if(this, _percent_of_insiders, perc, sdk::Cap_percent_of_insiders, 1e-12); }
+    double percentOfInsiders() const;
+    FieldTOpt setPercentOfInsiders(double perc);
 
-    double percentOfInstitution() const { return _percent_institution; }
-    FieldTOpt setPercentOfInsitution(double perc)
-    { return sdk::set_if(this, _percent_institution, perc, sdk::Cap_percent_institution, 1e-12); }
+    double percentOfInstitution() const;
+    FieldTOpt setPercentOfInsitution(double perc);
 
-    int64_t outstandShare(uint16_t year, sdk::Quartel quart = sdk::Quartel::Annual){
-        for (const auto& it : _outstand_shares)
-            if (it.year == year && it.quartel == quart)
-                return it.shares;
-        return -1;
-    }
+    int64_t outstandShare(uint16_t year, sdk::Quartel quart = sdk::Quartel::Annual);
 
-    int16_t outstandShare(QDate date)
-    { return outstandShare(date.year(), sdk::quartel::from_month(date.month())); }
-
+    int16_t outstandShare(const QDate& date);
     FieldTOpt setOutstandShare(uint64_t shares, uint16_t year,
-                               sdk::Quartel quart = sdk::Quartel::Annual){
-        for (auto& it : _outstand_shares)
-            if (it.year == year && quart == it.quartel){
-                if (shares == it.shares)
-                    return std::nullopt;
-                it.shares = shares;
-                _last_updated = QDateTime::currentDateTime();
-                return sdk::Cap_outstand_shares;
-            }
-        _outstand_shares.emplace_back(year, quart, shares);
-        _last_updated = QDateTime::currentDateTime();
-        return sdk::Cap_outstand_shares;
-    }
-    FieldTOpt setOutstandShare(uint64_t shares, QDate date)
-    { return setOutstandShare(shares, date.year(), sdk::quartel::from_month(date.month())); }
+                               sdk::Quartel quart = sdk::Quartel::Annual);
+    FieldTOpt setOutstandShare(uint64_t shares, QDate date);
 
 private:
     int64_t _shares_outstanding = -1;
@@ -62,14 +38,9 @@ private:
         sdk::Quartel quartel;
         int64_t shares;
 
-        bool operator == (const SharesPoint& o) const noexcept
-        { return year == o.year && quartel == o.quartel && shares == o.shares; }
+        bool operator == (const SharesPoint& o) const noexcept;
     };
-    static inline bool lessByYearQuartel(const SharesPoint& a,
-                                         const SharesPoint& b) {
-        if (a.year != b.year) return a.year < b.year;
-        return +a.quartel < +b.quartel;
-    }
+    static inline bool lessByYearQuartel(const SharesPoint& a, const SharesPoint& b);
     std::vector <SharesPoint> _outstand_shares;
 
     friend QDataStream& operator << (QDataStream& s, const Capital& d);

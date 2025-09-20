@@ -25,20 +25,20 @@ public:
     explicit API(QUrl url, QObject* parent = nullptr);
 
 protected:
-    virtual bool _request(Request type, const QString& name, StringMap keys = {}) final;
-    virtual bool _request(Request type, const sdk::Symbol& symbol, StringMap keys = {}) final;
-    virtual bool _request(Request type, const QString& name,
-                          const sdk::Symbol& symbol, StringMap keys = {}) = 0;
+    virtual bool request(Request type, const QString& name, StringMap keys = {}) final;
+    virtual bool request(Request type, const sdk::Symbol& symbol, StringMap keys = {}) final;
+    virtual bool request(Request type, const QString& name,
+                         const sdk::Symbol& symbol, StringMap keys = {}) = 0;
 
-    virtual void _handler_answer(Reply* reply) = 0;
-    virtual void _handler_error (Reply* reply, QNetworkReply::NetworkError error);
+    virtual void handlerAnswer(Reply* reply) = 0;
+    virtual void handlerError (Reply* reply, QNetworkReply::NetworkError error);
 
     virtual bool lock() const final { return _lock; }
-    virtual void _finish(QNetworkReply* reply) final;
+    virtual void finish(QNetworkReply* reply) final;
 
     int shift_ms;
-    virtual bool _queue_contains(Request r) const final;
-    virtual Reply* _add(api::Request type) final;
+    virtual bool queueContains(Request r) const final;
+    virtual Reply* add(api::Request type) final;
 
 private:
     QUrl url;
@@ -50,8 +50,8 @@ private:
     virtual void _next() final;
 
 signals:
-    void error_occurred(QString error);
-    void error_reply(QNetworkReply* reply);
+    void errorOccurred(QString error);
+    void errorReply(QNetworkReply* reply);
 };
 
 #endif

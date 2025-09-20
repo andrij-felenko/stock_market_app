@@ -33,7 +33,7 @@ namespace sdk {
 
         Isin isin;
         s >> isin;
-        auto t = Nexus.market()->find_instrument(isin);
+        auto t = Nexus.market()->findInstrument(isin);
 
         return s;
     }

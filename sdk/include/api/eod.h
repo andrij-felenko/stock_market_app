@@ -19,32 +19,49 @@ public:
 
     // void set_api_key(const QString& key);
 
-    static void get_all_tag(QString exchange);
-    static void get_all_exchange_tag();
+    static void getAllTag(const QString& exchange);
+    static void getAllExchangeTag();
 
     // void fetch_ticker_data(const QString& ticker);
 
     static void fundamental(const sdk::Symbol& tag);
-    static void historical_year(const sdk::Symbol& tag, int8_t year = -1, char period = 'd');
+    static void historicalYear(const sdk::Symbol& tag, int8_t year = -1, char period = 'd');
 
 signals:
-    void data_ready(const QJsonObject& data);
+    void dataReady(const QJsonObject& data);
 
 private:
     explicit Eod(QObject* parent = nullptr);
 
-    using api::API::_request;
+    using api::API::request;
     friend class sdk::Market;
     friend class sdk::Instrument;
 
-    virtual bool _request(Request type, const QString& name, const sdk::Symbol& symbol,
-                          StringMap keys = {}) override;
-    virtual void _handler_answer(Reply* reply) override;
-    virtual void _handler_error(Reply* reply, QNetworkReply::NetworkError error) override;
+    virtual bool request(Request type, const QString& name, const sdk::Symbol& symbol,
+                         StringMap keys = {}) override;
+    virtual void handlerAnswer(Reply* reply) override;
+    virtual void handlerError(Reply* reply, QNetworkReply::NetworkError error) override;
 
-    void _handle_exchange(Reply* reply);
-    void _handle_candle  (Reply* reply);
-    void _handle_info    (Reply* reply);
+    void _handleExchange(Reply* reply);
+    void _handleCandle  (Reply* reply);
+    void _handleInfo    (Reply* reply);
+
+    void _handleInfoGeneral           (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoHighlights        (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoValuation         (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoSharesStats       (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoSplitsDividends   (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoAnalystRatings    (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoOutstandingShares (const sdk::Finder& finded, const QJsonObject& obj);
+
+    void _handleInfoEarnings          (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoEarningsHistory   (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoEarningsTrend     (const sdk::Finder& finded, const QJsonObject& obj);
+
+    void _handleInfoFinancials        (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoFinancialsBalance (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoFinancialsCashFlow(const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoFinancialsIncome  (const sdk::Finder& finded, const QJsonObject& obj);
 };
 
 #endif

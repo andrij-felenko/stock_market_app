@@ -1,7 +1,7 @@
 #ifndef SDK_UTIL_TRACKABLE_H
 #define SDK_UTIL_TRACKABLE_H
 
-// #include "sdk.h" // IWYU pragma: keep
+// #include "sdk_def.h" // IWYU pragma: keep
 #include <QtCore/QDateTime>
 #include <QtCore/QDataStream>
 

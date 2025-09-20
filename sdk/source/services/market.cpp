@@ -15,9 +15,9 @@ sdk::Market::Market(QObject* parent) : QObject(parent)
     _instruments.reserve(100'000);
 }
 
-sdk::Market::TickerPtr sdk::Market::find_ticker(const sdk::Symbol& tag)
+sdk::Finder sdk::Market::findTicker(const sdk::Symbol& tag)
 {
-    TickerPtr ret(tag);
+    Finder ret(tag);
     for (auto& it : _instruments){
         if (it.has_data()){
             for (auto& t : it.data()->listings())
@@ -38,7 +38,7 @@ sdk::Market::TickerPtr sdk::Market::find_ticker(const sdk::Symbol& tag)
     return ret;
 }
 
-sdk::Instrument* sdk::Market::find_instrument(const sdk::Isin& isin)
+sdk::Instrument* sdk::Market::findInstrument(const sdk::Isin& isin)
 {
     for (auto& it : _instruments)
         if (it._isin == isin)
@@ -46,14 +46,14 @@ sdk::Instrument* sdk::Market::find_instrument(const sdk::Isin& isin)
     return nullptr;
 }
 
-sdk::Market::TickerPtr sdk::Market::add_ticker(const Symbol& tag, const Isin& isin,
-                                               const QString& name, Instype type)
+sdk::Finder sdk::Market::addTicker(const Symbol& tag, const Isin& isin,
+                                    const QString& name, Instype type)
 {
-    TickerPtr data = find_ticker(tag);
+    Finder data = findTicker(tag);
     if (data.exist())
         return data;
 
-    data.instrument = find_instrument(isin);
+    data.instrument = findInstrument(isin);
     if (data.exist()){ // isin founded
         data.instrument->findBetterName(name);
     }
@@ -67,7 +67,7 @@ sdk::Market::TickerPtr sdk::Market::add_ticker(const Symbol& tag, const Isin& is
     }
 
     // add new ticker
-    data.ticker = data.instrument->_add_ticker(tag);
+    data.ticker = data.instrument->_addTicker(tag);
     return data;
 }
 
@@ -173,7 +173,7 @@ sdk::Market::TickerPtr sdk::Market::add_ticker(const Symbol& tag, const Isin& is
 //         in->_sort_tickers();
 // }
 
-void sdk::Market::load_meta()
+void sdk::Market::loadMeta()
 {
     qDebug() << Q_FUNC_INFO;
     std::function _load = [this](QString path) -> bool {
@@ -202,11 +202,11 @@ void sdk::Market::load_meta()
     if (not _load(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation))){
         if (not _load(":/rc"))
             return;
-        save_meta();
+        saveMeta();
     }
 }
 
-void sdk::Market::save_meta() const
+void sdk::Market::saveMeta() const
 {
     qDebug() << Q_FUNC_INFO;
     QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);

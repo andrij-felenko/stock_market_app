@@ -3,7 +3,7 @@
 
 #include <QtCore/QObject>
 
-#include "sdk.h"
+#include "sdk_def.h"
 #include "services/market.h"
 // #include "data/user.h"
 // #include "data/market.h"

@@ -26,16 +26,16 @@ api::FinnHub* api::FinnHub::instance()
 
 // void api::FinnHub::set_api_key(const QString& key) { _api_key = key; }
 
-void api::FinnHub::update_info_by_tag(QString tag)
+void api::FinnHub::updateInfoByTag(QString tag)
 {
     FinnHub* data = FinnHub::instance();
-    data->_request(Request::Info, tag);
+    data->request(Request::Info, tag);
 }
 
-bool api::FinnHub::_request(Request type, const QString& name,
-                            const sdk::Symbol& tag, StringMap keys)
+bool api::FinnHub::request(Request type, const QString& name,
+                           const sdk::Symbol& tag, StringMap keys)
 {
-    Reply* post = _add(type);
+    Reply* post = add(type);
 
     QString subname;
     if (tag.us()) subname = tag.venue();
@@ -105,16 +105,16 @@ bool api::FinnHub::_request(Request type, const QString& name,
     return true;
 }
 
-void api::FinnHub::_handler_answer(Reply* reply)
+void api::FinnHub::handlerAnswer(Reply* reply)
 {
     qDebug() << "handler answer";
-    qDebug() << reply->receive_data();
+    qDebug() << reply->receiveData();
     // QByteArray response = m_reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
     qDebug() << reply->name << reply->symbol << "return data" << doc;
     // qDebug() << response;
 
-    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    auto ticker = Nexus.market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;

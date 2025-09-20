@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_FUNDAMENTAL_H
 #define SDK_INSTRUMENT_FUNDAMENTAL_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 
 class sdk::Fundamental : sdk::Trackable
 {

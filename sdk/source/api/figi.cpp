@@ -32,15 +32,15 @@ api::Figi* api::Figi::instance()
     return _instance;
 }
 
-void api::Figi::update_info_by_tag(const sdk::Symbol& tag)
+void api::Figi::updateInfoByTag(const sdk::Symbol& tag)
 {
-    Figi::instance()->_request(Request::Info, tag);
+    Figi::instance()->request(Request::Info, tag);
 }
 
-bool api::Figi::_request(Request type, const QString& name, const sdk::Symbol& symbol,
-                         StringMap keys)
+bool api::Figi::request(Request type, const QString& name, const sdk::Symbol& symbol,
+                        StringMap keys)
 {
-    Reply* post = _add(type);
+    Reply* post = add(type);
 
     // as we work only with US marker, we nee to cut .US domen from tag
     QString subname;
@@ -66,8 +66,8 @@ bool api::Figi::_request(Request type, const QString& name, const sdk::Symbol& s
         default:;
     }
 
-    post->_request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    post->_request.setRawHeader("X-OPENFIGI-APIKEY", settings::network()->key_figi().toUtf8());
+    post->request()->setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    post->request()->setRawHeader("X-OPENFIGI-APIKEY", settings::network()->key_figi().toUtf8());
     QJsonObject to_send;
 
     switch (type){
@@ -132,15 +132,15 @@ bool api::Figi::_request(Request type, const QString& name, const sdk::Symbol& s
     return true;
 }
 
-void api::Figi::_handler_answer(Reply* reply)
+void api::Figi::handlerAnswer(Reply* reply)
 {
     qDebug() << "handler answer";
-    qDebug() << reply->receive_data();
-    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    qDebug() << reply->receiveData();
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
     qDebug() << reply->name << reply->symbol << "return data" << doc;
     return;
 
-    auto t = Nexus.market()->find_ticker(reply->symbol);
+    auto t = Nexus.market()->findTicker(reply->symbol);
     if (t.ensure() == false)
         return;
 

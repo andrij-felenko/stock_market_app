@@ -9,7 +9,7 @@ api::Reply::Reply(Request type, API* parent) : QObject(parent), _type(type)
 
 api::Request api::Reply::type() const { return _type; }
 
-void api::Reply::ready_read()
+void api::Reply::readyRead()
 {
     QByteArray data = _reply->readAll();
     if (reader) _receive_data += reader(data);
@@ -31,7 +31,7 @@ QUrl api::Reply::url() const { return api()->url.toString() + suburl; }
 
 QNetworkRequest* api::Reply::request(){ return &_request; }
 
-const QByteArray& api::Reply::receive_data() const { return _receive_data; }
+const QByteArray& api::Reply::receiveData() const { return _receive_data; }
 
 api::API* api::Reply::api() const { return static_cast <API*> (parent()); }
 
@@ -50,7 +50,7 @@ void api::Reply::send()
     else // get
         _reply = api()->_netmanager.get(_request);
 
-    connect(_reply, &QNetworkReply::readyRead, this, &Reply::ready_read);
+    connect(_reply, &QNetworkReply::readyRead, this, &Reply::readyRead);
     connect(_reply, &QNetworkReply::finished,  this, &Reply::done);
     _status = Status::Sended;
 }

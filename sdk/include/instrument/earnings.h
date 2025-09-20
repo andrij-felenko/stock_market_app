@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_EARNINGS_H
 #define SDK_INSTRUMENT_EARNINGS_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 #include "symbol.h"
 
 class sdk::Earnings : Trackable

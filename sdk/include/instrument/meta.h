@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_META_H
 #define SDK_INSTRUMENT_META_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 #include "utilities/trackable.h"
 #include <QtCore/QJsonObject>
 #include <QtCore/QSize>

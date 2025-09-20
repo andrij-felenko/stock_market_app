@@ -7,33 +7,33 @@ api::API::API(QUrl url, QObject* parent) : QObject(parent), url(url), _lock(fals
     //
 }
 
-bool API::_request(Request t, const QString& n,     StringMap k) { return _request(t, n, {}, k); }
-bool API::_request(Request t, const sdk::Symbol& s, StringMap k) { return _request(t, "", s, k); }
-void API::_handler_error(Reply* reply, QNetworkReply::NetworkError error) { /* */ }
+bool API::request(Request t, const QString& n,     StringMap k) { return request(t, n, {}, k); }
+bool API::request(Request t, const sdk::Symbol& s, StringMap k) { return request(t, "", s, k); }
+void API::handlerError(Reply* reply, QNetworkReply::NetworkError error) { /* */ }
 
-api::Reply* api::API::_add(api::Request type)
+api::Reply* api::API::add(api::Request type)
 {
     Reply* ret = new Reply(type, this);
     _queue.push_back(ret);
-    connect(ret, &Reply::done, this, [ret, this](){ this->_finish(ret->_reply); });
+    connect(ret, &Reply::done, this, [ret, this](){ this->finish(ret->_reply); });
     return ret;
 }
 
-void api::API::_finish(QNetworkReply* reply)
+void api::API::finish(QNetworkReply* reply)
 {
     _queue.pop_front();
 
     bool error = false;
     if (reply->error() != QNetworkReply::NoError){
-        emit error_occurred(reply->errorString());
-        emit error_reply(reply);
+        emit errorOccurred(reply->errorString());
+        emit errorReply(reply);
         error = true;
     }
 
     std::erase_if(_queue, [reply, this, error](Reply* r) {
         if (r && r->_reply == reply) {
-            if (error) _handler_error (r, reply->error());
-            else       _handler_answer(r);
+            if (error) handlerError (r, reply->error());
+            else       handlerAnswer(r);
             r->deleteLater();
             return true;
         }
@@ -48,7 +48,7 @@ void api::API::_finish(QNetworkReply* reply)
         QTimer::singleShot(shift_ms, this, &API::_next);
 }
 
-bool api::API::_queue_contains(Request r) const
+bool api::API::queueContains(Request r) const
 {
     for (const auto& it : _queue)
         if (it->_type == r)

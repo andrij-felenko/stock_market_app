@@ -16,16 +16,16 @@ class api::MarketStack : public API {
 public:
     static MarketStack* instance();
 
-    static void update_info_by_tag(const sdk::Symbol& tag);
-    static void update_quotes_by_tag(sdk::SymbolList tags);
+    static void updateInfoByTag(const sdk::Symbol& tag);
+    static void updateQuotesByTag(sdk::SymbolList tags);
 
 private:
     explicit MarketStack(QObject* parent = nullptr);
-    using api::API::_request;
+    using api::API::request;
 
-    virtual bool _request(Request type, const QString& name, const sdk::Symbol& tag,
-                          StringMap keys = {}) override;
-    virtual void _handler_answer(Reply* reply) override;
+    virtual bool request(Request type, const QString& name, const sdk::Symbol& tag,
+                         StringMap keys = {}) override;
+    virtual void handlerAnswer(Reply* reply) override;
 };
 
 #endif // API_MARKETSTACK_H

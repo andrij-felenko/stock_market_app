@@ -57,7 +57,7 @@ FieldTOpt sdk::Meta::updateLogo(const Isin& isin, const QByteArray& data)
 
 void sdk::Meta::loadLogo(const Isin& isin) const
 {
-    api::FileFetch::fetch_logo(isin, _logo_url);
+    api::FileFetch::fetchLogo(isin, _logo_url);
 }
 
 QByteArray sdk::Meta::logoFull(const Isin& isin)

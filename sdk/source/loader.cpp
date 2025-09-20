@@ -20,7 +20,7 @@ void SDK::init()
     setParent(qApp);
 
     _market = new sdk::Market(qApp);
-    _market->load_meta();
+    _market->loadMeta();
 }
 
 settings::Network* SDK::network() const { return settings::Network::instance(); }

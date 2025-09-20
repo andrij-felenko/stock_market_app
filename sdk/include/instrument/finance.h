@@ -1,7 +1,7 @@
 #ifndef SDK_INSTRUMENT_FINANCE_H
 #define SDK_INSTRUMENT_FINANCE_H
 
-#include "sdk.h" // IWYU pragma: keep
+#include "sdk_def.h" // IWYU pragma: keep
 #include "capital.h"
 #include "estimate.h"
 #include "fundamental.h"

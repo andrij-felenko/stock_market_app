@@ -12,18 +12,18 @@ public:
     static FileFetch* instance();
 
     // Зручний статичний виклик
-    static void fetch_logo(const sdk::Isin& isin, const QUrl& url) {
+    static void fetchLogo(const sdk::Isin& isin, const QUrl& url) {
         StringMap k; k["url"] = url.toString();
-        instance()->_request(Request::Logo, QString::fromLatin1(~isin), std::move(k));
+        instance()->request(Request::Logo, QString::fromLatin1(~isin), std::move(k));
     }
 
 private:
     explicit FileFetch(QObject* parent = nullptr);
-    using api::API::_request;
+    using api::API::request;
 
-    bool _request(Request type, const QString& name, const sdk::Symbol& symbol,
-                  StringMap keys = {}) override;
-    void _handler_answer(Reply* reply) override;
+    bool request(Request type, const QString& name, const sdk::Symbol& symbol,
+                 StringMap keys = {}) override;
+    void handlerAnswer(Reply* reply) override;
 };
 
 #endif // API_FILELOADER_H

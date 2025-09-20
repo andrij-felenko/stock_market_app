@@ -4,7 +4,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
-#include "sdk.h"
+#include "sdk_def.h"
 
 struct sdk::QuotesDate {
     QDate date;

@@ -26,13 +26,13 @@ api::MarketStack* api::MarketStack::instance()
 
 // void api::FinnHub::set_api_key(const QString& key) { _api_key = key; }
 
-void api::MarketStack::update_info_by_tag(const sdk::Symbol& tag)
+void api::MarketStack::updateInfoByTag(const sdk::Symbol& tag)
 {
-    MarketStack::instance()->_request(Request::Info, tag);
+    MarketStack::instance()->request(Request::Info, tag);
 }
 
 // https://api.marketstack.com/v2/eod?access_key=c68c8ac43610203b7b46616e0bb8124a&symbols=VK.PA
-void api::MarketStack::update_quotes_by_tag(sdk::SymbolList tags)
+void api::MarketStack::updateQuotesByTag(sdk::SymbolList tags)
 {
     QString name;
     if (tags.empty())
@@ -52,13 +52,13 @@ void api::MarketStack::update_quotes_by_tag(sdk::SymbolList tags)
         name = tags[0];
 
     MarketStack* data = MarketStack::instance();
-    data->_request(Request::Quote, name);
+    data->request(Request::Quote, name);
 }
 
-bool api::MarketStack::_request(Request type, const QString& name, const sdk::Symbol& tag,
-                                StringMap keys)
+bool api::MarketStack::request(Request type, const QString& name, const sdk::Symbol& tag,
+                               StringMap keys)
 {
-    Reply* post = _add(type);
+    Reply* post = add(type);
 
     QString subname;
     if (tag.us()) subname = tag.venue();
@@ -135,12 +135,12 @@ bool api::MarketStack::_request(Request type, const QString& name, const sdk::Sy
     return true;
 }
 
-void api::MarketStack::_handler_answer(Reply* reply)
+void api::MarketStack::handlerAnswer(Reply* reply)
 {
     qDebug() << "handler answer";
-    qDebug() << reply->receive_data();
+    qDebug() << reply->receiveData();
     // QByteArray response = m_reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(reply->receive_data());
+    QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
     qDebug() << reply->name << reply->symbol << "return data" << doc;
     // qDebug() << response;
 

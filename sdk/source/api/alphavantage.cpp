@@ -26,39 +26,39 @@ api::AlphaVantage* api::AlphaVantage::instance()
     return _instance;
 }
 
-void api::AlphaVantage::update_info_by_tag(const sdk::Symbol& tag)
+void api::AlphaVantage::updateInfoByTag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
-    data->_request(Request::Info, tag);
+    data->request(Request::Info, tag);
 }
 
-void api::AlphaVantage::daily_candle_by_tag(const sdk::Symbol& tag)
+void api::AlphaVantage::dailyCandleByTag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
     api::StringMap params;
     params["func"] = "TIME_SERIES_DAILY";
-    data->_request(Request::Candle, tag, params);
+    data->request(Request::Candle, tag, params);
 }
 
-void api::AlphaVantage::today_candle_by_tag(const sdk::Symbol& tag)
+void api::AlphaVantage::todayCandleByTag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
     api::StringMap params;
     params["func"] = "TIME_SERIES_INTRADAY";
-    data->_request(Request::Candle, tag, params);
+    data->request(Request::Candle, tag, params);
 }
 
-void api::AlphaVantage::find_symbol(QString str) { find_tag(str); }
-void api::AlphaVantage::find_tag   (QString str)
+void api::AlphaVantage::findSymbol(QString str) { findTag(str); }
+void api::AlphaVantage::findTag   (QString str)
 {
     AlphaVantage* data = AlphaVantage::instance();
-    data->_request(Request::Tag, str);
+    data->request(Request::Tag, str);
 }
 
-bool api::AlphaVantage::_request(Request type, const QString& name,
-                                 const sdk::Symbol& tag, StringMap keys)
+bool api::AlphaVantage::request(Request type, const QString& name,
+                                const sdk::Symbol& tag, StringMap keys)
 {
-    Reply* post = _add(type);
+    Reply* post = add(type);
 
     QString subname;
     if (tag.us()) subname = tag.venue();
@@ -129,27 +129,27 @@ bool api::AlphaVantage::_request(Request type, const QString& name,
     return true;
 }
 
-void api::AlphaVantage::_handler_answer(Reply* reply)
+void api::AlphaVantage::handlerAnswer(Reply* reply)
 {
     qDebug() << "handler answer";
 
     switch (reply->type()){
-        case api::Request::Info:     _handle_info    (reply); break;
-        case api::Request::Candle:   _handle_candle  (reply); break;
-        case api::Request::Tag:      _handle_tag     (reply); break;
-        case api::Request::Dividend: _handle_dividend(reply); break;
+        case api::Request::Info:     handleInfo    (reply); break;
+        case api::Request::Candle:   handleCandle  (reply); break;
+        case api::Request::Tag:      handleTag     (reply); break;
+        case api::Request::Dividend: handleDividend(reply); break;
         default:;
     }
 }
 
-void api::AlphaVantage::_handle_info(Reply* reply)
+void api::AlphaVantage::handleInfo(Reply* reply)
 {
-    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    auto ticker = Nexus.market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;
     }
-    QJsonObject root = QJsonDocument::fromJson(reply->receive_data()).object();
+    QJsonObject root = QJsonDocument::fromJson(reply->receiveData()).object();
     // in->identity()->setTitle(root.value("Name").toString());
     // in->identity()->setDescrip(root.value("Description").toString());
 
@@ -191,14 +191,14 @@ void api::AlphaVantage::_handle_info(Reply* reply)
     ticker->instrument()->release();
 }
 
-void api::AlphaVantage::_handle_candle(Reply* reply)
+void api::AlphaVantage::handleCandle(Reply* reply)
 {
-    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    auto ticker = Nexus.market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;
     }
-    QJsonObject root = QJsonDocument::fromJson(reply->receive_data()).object();
+    QJsonObject root = QJsonDocument::fromJson(reply->receiveData()).object();
     QJsonObject time_daily = root.value("Time Series (Daily)").toObject();
     for (auto it = time_daily.begin(); it != time_daily.end(); ++it) {
         QString dateStr = it.key();
@@ -238,9 +238,9 @@ void api::AlphaVantage::_handle_candle(Reply* reply)
     ticker->instrument()->release();
 }
 
-void api::AlphaVantage::_handle_tag(Reply* reply)
+void api::AlphaVantage::handleTag(Reply* reply)
 {
-    QJsonObject root = QJsonDocument::fromJson(reply->receive_data()).object();
+    QJsonObject root = QJsonDocument::fromJson(reply->receiveData()).object();
     QJsonArray list = root.value("bestMatches").toArray();
     // Nexus.search_tag()->clear();
     // for (const auto& it : std::as_const(list)){
@@ -251,14 +251,14 @@ void api::AlphaVantage::_handle_tag(Reply* reply)
     // }
 }
 
-void api::AlphaVantage::_handle_dividend(Reply* reply)
+void api::AlphaVantage::handleDividend(Reply* reply)
 {
-    auto ticker = Nexus.market()->find_ticker(reply->symbol);
+    auto ticker = Nexus.market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;
     }
-    QJsonObject root = QJsonDocument::fromJson(reply->receive_data()).object();
+    QJsonObject root = QJsonDocument::fromJson(reply->receiveData()).object();
     QJsonArray array = root.value("data").toArray();
     for (const auto& it : std::as_const(array)){
         QJsonObject obj = it.toObject();
