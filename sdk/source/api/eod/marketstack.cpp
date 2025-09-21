@@ -35,7 +35,7 @@ void sdk::api::MarketStack::updateInfoByTag(const sdk::Symbol& tag)
 void sdk::api::MarketStack::updateQuotesByTag(sdk::SymbolList tags)
 {
     QString name;
-    if (tags.empty())
+    if (tags->empty())
         return;
 
     if (tags.size() > 1){
@@ -49,7 +49,7 @@ void sdk::api::MarketStack::updateQuotesByTag(sdk::SymbolList tags)
         name = list.join(",").toUpper();
     }
     else
-        name = tags[0];
+        name = tags->at(0);
 
     MarketStack* data = MarketStack::instance();
     data->request(Request::Quote, name);

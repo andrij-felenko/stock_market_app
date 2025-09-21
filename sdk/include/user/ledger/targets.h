@@ -1,3 +1,5 @@
+#ifndef SDK_USER_LEDGER_TARGETS_H
+#define SDK_USER_LEDGER_TARGETS_H
 /*!
 \class Targets
 \brief Цілі/плани купівлі без створення заявки.
@@ -14,5 +16,17 @@ tg.add(symbol("TTE"),
        70.0,                     // target price
        QDate::currentDate().addMonths(3)); // deadline
 \endcode
-
 */
+
+#include "sdk_def.h"
+
+class sdk::Targets
+{
+public:
+    Targets() = default;
+
+private:
+    //
+};
+
+#endif // SDK_USER_LEDGER_TARGETS_H

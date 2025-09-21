@@ -15,12 +15,12 @@ sdk::Market::Market(QObject* parent) : QObject(parent)
     _instruments.reserve(100'000);
 }
 
-sdk::Finder sdk::Market::findTicker(const sdk::Symbol& tag)
+sdk::market::Finder sdk::Market::findTicker(const sdk::Symbol& tag)
 {
-    Finder ret(tag);
+    market::Finder ret(tag);
     for (auto& it : _instruments){
         if (it.has_data()){
-            for (auto& t : it.data()->listings())
+            for (auto& t : it.data()->tickers)
                 if (t.symbol() == tag){
                     ret.ticker = &t;
                     ret.instrument = &it;
@@ -46,10 +46,10 @@ sdk::Instrument* sdk::Market::findInstrument(const sdk::Isin& isin)
     return nullptr;
 }
 
-sdk::Finder sdk::Market::addTicker(const Symbol& tag, const Isin& isin,
-                                    const QString& name, Instype type)
+sdk::market::Finder sdk::Market::addTicker(const Symbol& tag, const Isin& isin,
+                                           const QString& name, Instype type)
 {
-    Finder data = findTicker(tag);
+    market::Finder data = findTicker(tag);
     if (data.exist())
         return data;
 

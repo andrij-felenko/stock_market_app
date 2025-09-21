@@ -59,7 +59,7 @@ public:
     // double quarterlyEarningsGrowthYoy() const
 
 private:
-    std::vector <QuartelData> _quartel_data;
+    sdk::List <QuartelData, Finance> _quartel_data;
 
     friend QDataStream& operator << (QDataStream& s, const Finance& d);
     friend QDataStream& operator >> (QDataStream& s,       Finance& d);

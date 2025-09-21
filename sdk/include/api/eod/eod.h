@@ -45,22 +45,22 @@ private:
     void _handleCandle  (Call* reply);
     void _handleInfo    (Call* reply);
 
-    void _handleInfoGeneral           (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoHighlights        (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoValuation         (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoSharesStats       (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoSplitsDividends   (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoAnalystRatings    (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoOutstandingShares (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoGeneral           (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoHighlights        (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoValuation         (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoSharesStats       (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoSplitsDividends   (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoAnalystRatings    (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoOutstandingShares (const market::Finder& finded, const QJsonObject& obj);
 
-    void _handleInfoEarnings          (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoEarningsHistory   (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoEarningsTrend     (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoEarnings          (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoEarningsHistory   (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoEarningsTrend     (const market::Finder& finded, const QJsonObject& obj);
 
-    void _handleInfoFinancials        (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoFinancialsBalance (const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoFinancialsCashFlow(const sdk::Finder& finded, const QJsonObject& obj);
-    void _handleInfoFinancialsIncome  (const sdk::Finder& finded, const QJsonObject& obj);
+    void _handleInfoFinancials        (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoFinancialsBalance (const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoFinancialsCashFlow(const market::Finder& finded, const QJsonObject& obj);
+    void _handleInfoFinancialsIncome  (const market::Finder& finded, const QJsonObject& obj);
 };
 
 #endif

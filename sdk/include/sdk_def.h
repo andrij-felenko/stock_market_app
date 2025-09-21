@@ -31,16 +31,14 @@ namespace sdk {
 
     class ShortInterest;
     class Ticker;
-    class Transaction;
     class Trend;
     class User;
     class Valuation;
-    class Stock;
     class Symbol;
 
     // services
     class Market;
-    class Finder;
+    namespace market { class Finder; }
 
     // Utilities
     class ResDir;
@@ -64,6 +62,19 @@ namespace sdk {
         class TwelveData;
         class Yahoo;
     }
+
+    // user
+    class Account;
+    class Profile;
+    class Session;
+    class Ledger;
+    class Pending;
+    class Portfolio;
+    class Screener;
+    class Targets;
+    class WatchList;
+    class Stock;
+    class Transaction;
 }
 
 using FieldTOpt = std::optional <sdk::FieldType>;

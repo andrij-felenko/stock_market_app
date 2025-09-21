@@ -31,9 +31,9 @@ public:
     Market(QObject* parent = nullptr);
     Market& operator = (const Market&) = delete;
 
-    void        findTicker    (Finder& finder);
-    Finder      findTicker    (const sdk::Symbol& tag);
-    Instrument* findInstrument(const sdk::Isin&  isin);
+    void           findTicker    (market::Finder& finder);
+    market::Finder findTicker    (const sdk::Symbol& tag);
+    Instrument*    findInstrument(const sdk::Isin&  isin);
 
     void saveMeta() const;
     bool empty() const;
@@ -42,7 +42,8 @@ private:
     uint16_t _last_index = 0;
 
     std::vector <Instrument> _instruments;
-    Finder addTicker(const sdk::Symbol& tag, const Isin& isin, const QString& name, Instype type);
+    market::Finder addTicker(const sdk::Symbol& tag, const Isin& isin,
+                             const QString& name, Instype type);
 
     void loadMeta();
 

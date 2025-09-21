@@ -1,49 +1,49 @@
-// #ifndef DATA_USER_INFO_H
-// #define DATA_USER_INFO_H
+#include "user/account/profile.h"
 
-// #include <QtCore/QObject>
-// #include <QtCore/QDate>
-// #include <QtCore/QUrl>
-// #include <QtCore/QAbstractListModel>
-// #include <QtCore/QTimer>
+uint32_t sdk::Profile::id() const
+{
+    return _id;
+}
 
-// namespace data { class User; }
-// namespace data::user { class Info; }
+QString sdk::Profile::username() const
+{
+    return _username;
+}
 
-// class data::user::Info : public QObject
-// {
-//     Q_OBJECT
-//     Q_PROPERTY(QString username READ username WRITE setUsername NOTIFY usernameChanged FINAL)
-//     Q_PROPERTY(QString email READ email WRITE setEmail NOTIFY emailChanged FINAL)
-//     Q_PROPERTY(bool guest READ guest NOTIFY guestChanged FINAL)
-// public:
-//     static Info* instance();
+void sdk::Profile::setUsername(const QString& newUsername)
+{
+    _username = newUsername;
+}
 
-//     QString username() const;
-//     QString email() const;
-//     bool guest() const;
+QString sdk::Profile::email() const
+{
+    return _email;
+}
 
-// public slots:
-//     void setUsername(const QString& newName);
-//     void setEmail(const QString& newEmail);
+void sdk::Profile::setEmail(const QString& newEmail)
+{
+    _email = newEmail;
+}
 
-// signals:
-//     void usernameChanged(QString name);
-//     void emailChanged(QString email);
-//     void guestChanged(bool guest);
+QDateTime sdk::Profile::created() const
+{
+    return _created;
+}
 
-// private:
-//     Info(QObject* parent = nullptr);
-//     Info& operator = (const Info&) = delete;
-//     void clear();
+void sdk::Profile::setCreated(const QDateTime& newCreated)
+{
+    _created = newCreated;
+}
 
-//     QString _username;
-//     QString _email;
 
-//     friend QDataStream& operator << (QDataStream& s, const Info& d);
-//     friend QDataStream& operator >> (QDataStream& s,       Info& d);
 
-//     friend class data::User;
-// };
+namespace sdk {
+    QDataStream& operator << (QDataStream& s, const Profile& d) {
+        return s << d._id << d._created << d._email << d._username;
+    }
 
-// #endif
+    QDataStream& operator >> (QDataStream& s, Profile& d) {
+        s >> d._id >> d._created >> d._email >> d._username;
+        return s;
+    }
+}

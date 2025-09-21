@@ -11,7 +11,7 @@
 #include "core/security/listing/ticker.h"
 
 
-class sdk::Finder final
+class sdk::market::Finder final
 {
 public:
     Finder(const sdk::Symbol& symbol);

@@ -19,7 +19,7 @@ sdk::Quotes& sdk::Quotes::operator =(const Quotes& other)
 
 const std::vector <sdk::QuotesDate>& sdk::Quotes::raw_points() const
 {
-    return _points;
+    return _points._;
 }
 
 void sdk::Quotes::setData(QDate d, float open, float close, float high, float low, quint64  v)
@@ -43,7 +43,7 @@ void sdk::Quotes::setData(QDate d, float open, float close, float high, float lo
     p.low = low;
     p.volume = v;
 
-    _points.push_back(p);
+    _points->push_back(p);
 }
 
 void sdk::Quotes::setData(QTime t, float open, float close, float high, float low, quint64 v)
@@ -67,12 +67,12 @@ void sdk::Quotes::setData(QTime t, float open, float close, float high, float lo
     p.low = low;
     p.volume = v;
 
-    _intraday.push_back(p);
+    _intraday->push_back(p);
 }
 
 void sdk::Quotes::setIntraday(QDate date)
 {
-    _intraday.clear();
+    _intraday->clear();
     _last_intraday = date;
 }
 
@@ -113,7 +113,7 @@ float sdk::Quotes::current() const
             ret = it.close;
             date = it.date;
         }
-    if (! _intraday.empty() && _last_intraday > date){
+    if (! _intraday->empty() && _last_intraday > date){
         QTime time = QTime(0, 0);
         for (auto& it : _intraday){
             if (it.time > time){
@@ -128,7 +128,7 @@ float sdk::Quotes::current() const
 
 bool sdk::Quotes::empty()
 {
-    return _points.empty();
+    return _points->empty();
 }
 
 namespace sdk {
@@ -145,18 +145,10 @@ namespace sdk {
     QDataStream& operator >> (QDataStream& s,       QuotesTime& q)
     { return s >> q.time >> q.open >> q.close >> q.high >> q.low >> q.volume; }
 // --------------------------------------------------------------------------------------
-    QDataStream& operator << (QDataStream& s, const Quotes& q) {
-        sdk::list_to_stream(s, q._points);
-        sdk::list_to_stream(s, q._intraday);
-        return s << q._last_intraday << q._beta;
-    }
+    QDataStream& operator << (QDataStream& s, const Quotes& q)
+    { return s << q._points << q._intraday << q._last_intraday << q._beta; }
 
-    QDataStream& operator >> (QDataStream& s, Quotes& q) {
-        q._points.clear();
-        q._intraday.clear();
-        sdk::list_from_stream(s, q._points);
-        sdk::list_from_stream(s, q._intraday);
-        return s >> q._last_intraday >> q._beta;
-    }
+    QDataStream& operator >> (QDataStream& s, Quotes& q)
+    { return s >> q._points >> q._intraday >> q._last_intraday >> q._beta; }
 // --------------------------------------------------------------------------------------
 }

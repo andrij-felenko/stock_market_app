@@ -6,8 +6,8 @@ sdk::QuartelData& sdk::Finance::quartel(uint16_t year, Quartel q)
         if (it.year() == year && q == it.quartel())
             return it;
 
-    _quartel_data.emplace_back(year, q);
-    return _quartel_data.back();
+    _quartel_data->emplace_back(year, q);
+    return _quartel_data->back();
 }
 
 bool sdk::Finance::hasQuartel(uint16_t year, Quartel q) const
@@ -20,12 +20,10 @@ bool sdk::Finance::hasQuartel(uint16_t year, Quartel q) const
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, const Finance& d){
-        sdk::list_to_stream(s, d._quartel_data);
-        return s << d.capital << d.estimates << d.fundamental;
+        return s << d._quartel_data << d.capital << d.estimates << d.fundamental;
     }
 
     QDataStream& operator >> (QDataStream& s, Finance& d){
-        sdk::list_from_stream(s, d._quartel_data);
-        return s >> d.capital >> d.estimates >> d.fundamental;
+        return s >> d._quartel_data >> d.capital >> d.estimates >> d.fundamental;
     }
 }

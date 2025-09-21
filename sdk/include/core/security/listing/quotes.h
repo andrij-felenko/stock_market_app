@@ -5,6 +5,7 @@
 #include <QtCore/QDate>
 #include <QtCore/QUrl>
 #include "sdk_def.h"
+#include "common/features.h"
 
 struct sdk::QuotesDate {
     QDate date;
@@ -77,8 +78,8 @@ public:
 private:
     double _beta = 0.0;
     QDate _last_intraday;
-    std::vector <QuotesTime> _intraday;
-    std::vector <QuotesDate> _points;
+    sdk::List <QuotesTime, Quotes> _intraday;
+    sdk::List <QuotesDate, Quotes> _points;
 
     friend QDataStream& operator << (QDataStream& s, const Quotes& q);
     friend QDataStream& operator >> (QDataStream& s,       Quotes& q);

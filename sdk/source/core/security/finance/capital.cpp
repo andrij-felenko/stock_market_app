@@ -39,7 +39,7 @@ FieldTOpt sdk::Capital::setOutstandShare(uint64_t shares, uint16_t year, sdk::Qu
             return sdk::Cap_outstand_shares;
         }
 
-    _outstand_shares.emplace_back(year, quart, shares);
+    _outstand_shares->emplace_back(year, quart, shares);
     _last_updated = QDateTime::currentDateTime();
     return sdk::Cap_outstand_shares;
 }
@@ -64,15 +64,15 @@ bool sdk::Capital::lessByYearQuartel(const SharesPoint& a, const SharesPoint& b)
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, const Capital& d){
-        sdk::list_to_stream(s, d._outstand_shares);
         return s << d._shares_outstanding << d._shares_float
-                 << d._percent_of_insiders << d._percent_institution;
+                 << d._percent_of_insiders << d._percent_institution
+                 << d._outstand_shares;
     }
 
     QDataStream& operator >> (QDataStream& s, Capital& d){
-        sdk::list_from_stream(s, d._outstand_shares);
         return s >> d._shares_outstanding >> d._shares_float
-                 >> d._percent_of_insiders >> d._percent_institution;
+                 >> d._percent_of_insiders >> d._percent_institution
+                 >> d._outstand_shares;
     }
 
     QDataStream& operator << (QDataStream& s, const Capital::SharesPoint& d)

@@ -8,7 +8,14 @@
 #include "sdk_def.h"
 
 class sdk::Transaction : Trackable
-{
+{ 
+    // 0000 00xx -> pending - 00 / exec  - 01 / canceled - 10 / closed - 11
+    // 0000 xx00 -> planned - 00 / order - 01 / alert    - 10 / ???
+    // 000x 0000 -> buy    - 0 / sell  - 1
+    // 00x0 0000 -> market - 0 / limit - 1
+    // 0x00 0000 -> no stop - 0 / stop - 1
+    // x000 0000 -> reserved
+    uint8_t _;
 public:
     Transaction(float price, float count, const QDateTime& dt, const QString& broker);
 

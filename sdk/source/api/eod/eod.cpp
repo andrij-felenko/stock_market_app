@@ -252,7 +252,7 @@ void sdk::api::Eod::_handleInfo(Call* reply)
     finded->save();
 }
 
-void sdk::api::Eod::_handleInfoGeneral(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoGeneral(const sdk::market::Finder& finded, const QJsonObject& obj)
 {
     auto g = json::object(obj, "General");
     if (not g)
@@ -307,7 +307,8 @@ void sdk::api::Eod::_handleInfoGeneral(const sdk::Finder& finded, const QJsonObj
     // ISIN / Name / Type / Code / Exchange / Currency* / PrimaryTicker / UpdatedAt
 }
 
-void sdk::api::Eod::_handleInfoHighlights(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoHighlights(const sdk::market::Finder& finded,
+                                          const QJsonObject& obj)
 {
     auto h = json::object(obj, "Highlights");
     if (not h) return;
@@ -345,7 +346,7 @@ void sdk::api::Eod::_handleInfoHighlights(const sdk::Finder& finded, const QJson
     // коли підтвердимо ім'я сеттера у Fundamental/Derived
 }
 
-void sdk::api::Eod::_handleInfoValuation(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoValuation(const sdk::market::Finder& finded, const QJsonObject& obj)
 {
     auto v = json::object(obj, "Valuation");
     if (not v) return;
@@ -359,7 +360,8 @@ void sdk::api::Eod::_handleInfoValuation(const sdk::Finder& finded, const QJsonO
     // if (auto x = json::real(*v, "EnterpriseValueEbitda")) val.setEnterpriseValueEbitda(*x);
 }
 
-void sdk::api::Eod::_handleInfoSharesStats(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoSharesStats(const sdk::market::Finder& finded,
+                                           const QJsonObject& obj)
 {
     auto s = json::object(obj, "SharesStats");
     if (not s) return;
@@ -376,7 +378,8 @@ void sdk::api::Eod::_handleInfoSharesStats(const sdk::Finder& finded, const QJso
     if (auto x = json::integer(*s, "SharesShortPriorMonth")) shorts.setSharesPriorMonth(*x);
 }
 
-void sdk::api::Eod::_handleInfoSplitsDividends(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoSplitsDividends(const sdk::market::Finder& finded,
+                                               const QJsonObject& obj)
 {
     auto sd = json::object(obj, "SplitsDividends");
     if (not sd) return;
@@ -413,7 +416,8 @@ void sdk::api::Eod::_handleInfoSplitsDividends(const sdk::Finder& finded, const 
     // }
 }
 
-void sdk::api::Eod::_handleInfoAnalystRatings(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoAnalystRatings(const sdk::market::Finder& finded,
+                                              const QJsonObject& obj)
 {
     auto ar = json::object(obj, "AnalystRatings");
     if (not ar) return;
@@ -431,7 +435,8 @@ void sdk::api::Eod::_handleInfoAnalystRatings(const sdk::Finder& finded, const Q
 
 }
 
-void sdk::api::Eod::_handleInfoOutstandingShares(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoOutstandingShares(const sdk::market::Finder& finded,
+                                                 const QJsonObject& obj)
 {
     auto os = json::object(obj, "outstandingShares");
     if (not os) return;
@@ -452,7 +457,8 @@ void sdk::api::Eod::_handleInfoOutstandingShares(const sdk::Finder& finded, cons
     }
 }
 
-void sdk::api::Eod::_handleInfoEarnings(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoEarnings(const sdk::market::Finder& finded,
+                                        const QJsonObject& obj)
 {
     auto e = json::object(obj, "Earnings");
     if (not e) return;
@@ -461,7 +467,8 @@ void sdk::api::Eod::_handleInfoEarnings(const sdk::Finder& finded, const QJsonOb
     _handleInfoEarningsTrend(finded, *e);
 }
 
-void sdk::api::Eod::_handleInfoEarningsHistory(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoEarningsHistory(const sdk::market::Finder& finded,
+                                               const QJsonObject& obj)
 {
     auto h = json::object(obj, "History");
     if (not h) return;
@@ -483,7 +490,8 @@ void sdk::api::Eod::_handleInfoEarningsHistory(const sdk::Finder& finded, const 
     }
 }
 
-void sdk::api::Eod::_handleInfoEarningsTrend(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoEarningsTrend(const sdk::market::Finder& finded,
+                                             const QJsonObject& obj)
 {
     auto t = json::object(obj, "Trend");
     if (not t) return;
@@ -525,7 +533,8 @@ void sdk::api::Eod::_handleInfoEarningsTrend(const sdk::Finder& finded, const QJ
     }
 }
 
-void sdk::api::Eod::_handleInfoFinancials(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoFinancials(const sdk::market::Finder& finded,
+                                          const QJsonObject& obj)
 {
     auto e = json::object(obj, "Financials");
     if (not e) return;
@@ -535,7 +544,8 @@ void sdk::api::Eod::_handleInfoFinancials(const sdk::Finder& finded, const QJson
     _handleInfoFinancialsIncome  (finded, *e);
 }
 
-void sdk::api::Eod::_handleInfoFinancialsBalance(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoFinancialsBalance(const sdk::market::Finder& finded,
+                                                 const QJsonObject& obj)
 {
     auto h = json::object(obj, "Balance_Sheet");
     if (not h)
@@ -627,7 +637,8 @@ void sdk::api::Eod::_handleInfoFinancialsBalance(const sdk::Finder& finded, cons
     }
 }
 
-void sdk::api::Eod::_handleInfoFinancialsCashFlow(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoFinancialsCashFlow(const sdk::market::Finder& finded,
+                                                  const QJsonObject& obj)
 {
     auto cf = json::object(obj, "Cash_Flow");
     if (not cf)
@@ -692,7 +703,8 @@ void sdk::api::Eod::_handleInfoFinancialsCashFlow(const sdk::Finder& finded, con
     }
 }
 
-void sdk::api::Eod::_handleInfoFinancialsIncome(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoFinancialsIncome(const sdk::market::Finder& finded,
+                                                const QJsonObject& obj)
 {
     auto is = json::object(obj, "Income_Statement");
     if (not is)

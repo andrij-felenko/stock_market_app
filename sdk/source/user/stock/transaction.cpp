@@ -15,11 +15,9 @@ QDateTime sdk::Transaction::dtime()  const { return _dtime;  }
 float sdk::Transaction::value() const { return _price * _count; }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Transaction& d) {
-        return s << d._broker << d._count << d._price << d._dtime;
-    }
+    QDataStream& operator << (QDataStream& s, const Transaction& d)
+    { return s << d._broker << d._count << d._price << d._dtime << d._; }
 
-    QDataStream& operator >> (QDataStream& s, Transaction& d) {
-        return s >> d._broker >> d._count >> d._price >> d._dtime;
-    }
+    QDataStream& operator >> (QDataStream& s, Transaction& d)
+    { return s >> d._broker >> d._count >> d._price >> d._dtime >> d._; }
 }

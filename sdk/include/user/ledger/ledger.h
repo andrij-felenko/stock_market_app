@@ -1,3 +1,5 @@
+#ifndef SDK_USER_LEDGER_LEDGER_H
+#define SDK_USER_LEDGER_LEDGER_H
 /*!
 \file ledger_overview.dox
 \brief Огляд користувацьких сутностей обліку
@@ -41,3 +43,26 @@ ldg.portfolio().syncFromBroker(broker_feed);
 auto alerts = ldg.screener().evaluate(market_feed);
 \endcode
 */
+
+#include "sdk_def.h"
+#include "user/ledger/pending.h"
+#include "user/ledger/portfolio.h"
+#include "user/ledger/screener.h"
+#include "user/ledger/targets.h"
+#include "user/ledger/watchlist.h"
+
+class sdk::Ledger
+{
+public:
+    Ledger() = default;
+
+private:
+    sdk::List <WatchList, Ledger> _watchlists;
+    // Pending _pending;
+    //
+
+    friend QDataStream& operator << (QDataStream& s, const Ledger& d);
+    friend QDataStream& operator >> (QDataStream& s,       Ledger& d);
+};
+
+#endif // SDK_USER_LEDGER_LEDGER_H

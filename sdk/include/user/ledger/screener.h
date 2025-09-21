@@ -1,3 +1,5 @@
+#ifndef SDK_USER_LEDGER_SCREENER_H
+#define SDK_USER_LEDGER_SCREENER_H
 /*!
 \class Screener
 \brief Правила/умови моніторингу (ціна, метрики, патерни).
@@ -14,3 +16,16 @@ sc.addRule(symbol("TXN"),  Rule::epsGrowthYoY(> 0.10));
 auto hits = sc.evaluate(market_feed);
 \endcode
 */
+
+#include "sdk_def.h"
+
+class sdk::Screener
+{
+public:
+    Screener() = default;
+
+private:
+    //
+};
+
+#endif // SDK_USER_LEDGER_SCREENER_H

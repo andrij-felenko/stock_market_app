@@ -62,6 +62,6 @@ private:
     friend QDebug operator << (QDebug dbg, const Symbol& symbol);
 };
 
-namespace sdk { using SymbolList = std::vector <Symbol>; }
+namespace sdk { using SymbolList = sdk::List <Symbol>; }
 
 #endif // SDK_INSTRUMENT_SYMBOL_H
