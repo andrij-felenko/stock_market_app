@@ -6,12 +6,11 @@
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "api/api.h"
-#include "reply.h"
+#include "api/transport/provider.h"
+#include "api/transport/call.h"
 
-namespace api { class FinnHub; }
 
-class api::FinnHub : public API {
+class sdk::api::FinnHub : public Provider {
     Q_OBJECT
 public:
     static FinnHub* instance();
@@ -22,11 +21,11 @@ public:
 
 private:
     explicit FinnHub(QObject* parent = nullptr);
-    using api::API::request;
+    using sdk::api::Provider::request;
 
     virtual bool request(Request type, const QString& name, const sdk::Symbol& tag,
                          StringMap keys = {}) override;
-    virtual void handlerAnswer(Reply* reply) override;
+    virtual void handlerAnswer(Call* reply) override;
 };
 
 #endif

@@ -1,0 +1,4 @@
+#ifndef SDK_API_EOD_YAHOO_H
+#define SDK_API_EOD_YAHOO_H
+
+#endif // SDK_API_EOD_YAHOO_H

@@ -7,12 +7,11 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QUrlQuery>
-#include "api/api.h"
-#include "instrument/symbol.h"
+#include "sdk_def.h"
+#include "core/symbol.h"
+#include "api/transport/provider.h"
 
-namespace api { class Eod; }
-
-class api::Eod final : public API {
+class sdk::api::Eod final : public Provider {
     Q_OBJECT
 public:
     static Eod* instance();
@@ -33,18 +32,18 @@ signals:
 private:
     explicit Eod(QObject* parent = nullptr);
 
-    using api::API::request;
+    using api::Provider::request;
     friend class sdk::Market;
     friend class sdk::Instrument;
 
     virtual bool request(Request type, const QString& name, const sdk::Symbol& symbol,
                          StringMap keys = {}) override;
-    virtual void handlerAnswer(Reply* reply) override;
-    virtual void handlerError(Reply* reply, QNetworkReply::NetworkError error) override;
+    virtual void handlerAnswer(Call* reply) override;
+    virtual void handlerError(Call* reply, QNetworkReply::NetworkError error) override;
 
-    void _handleExchange(Reply* reply);
-    void _handleCandle  (Reply* reply);
-    void _handleInfo    (Reply* reply);
+    void _handleExchange(Call* reply);
+    void _handleCandle  (Call* reply);
+    void _handleInfo    (Call* reply);
 
     void _handleInfoGeneral           (const sdk::Finder& finded, const QJsonObject& obj);
     void _handleInfoHighlights        (const sdk::Finder& finded, const QJsonObject& obj);

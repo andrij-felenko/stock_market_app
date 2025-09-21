@@ -6,12 +6,11 @@
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "api/api.h"
-#include "reply.h"
+#include "api/transport/provider.h"
+#include "api/transport/call.h"
 
-namespace api { class Figi; }
 
-class api::Figi : public API {
+class sdk::api::Figi : public Provider {
     Q_OBJECT
 public:
     static Figi* instance();
@@ -20,11 +19,11 @@ public:
 
 private:
     explicit Figi(QObject* parent = nullptr);
-    using api::API::request;
+    using sdk::api::Provider::request;
 
     virtual bool request(Request type, const QString& name, const sdk::Symbol& symbol,
                          StringMap keys = {}) override;
-    virtual void handlerAnswer(Reply* reply) override;
+    virtual void handlerAnswer(Call* reply) override;
 };
 
 #endif

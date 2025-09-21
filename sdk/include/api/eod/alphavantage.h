@@ -6,14 +6,12 @@
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "api/api.h"
-#include "reply.h"
-#include "instrument/ticker.h"
-#include "services/market.h"
+#include "api/transport/provider.h"
+#include "api/transport/call.h"
+#include "core/security/listing/ticker.h"
+#include "service/market.h"
 
-namespace api { class AlphaVantage; }
-
-class api::AlphaVantage : public API {
+class sdk::api::AlphaVantage : public Provider {
     Q_OBJECT
 public:
     static AlphaVantage* instance();
@@ -28,16 +26,16 @@ public slots:
 
 private:
     explicit AlphaVantage(QObject* parent = nullptr);
-    using api::API::request;
+    using sdk::api::Provider::request;
 
     virtual bool request(Request type, const QString& name, const sdk::Symbol& tag,
                          StringMap keys = {}) override;
-    virtual void handlerAnswer(Reply* reply) override;
+    virtual void handlerAnswer(Call* reply) override;
 
-    void handleInfo    (Reply* reply);
-    void handleCandle  (Reply* reply);
-    void handleTag     (Reply* reply);
-    void handleDividend(Reply* reply);
+    void handleInfo    (Call* reply);
+    void handleCandle  (Call* reply);
+    void handleTag     (Call* reply);
+    void handleDividend(Call* reply);
 };
 
 #endif

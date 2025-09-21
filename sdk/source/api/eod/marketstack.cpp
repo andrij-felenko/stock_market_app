@@ -1,4 +1,4 @@
-#include "api/marketstack.h"
+#include "api/eod/marketstack.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -7,15 +7,15 @@
 #include <QtGui/QGuiApplication>
 #include <QJsonArray>
 
-#include "services/market.h"
+#include "service/market.h"
 
-api::MarketStack::MarketStack(QObject* parent)
-    : API(QUrl("https://api.marketstack.com/"), parent)
+sdk::api::MarketStack::MarketStack(QObject* parent)
+    : Provider(QUrl("https://api.marketstack.com/"), parent)
 {
     // set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
 }
 
-api::MarketStack* api::MarketStack::instance()
+sdk::api::MarketStack* sdk::api::MarketStack::instance()
 {
     static MarketStack* _instance = nullptr;
     if (_instance == nullptr){
@@ -26,13 +26,13 @@ api::MarketStack* api::MarketStack::instance()
 
 // void api::FinnHub::set_api_key(const QString& key) { _api_key = key; }
 
-void api::MarketStack::updateInfoByTag(const sdk::Symbol& tag)
+void sdk::api::MarketStack::updateInfoByTag(const sdk::Symbol& tag)
 {
     MarketStack::instance()->request(Request::Info, tag);
 }
 
 // https://api.marketstack.com/v2/eod?access_key=c68c8ac43610203b7b46616e0bb8124a&symbols=VK.PA
-void api::MarketStack::updateQuotesByTag(sdk::SymbolList tags)
+void sdk::api::MarketStack::updateQuotesByTag(sdk::SymbolList tags)
 {
     QString name;
     if (tags.empty())
@@ -55,10 +55,10 @@ void api::MarketStack::updateQuotesByTag(sdk::SymbolList tags)
     data->request(Request::Quote, name);
 }
 
-bool api::MarketStack::request(Request type, const QString& name, const sdk::Symbol& tag,
-                               StringMap keys)
+bool sdk::api::MarketStack::request(Request type, const QString& name, const sdk::Symbol& tag,
+                                    StringMap keys)
 {
-    Reply* post = add(type);
+    Call* post = add(type);
 
     QString subname;
     if (tag.us()) subname = tag.venue();
@@ -83,7 +83,7 @@ bool api::MarketStack::request(Request type, const QString& name, const sdk::Sym
     }
 
     post->addQueryItem("symbol", subname);
-    post->addQueryItem("token", settings::network()->key_fh());
+    post->addQueryItem("token", endpoints()->key_fh());
 
     switch (type){
         case api::Request::MetricAll:       post->addQueryItem("metric", "all");       break;
@@ -114,13 +114,13 @@ bool api::MarketStack::request(Request type, const QString& name, const sdk::Sym
             break;
         }
         case api::Request::Info: {
-            post->addQueryItem("access_key", settings::network()->key_ms());
+            post->addQueryItem("access_key", endpoints()->key_ms());
             break;
         }
         case api::Request::Peers:    break;
         case api::Request::Quote: {
             // ?access_key=c68c8ac43610203b7b46616e0bb8124a&symbols=VK.PA
-            post->addQueryItem("access_key", settings::network()->key_ms());
+            post->addQueryItem("access_key", endpoints()->key_ms());
             post->addQueryItem("symbols", name);
             post->addQueryItem("limit", "999");
             break;
@@ -135,7 +135,7 @@ bool api::MarketStack::request(Request type, const QString& name, const sdk::Sym
     return true;
 }
 
-void api::MarketStack::handlerAnswer(Reply* reply)
+void sdk::api::MarketStack::handlerAnswer(Call* reply)
 {
     qDebug() << "handler answer";
     qDebug() << reply->receiveData();

@@ -1,4 +1,4 @@
-#include "api/figi.h"
+#include "api/eod/figi.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -7,8 +7,8 @@
 #include <QtGui/QGuiApplication>
 #include <QJsonArray>
 
-#include "services/market.h"
-#include "instrument/instrument.h"
+#include "service/market.h"
+#include "core/security/instrument.h"
 #include "loader.h"
 
 /**
@@ -18,12 +18,12 @@
  * \link https://www.openfigi.com/api/documentation OpenFIGI Mapping API \endlink
  */
 
-api::Figi::Figi(QObject* parent) : API(QUrl("https://api.openfigi.com/"), parent)
+sdk::api::Figi::Figi(QObject* parent) : Provider(QUrl("https://api.openfigi.com/"), parent)
 {
     //
 }
 
-api::Figi* api::Figi::instance()
+sdk::api::Figi* sdk::api::Figi::instance()
 {
     static Figi* _instance = nullptr;
     if (_instance == nullptr){
@@ -32,15 +32,15 @@ api::Figi* api::Figi::instance()
     return _instance;
 }
 
-void api::Figi::updateInfoByTag(const sdk::Symbol& tag)
+void sdk::api::Figi::updateInfoByTag(const sdk::Symbol& tag)
 {
     Figi::instance()->request(Request::Info, tag);
 }
 
-bool api::Figi::request(Request type, const QString& name, const sdk::Symbol& symbol,
-                        StringMap keys)
+bool sdk::api::Figi::request(Request type, const QString& name, const sdk::Symbol& symbol,
+                             StringMap keys)
 {
-    Reply* post = add(type);
+    Call* post = add(type);
 
     // as we work only with US marker, we nee to cut .US domen from tag
     QString subname;
@@ -67,7 +67,7 @@ bool api::Figi::request(Request type, const QString& name, const sdk::Symbol& sy
     }
 
     post->request()->setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    post->request()->setRawHeader("X-OPENFIGI-APIKEY", settings::network()->key_figi().toUtf8());
+    post->request()->setRawHeader("X-OPENFIGI-APIKEY", endpoints()->key_figi().toUtf8());
     QJsonObject to_send;
 
     switch (type){
@@ -132,7 +132,7 @@ bool api::Figi::request(Request type, const QString& name, const sdk::Symbol& sy
     return true;
 }
 
-void api::Figi::handlerAnswer(Reply* reply)
+void sdk::api::Figi::handlerAnswer(Call* reply)
 {
     qDebug() << "handler answer";
     qDebug() << reply->receiveData();

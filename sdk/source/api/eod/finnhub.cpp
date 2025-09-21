@@ -1,4 +1,4 @@
-#include "api/finnhub.h"
+#include "api/eod/finnhub.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -7,15 +7,15 @@
 #include <QtGui/QGuiApplication>
 
 #include "loader.h"
-#include "services/market.h"
+#include "service/market.h"
 
-api::FinnHub::FinnHub(QObject* parent) : API(QUrl("https://finnhub.io/api/v1/"), parent)
+sdk::api::FinnHub::FinnHub(QObject* parent) : Provider(QUrl("https://finnhub.io/api/v1/"), parent)
 {
     shift_ms = 1000;
     // set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
 }
 
-api::FinnHub* api::FinnHub::instance()
+sdk::api::FinnHub* sdk::api::FinnHub::instance()
 {
     static FinnHub* _instance = nullptr;
     if (_instance == nullptr){
@@ -26,16 +26,16 @@ api::FinnHub* api::FinnHub::instance()
 
 // void api::FinnHub::set_api_key(const QString& key) { _api_key = key; }
 
-void api::FinnHub::updateInfoByTag(QString tag)
+void sdk::api::FinnHub::updateInfoByTag(QString tag)
 {
     FinnHub* data = FinnHub::instance();
     data->request(Request::Info, tag);
 }
 
-bool api::FinnHub::request(Request type, const QString& name,
-                           const sdk::Symbol& tag, StringMap keys)
+bool sdk::api::FinnHub::request(Request type, const QString& name,
+                                const sdk::Symbol& tag, StringMap keys)
 {
-    Reply* post = add(type);
+    Call* post = add(type);
 
     QString subname;
     if (tag.us()) subname = tag.venue();
@@ -62,7 +62,7 @@ bool api::FinnHub::request(Request type, const QString& name,
     }
 
     post->addQueryItem("symbol", subname);
-    post->addQueryItem("token", settings::network()->key_fh());
+    post->addQueryItem("token", endpoints()->key_fh());
 
     switch (type){
         case api::Request::MetricAll:       post->addQueryItem("metric", "all");       break;
@@ -105,7 +105,7 @@ bool api::FinnHub::request(Request type, const QString& name,
     return true;
 }
 
-void api::FinnHub::handlerAnswer(Reply* reply)
+void sdk::api::FinnHub::handlerAnswer(Call* reply)
 {
     qDebug() << "handler answer";
     qDebug() << reply->receiveData();

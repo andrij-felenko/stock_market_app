@@ -1,4 +1,4 @@
-#include "api/twelvedata.h"
+#include "api/eod/twelvedata.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -7,15 +7,16 @@
 #include <QJsonArray>
 #include <QtGui/QGuiApplication>
 
-#include "services/market.h"
+#include "service/market.h"
 #include "loader.h"
 
-api::TwelveData::TwelveData(QObject* parent) : API(QUrl("https://api.twelvedata.com/"), parent)
+sdk::api::TwelveData::TwelveData(QObject* parent)
+    : Provider(QUrl("https://api.twelvedata.com/"), parent)
 {
     // set_api_key("f9b33ba1139a4b5e8c0572bcd1e11258");
 }
 
-api::TwelveData* api::TwelveData::instance()
+sdk::api::TwelveData* sdk::api::TwelveData::instance()
 {
     static TwelveData* _instance = nullptr;
     if (_instance == nullptr){
@@ -28,10 +29,10 @@ api::TwelveData* api::TwelveData::instance()
     // m_api_key = key;
 // }
 
-bool api::TwelveData::request(Request type, const QString& name, const sdk::Symbol& tag,
-                              StringMap keys)
+bool sdk::api::TwelveData::request(Request type, const QString& name, const sdk::Symbol& tag,
+                                   StringMap keys)
 {
-    Reply* post = add(type);
+    Call* post = add(type);
 
     QString subname;
     if (tag.us()) subname = tag.venue();
@@ -49,7 +50,7 @@ bool api::TwelveData::request(Request type, const QString& name, const sdk::Symb
             post->addQueryItem("interval", keys["interval"]);
             post->addQueryItem("start_date", keys["start_date"]);
             post->addQueryItem("end_date", keys["end_date"]);
-            post->addQueryItem("apikey", settings::network()->key_td());
+            post->addQueryItem("apikey", endpoints()->key_td());
             break;
         default:
             return false;
@@ -60,12 +61,12 @@ bool api::TwelveData::request(Request type, const QString& name, const sdk::Symb
     return true;
 }
 
-void api::TwelveData::updateByTag(QString tag)
+void sdk::api::TwelveData::updateByTag(QString tag)
 {
     // TwelveData* data = TwelveData::instance();
 }
 
-void api::TwelveData::addByTag(QString tag)
+void sdk::api::TwelveData::addByTag(QString tag)
 {
     qDebug() << "ADD BY TAG" << tag;
     api::StringMap params = {
@@ -76,7 +77,7 @@ void api::TwelveData::addByTag(QString tag)
     request(Request::Candle, tag, params);
 }
 
-void api::TwelveData::handlerAnswer(Reply* reply)
+void sdk::api::TwelveData::handlerAnswer(Call* reply)
 {
     qDebug() << "handler answer";
     qDebug() << reply->receiveData();

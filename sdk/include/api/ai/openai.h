@@ -6,11 +6,10 @@
 #include <QNetworkReply>
 #include <QJsonObject>
 #include <QJsonDocument>
-#include "api/api.h"
+#include "api/transport/provider.h"
 
-namespace api { class OpenAI; }
 
-class api::OpenAI : public API {
+class sdk::api::OpenAI : public Provider {
     Q_OBJECT
 public:
     static OpenAI* instance();
@@ -32,7 +31,7 @@ private:
 
     virtual bool request(Request type, const QString& name, const sdk::Symbol& symbol,
                          StringMap keys = {}) override;
-    virtual void handlerAnswer(Reply* reply) override;
+    virtual void handlerAnswer(Call* reply) override;
 };
 
 #endif // API_OPENAI_H

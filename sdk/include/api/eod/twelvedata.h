@@ -1,17 +1,15 @@
-#ifndef API_TWELVEDATA_H
-#define API_TWELVEDATA_H
+#ifndef SDK_API_EOD_TWELVEDATA_H
+#define SDK_API_EOD_TWELVEDATA_H
 
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "api/api.h"
-#include "reply.h"
+#include "api/transport/provider.h"
+#include "api/transport/call.h"
 
-namespace api { class TwelveData; }
-
-class api::TwelveData : public API {
+class sdk::api::TwelveData : public sdk::api::Provider {
     Q_OBJECT
 public:
     static TwelveData* instance();
@@ -23,11 +21,11 @@ public slots:
 
 private:
     explicit TwelveData(QObject* parent = nullptr);
-    using api::API::request;
+    using api::Provider::request;
 
     virtual bool request(Request type, const QString& name, const sdk::Symbol& tag,
                          StringMap keys = {}) override;
-    virtual void handlerAnswer(Reply* reply) override;
+    virtual void handlerAnswer(Call* reply) override;
 };
 
-#endif // API_TWELVEDATA_H
+#endif // SDK_API_EOD_TWELVEDATA_H

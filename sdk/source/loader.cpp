@@ -2,8 +2,8 @@
 #include <QtCore/QCoreApplication>
 #include <QtQuick/QQuickWindow>
 
-#include "api/ibkr.h"
-#include "api/yahoo.h"
+// #include "api/ibkr.h"
+// #include "api/yahoo.h"
 
 SDK* const SDK::instance() {
     static SDK* instance = nullptr;
@@ -23,7 +23,7 @@ void SDK::init()
     _market->loadMeta();
 }
 
-settings::Network* SDK::network() const { return settings::Network::instance(); }
+sdk::api::EndPoints* SDK::network() const { return sdk::api::endpoints(); }
 // data::User*        sdk::Loader::account() const { return _user; }
 sdk::Market*       SDK::market()  const { return _market; }
 

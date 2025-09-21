@@ -1,9 +1,9 @@
-#include "api/openai.h"
+#include "api/ai/openai.h"
 #include <QJsonArray>
 #include <QDebug>
 #include <QtGui/QGuiApplication>
 
-api::OpenAI* api::OpenAI::instance()
+sdk::api::OpenAI* sdk::api::OpenAI::instance()
 {
     static OpenAI* _instance = nullptr;
     if (_instance == nullptr){
@@ -12,8 +12,8 @@ api::OpenAI* api::OpenAI::instance()
     return _instance;
 }
 
-api::OpenAI::OpenAI(QObject* parent)
-    : API(QUrl("https://api.openai.com/v1/chat/completions"), parent),
+sdk::api::OpenAI::OpenAI(QObject* parent)
+    : Provider(QUrl("https://api.openai.com/v1/chat/completions"), parent),
       _model("gpt-5-nano")
 {
     // set_api_key("sk-proj-vccDzzJrmHvKungJmFIz_U5X_yZI3wvadiKedhBomYzXUNv"
@@ -23,15 +23,15 @@ api::OpenAI::OpenAI(QObject* parent)
 
 // void api::OpenAI::set_api_key(const QString& key) { _api_key = key; }
 
-void api::OpenAI::setModel(const QString& new_model) { _model = new_model; }
+void sdk::api::OpenAI::setModel(const QString& new_model) { _model = new_model; }
 
-bool api::OpenAI::request(Request type, const QString& text,
-                          const sdk::Symbol& symbol, StringMap keys)
+bool sdk::api::OpenAI::request(Request type, const QString& text,
+                               const sdk::Symbol& symbol, StringMap keys)
 {
-    Reply* post = add(type);
+    Call* post = add(type);
     post->request()->setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     post->request()->setRawHeader("Authorization",
-                                  "Bearer " + settings::network()->key_oai().toUtf8());
+                                  "Bearer " + endpoints()->key_oai().toUtf8());
 
     int max_chars = keys.value("max", "50").toInt();
     bool stream = keys.value("stream", "false") == "true";
@@ -90,7 +90,7 @@ bool api::OpenAI::request(Request type, const QString& text,
     return true;
 }
 
-void api::OpenAI::recheckTag(const sdk::Symbol& tag)
+void sdk::api::OpenAI::recheckTag(const sdk::Symbol& tag)
 {
     request(Request::Tag,
         "Знайди компанію за частковою або повною назвою, або категорією, або за відомим брендом, "
@@ -118,7 +118,7 @@ void api::OpenAI::recheckTag(const sdk::Symbol& tag)
     );
 }
 
-void api::OpenAI::handlerAnswer(Reply* reply)
+void sdk::api::OpenAI::handlerAnswer(Call* reply)
 {
     qDebug() << "OPENAI result" << reply->receiveData();
     emit replyComplete(reply->receiveData());

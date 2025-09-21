@@ -1,75 +1,17 @@
-#include "api/eod.h"
+#include "api/eod/eod.h"
 #include <QtCore/QDebug>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QJsonArray>
-#include "instrument/instrument.h"
+#include "core/security/instrument.h"
 #include "loader.h"
+#include "common/json.h"
 
-namespace json {
-    std::optional <QString> string(const QJsonObject& obj, const char* key) {
-        auto it = obj.find(key);
-        if (it == obj.end() || !it->isString()) return std::nullopt;
-        const QString v = it->toString().trimmed();
-        return v.isEmpty() ? std::nullopt : std::optional<QString>(v);
-    };
-
-    std::optional <bool> boolean(const QJsonObject& obj, const char* key) {
-        auto it = obj.find(key);
-        if (it == obj.end()) return std::nullopt;
-        if (it->isBool()) return it->toBool();
-        if (it->isString()) {
-            const auto v = it->toString().trimmed().toLower();
-            if (v == "true" || v == "1")  return true;
-            if (v == "false"|| v == "0")  return false;
-        }
-        return std::nullopt;
-    };
-
-    std::optional <QDate> date(const QJsonObject& obj, const char* key,
-                              const char* fmt = "yyyy-MM-dd") {
-        auto it = obj.find(key);
-        if (it == obj.end() || !it->isString()) return std::nullopt;
-        const QDate dt = QDate::fromString(it->toString(), fmt);
-        return dt.isValid() ? std::optional<QDate>(dt) : std::nullopt;
-    };
-
-    std::optional <QJsonObject> object(const QJsonObject& obj, const char* key) {
-        auto it = obj.find(key);
-        return (it != obj.end() && it->isObject()) ? std::optional <QJsonObject>(it->toObject())
-                                                   : std::nullopt;
-    };
-
-    std::optional <int64_t> integer(const QJsonObject& obj, const char* key) {
-        auto it = obj.find(key);
-        if (it == obj.end()) return std::nullopt;
-        if (it->isDouble()) return it->toInteger();
-        if (it->isString()) {
-            bool ok = false;
-            int v = it->toString().remove(',').toLongLong(&ok);
-            if (ok) return v;
-        }
-        return std::nullopt;
-    };
-
-    std::optional <double> real(const QJsonObject& obj, const char* key) {
-        auto it = obj.find(key);
-        if (it == obj.end()) return std::nullopt;
-        if (it->isDouble()) return it->toDouble();
-        if (it->isString()) {
-            bool ok = false;
-            double d = it->toString().toDouble(&ok);
-            if (ok) return d;
-        }
-        return std::nullopt;
-    };
-}
-
-api::Eod::Eod(QObject* parent) : API(QUrl("https://eodhd.com/api"), parent)
+sdk::api::Eod::Eod(QObject* parent) : Provider(QUrl("https://eodhd.com/api"), parent)
 {
     //
 }
 
-api::Eod* api::Eod::instance()
+sdk::api::Eod* sdk::api::Eod::instance()
 {
     static Eod* _instance = nullptr;
     if (_instance == nullptr)
@@ -78,13 +20,13 @@ api::Eod* api::Eod::instance()
     return _instance;
 }
 
-void api::Eod::getAllTag(const QString& exchange)
+void sdk::api::Eod::getAllTag(const QString& exchange)
 {
     Eod* data = Eod::instance();
     data->request(Request::Exchange, exchange);
 }
 
-void api::Eod::getAllExchangeTag()
+void sdk::api::Eod::getAllExchangeTag()
 {
     Eod* data = Eod::instance();
     QStringList list = sdk::exchange::all_exchange_venue();
@@ -92,12 +34,12 @@ void api::Eod::getAllExchangeTag()
         data->request(Request::Exchange, it);
 }
 
-void api::Eod::fundamental(const sdk::Symbol& tag)
+void sdk::api::Eod::fundamental(const sdk::Symbol& tag)
 {
     Eod::instance()->request(Request::Info, tag);
 }
 
-void api::Eod::historicalYear(const sdk::Symbol& tag, int8_t year, char period)
+void sdk::api::Eod::historicalYear(const sdk::Symbol& tag, int8_t year, char period)
 {
     qDebug() << "EOD ADD BY TAG" << tag;
     if (year >= 30 || year < 1)
@@ -114,10 +56,10 @@ void api::Eod::historicalYear(const sdk::Symbol& tag, int8_t year, char period)
     Eod::instance()->request(Request::Candle, tag, params);
 }
 
-bool api::Eod::request(Request type, const QString& name,
-                       const sdk::Symbol& symbol, StringMap keys)
+bool sdk::api::Eod::request(Request type, const QString& name,
+                            const sdk::Symbol& symbol, StringMap keys)
 {
-    Reply* post = add(type);
+    Call* post = add(type);
 
     switch (type){
         case api::Request::Text:
@@ -143,13 +85,13 @@ bool api::Eod::request(Request type, const QString& name,
         case api::Request::Exchange:
         case api::Request::Info:
         {
-            post->addQueryItem("api_token", settings::network()->key_eod());
+            post->addQueryItem("api_token", endpoints()->key_eod());
             post->addQueryItem("fmt", "json");
             break;
         }
         case api::Request::Candle: {
             // https://eodhd.com/api/eod/MCD.US?api_token=683ebb8bc59b60.11043967&fmt=json
-            post->addQueryItem("api_token", settings::network()->key_eod());
+            post->addQueryItem("api_token", endpoints()->key_eod());
             post->addQueryItem("period", keys.value("period", "d"));
             post->addQueryItem("fmt", "json");
             post->addQueryItem("from", keys.value("from"));
@@ -170,7 +112,7 @@ bool api::Eod::request(Request type, const QString& name,
     return true;
 }
 
-void api::Eod::handlerAnswer(Reply* reply)
+void sdk::api::Eod::handlerAnswer(Call* reply)
 {
     qDebug() << "handler answer eod";
 
@@ -182,7 +124,7 @@ void api::Eod::handlerAnswer(Reply* reply)
     }
 }
 
-void api::Eod::handlerError(Reply* reply, QNetworkReply::NetworkError error)
+void sdk::api::Eod::handlerError(Call* reply, QNetworkReply::NetworkError error)
 {
     qDebug() << Q_FUNC_INFO << static_cast <uint32_t> (reply->type()) << error
              << reply->name << reply->symbol;
@@ -222,7 +164,7 @@ void api::Eod::handlerError(Reply* reply, QNetworkReply::NetworkError error)
     }
 }
 
-void api::Eod::_handleExchange(Reply* reply)
+void sdk::api::Eod::_handleExchange(Call* reply)
 {
     QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
     auto market = Nexus.market();
@@ -243,7 +185,7 @@ void api::Eod::_handleExchange(Reply* reply)
     market->saveMeta();
 }
 
-void api::Eod::_handleCandle(Reply* reply)
+void sdk::api::Eod::_handleCandle(Call* reply)
 {
     QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
     auto ticker = Nexus.market()->findTicker(reply->symbol);
@@ -269,7 +211,7 @@ void api::Eod::_handleCandle(Reply* reply)
     ticker->save();
 }
 
-void api::Eod::_handleInfo(Reply* reply)
+void sdk::api::Eod::_handleInfo(Call* reply)
 {
     qDebug() << Q_FUNC_INFO;
     auto finded = Nexus.market()->findTicker(reply->symbol);
@@ -310,7 +252,7 @@ void api::Eod::_handleInfo(Reply* reply)
     finded->save();
 }
 
-void api::Eod::_handleInfoGeneral(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoGeneral(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto g = json::object(obj, "General");
     if (not g)
@@ -365,7 +307,7 @@ void api::Eod::_handleInfoGeneral(const sdk::Finder& finded, const QJsonObject& 
     // ISIN / Name / Type / Code / Exchange / Currency* / PrimaryTicker / UpdatedAt
 }
 
-void api::Eod::_handleInfoHighlights(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoHighlights(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto h = json::object(obj, "Highlights");
     if (not h) return;
@@ -403,7 +345,7 @@ void api::Eod::_handleInfoHighlights(const sdk::Finder& finded, const QJsonObjec
     // коли підтвердимо ім'я сеттера у Fundamental/Derived
 }
 
-void api::Eod::_handleInfoValuation(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoValuation(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto v = json::object(obj, "Valuation");
     if (not v) return;
@@ -417,7 +359,7 @@ void api::Eod::_handleInfoValuation(const sdk::Finder& finded, const QJsonObject
     // if (auto x = json::real(*v, "EnterpriseValueEbitda")) val.setEnterpriseValueEbitda(*x);
 }
 
-void api::Eod::_handleInfoSharesStats(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoSharesStats(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto s = json::object(obj, "SharesStats");
     if (not s) return;
@@ -434,7 +376,7 @@ void api::Eod::_handleInfoSharesStats(const sdk::Finder& finded, const QJsonObje
     if (auto x = json::integer(*s, "SharesShortPriorMonth")) shorts.setSharesPriorMonth(*x);
 }
 
-void api::Eod::_handleInfoSplitsDividends(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoSplitsDividends(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto sd = json::object(obj, "SplitsDividends");
     if (not sd) return;
@@ -471,7 +413,7 @@ void api::Eod::_handleInfoSplitsDividends(const sdk::Finder& finded, const QJson
     // }
 }
 
-void api::Eod::_handleInfoAnalystRatings(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoAnalystRatings(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto ar = json::object(obj, "AnalystRatings");
     if (not ar) return;
@@ -489,7 +431,7 @@ void api::Eod::_handleInfoAnalystRatings(const sdk::Finder& finded, const QJsonO
 
 }
 
-void api::Eod::_handleInfoOutstandingShares(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoOutstandingShares(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto os = json::object(obj, "outstandingShares");
     if (not os) return;
@@ -510,7 +452,7 @@ void api::Eod::_handleInfoOutstandingShares(const sdk::Finder& finded, const QJs
     }
 }
 
-void api::Eod::_handleInfoEarnings(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoEarnings(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto e = json::object(obj, "Earnings");
     if (not e) return;
@@ -519,7 +461,7 @@ void api::Eod::_handleInfoEarnings(const sdk::Finder& finded, const QJsonObject&
     _handleInfoEarningsTrend(finded, *e);
 }
 
-void api::Eod::_handleInfoEarningsHistory(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoEarningsHistory(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto h = json::object(obj, "History");
     if (not h) return;
@@ -541,7 +483,7 @@ void api::Eod::_handleInfoEarningsHistory(const sdk::Finder& finded, const QJson
     }
 }
 
-void api::Eod::_handleInfoEarningsTrend(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoEarningsTrend(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto t = json::object(obj, "Trend");
     if (not t) return;
@@ -583,7 +525,7 @@ void api::Eod::_handleInfoEarningsTrend(const sdk::Finder& finded, const QJsonOb
     }
 }
 
-void api::Eod::_handleInfoFinancials(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoFinancials(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto e = json::object(obj, "Financials");
     if (not e) return;
@@ -593,7 +535,7 @@ void api::Eod::_handleInfoFinancials(const sdk::Finder& finded, const QJsonObjec
     _handleInfoFinancialsIncome  (finded, *e);
 }
 
-void api::Eod::_handleInfoFinancialsBalance(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoFinancialsBalance(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto h = json::object(obj, "Balance_Sheet");
     if (not h)
@@ -685,7 +627,7 @@ void api::Eod::_handleInfoFinancialsBalance(const sdk::Finder& finded, const QJs
     }
 }
 
-void api::Eod::_handleInfoFinancialsCashFlow(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoFinancialsCashFlow(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto cf = json::object(obj, "Cash_Flow");
     if (not cf)
@@ -750,7 +692,7 @@ void api::Eod::_handleInfoFinancialsCashFlow(const sdk::Finder& finded, const QJ
     }
 }
 
-void api::Eod::_handleInfoFinancialsIncome(const sdk::Finder& finded, const QJsonObject& obj)
+void sdk::api::Eod::_handleInfoFinancialsIncome(const sdk::Finder& finded, const QJsonObject& obj)
 {
     auto is = json::object(obj, "Income_Statement");
     if (not is)

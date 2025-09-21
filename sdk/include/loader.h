@@ -4,10 +4,10 @@
 #include <QtCore/QObject>
 
 #include "sdk_def.h"
-#include "services/market.h"
+#include "service/market.h"
 // #include "data/user.h"
 // #include "data/market.h"
-#include "settings/network.h"
+#include "api/connectors/endpoints.h"
 
 
 class SDK final : public QObject
@@ -15,7 +15,7 @@ class SDK final : public QObject
     Q_OBJECT
 //     Q_PROPERTY(data::User*   user   READ account CONSTANT)
     Q_PROPERTY(sdk::Market* market READ market  CONSTANT)
-    Q_PROPERTY(settings::Network*   settings_network READ network CONSTANT)
+    Q_PROPERTY(sdk::api::EndPoints* settings_network READ network CONSTANT)
 public:
     static SDK* const instance();
     static SDK&      reference();
@@ -24,7 +24,7 @@ public:
 
 //     data::User* account() const;
     sdk::Market* market() const;
-    settings::Network* network() const;
+    sdk::api::EndPoints* network() const;
 
 signals:
     void prepared();

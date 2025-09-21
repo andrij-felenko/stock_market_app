@@ -3,153 +3,159 @@ project(sdk)
 
 # app -------------------------------------------------------------------------
 set (sdk_h
+    include/loader.h
     include/sdk.h
     include/sdk_def.h
 
-    include/api/api.h
-    include/api/reply.h
-    include/api/filefetch.h
-    include/api/syncer.h
-
     include/api/ai/openai.h
-
+    # include/api/broker/ibkr.h
+    # include/api/broker/tradernet.h
+    include/api/connectors/endpoints.h
     include/api/eod/alphavantage.h
     include/api/eod/eod.h
     include/api/eod/figi.h
     include/api/eod/finnhub.h
-    include/api/eod/twelvedata.h
     include/api/eod/marketstack.h
+    include/api/eod/twelvedata.h
     include/api/eod/yahoo.h
+    include/api/transport/filefetch.h
+    include/api/transport/provider.h
+    include/api/transport/call.h
+    include/api/transport/syncer.h
 
-    include/api/broker/ibkr.h
-    include/api/broker/tradernet.h
+    include/common/json.h
+    include/common/define.h
+    include/common/features.h
+    include/common/res_dir.h
+    include/common/trackable.h
 
-    include/currency/forex.h
+    include/core/enum.h
+    include/core/isin.h
+    include/core/symbol.h
+    include/core/forex/pair.h
 
-    include/instrument/data.h
-    include/instrument/trend.h
-    include/instrument/earnings.h
-    include/instrument/quartel_data.h
-    include/instrument/incomes.h
-    include/instrument/cash_flow.h
-    include/instrument/balance.h
-    include/instrument/quotes.h
-    include/instrument/short_interest.h
-    include/instrument/ticker.h
-    include/instrument/valuation.h
-    include/instrument/capital.h
-    include/instrument/corporate_action.h
-    include/instrument/dividend.h
-    include/instrument/estimate.h
-    include/instrument/fundamental.h
-    include/instrument/instrument.h
-    include/instrument/legal.h
-    include/instrument/meta.h
-    include/instrument/finance.h
-    include/instrument/symbol.h
-    include/instrument/isin.h
+    include/core/security/data.h
+    include/core/security/instrument.h
+    include/core/security/legal.h
+    include/core/security/meta.h
 
-    include/services/finder.h
-    include/services/market.h
+    include/core/security/finance/capital.h
+    include/core/security/finance/estimate.h
+    include/core/security/finance/finance.h
+    include/core/security/finance/fundamental.h
 
-    include/account/account.h
-    include/account/session.h
-    include/account/profile.h
+    include/core/security/listing/corporate_action.h
+    include/core/security/listing/dividend.h
+    include/core/security/listing/quotes.h
+    include/core/security/listing/short_interest.h
+    include/core/security/listing/ticker.h
+    include/core/security/listing/valuation.h
 
-    include/ledger/pending.h
-    include/ledger/portfolio.h
-    include/ledger/screener.h
-    include/ledger/targets.h
-    include/ledger/watchlist.h
-    include/ledger/ledger.h
+    include/core/security/quarter/balance.h
+    include/core/security/quarter/cash_flow.h
+    include/core/security/quarter/earnings.h
+    include/core/security/quarter/incomes.h
+    include/core/security/quarter/quarter_data.h
+    include/core/security/quarter/trend.h
 
-    include/stock/stock.h
-    include/stock/transaction.h
+    include/service/finder.h
+    include/service/forex.h
+    include/service/market.h
 
-    include/enum/enum.h
+    include/user/account/account.h
+    include/user/account/profile.h
+    include/user/account/session.h
 
-    include/settings/network.h
+    include/user/ledger/ledger.h
+    include/user/ledger/pending.h
+    include/user/ledger/portfolio.h
+    include/user/ledger/screener.h
+    include/user/ledger/targets.h
+    include/user/ledger/watchlist.h
 
-    include/utilities/define.h
-    include/utilities/res_dir.h
-    include/utilities/features.h
-    include/utilities/trackable.h
-
-    include/loader.h
+    include/user/stock/stock.h
+    include/user/stock/transaction.h
 )
 
 set (sdk_cpp
-    source/api/api.cpp
-    source/api/reply.cpp
-    source/api/filefetch.cpp
-    source/api/syncer.cpp
+    source/loader.cpp
 
     source/api/ai/openai.cpp
-
+    # source/api/broker/ibkr.cpp
+    # source/api/broker/tradernet.cpp
+    source/api/connectors/endpoints.cpp
     source/api/eod/alphavantage.cpp
     source/api/eod/eod.cpp
     source/api/eod/figi.cpp
     source/api/eod/finnhub.cpp
-    source/api/eod/twelvedata.cpp
     source/api/eod/marketstack.cpp
+    source/api/eod/twelvedata.cpp
+    source/api/eod/yahoo.cpp
+    source/api/transport/filefetch.cpp
+    source/api/transport/provider.cpp
+    source/api/transport/call.cpp
+    source/api/transport/syncer.cpp
 
-    source/instrument/data.cpp
-    source/instrument/trend.cpp
-    source/instrument/earnings.cpp
-    source/instrument/quartel_data.cpp
-    source/instrument/incomes.cpp
-    source/instrument/cash_flow.cpp
-    source/instrument/balance.cpp
-    source/instrument/legal.cpp
-    source/instrument/meta.cpp
-    source/instrument/quotes.cpp
-    source/instrument/short_interest.cpp
-    source/instrument/ticker.cpp
-    source/instrument/valuation.cpp
-    source/instrument/capital.cpp
-    source/instrument/corporate_action.cpp
-    source/instrument/dividend.cpp
-    source/instrument/estimate.cpp
-    source/instrument/fundamental.cpp
-    source/instrument/instrument.cpp
-    source/instrument/finance.cpp
-    source/instrument/symbol.cpp
-    source/instrument/isin.cpp
+    source/common/json.cpp
+    source/common/features.cpp
+    source/common/res_dir.cpp
+    source/common/trackable.cpp
 
-    source/services/finder.cpp
-    source/services/market.cpp
+    source/core/isin.cpp
+    source/core/symbol.cpp
+    source/core/forex/pair.cpp
 
-    source/account/account.cpp
-    source/account/session.cpp
-    source/account/profile.cpp
+    source/core/enum/continent.cpp
+    source/core/enum/country.cpp
+    source/core/enum/currency.cpp
+    source/core/enum/exchange.cpp
+    source/core/enum/home_category.cpp
+    source/core/enum/instype.cpp
+    source/core/enum/month.cpp
+    source/core/enum/quarter.cpp
+    source/core/enum/region.cpp
 
-    source/ledger/pending.cpp
-    source/ledger/portfolio.cpp
-    source/ledger/screener.cpp
-    source/ledger/targets.cpp
-    source/ledger/watchlist.cpp
-    source/ledger/ledger.cpp
+    source/core/security/data.cpp
+    source/core/security/instrument.cpp
+    source/core/security/legal.cpp
+    source/core/security/meta.cpp
 
-    source/stock/stock.cpp
-    source/stock/transaction.cpp
+    source/core/security/finance/capital.cpp
+    source/core/security/finance/estimate.cpp
+    source/core/security/finance/finance.cpp
+    source/core/security/finance/fundamental.cpp
 
-    source/enum/continent.cpp
-    source/enum/country.cpp
-    source/enum/currency.cpp
-    source/enum/exchange.cpp
-    source/enum/region.cpp
-    source/enum/instype.cpp
-    source/enum/month.cpp
-    source/enum/quartel.cpp
-    source/enum/home_category.cpp
+    source/core/security/listing/corporate_action.cpp
+    source/core/security/listing/dividend.cpp
+    source/core/security/listing/quotes.cpp
+    source/core/security/listing/short_interest.cpp
+    source/core/security/listing/ticker.cpp
+    source/core/security/listing/valuation.cpp
 
-    source/settings/network.cpp
+    source/core/security/quarter/balance.cpp
+    source/core/security/quarter/cash_flow.cpp
+    source/core/security/quarter/earnings.cpp
+    source/core/security/quarter/incomes.cpp
+    source/core/security/quarter/quarter_data.cpp
+    source/core/security/quarter/trend.cpp
 
-    source/utilities/res_dir.cpp
-    source/utilities/features.cpp
-    source/utilities/trackable.cpp
+    source/service/finder.cpp
+    source/service/forex.cpp
+    source/service/market.cpp
 
-    source/loader.cpp
+    source/user/account/account.cpp
+    source/user/account/profile.cpp
+    source/user/account/session.cpp
+
+    source/user/ledger/ledger.cpp
+    source/user/ledger/pending.cpp
+    source/user/ledger/portfolio.cpp
+    source/user/ledger/screener.cpp
+    source/user/ledger/targets.cpp
+    source/user/ledger/watchlist.cpp
+
+    source/user/stock/stock.cpp
+    source/user/stock/transaction.cpp
 )
 
 set (sdk_files

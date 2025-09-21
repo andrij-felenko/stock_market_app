@@ -1,4 +1,4 @@
-#include "api/alphavantage.h"
+#include "api/eod/alphavantage.h"
 #include "loader.h"
 
 #include <QUrl>
@@ -8,16 +8,16 @@
 #include <QtGui/QGuiApplication>
 #include <QJsonArray>
 
-#include "services/market.h"
-#include "instrument/instrument.h"
+#include "service/market.h"
+#include "core/security/instrument.h"
 
-api::AlphaVantage::AlphaVantage(QObject* parent)
-    : API(QUrl("https://www.alphavantage.co/query/"), parent)
+sdk::api::AlphaVantage::AlphaVantage(QObject* parent)
+    : Provider(QUrl("https://www.alphavantage.co/query/"), parent)
 {
     shift_ms = 15'100;
 }
 
-api::AlphaVantage* api::AlphaVantage::instance()
+sdk::api::AlphaVantage* sdk::api::AlphaVantage::instance()
 {
     static AlphaVantage* _instance = nullptr;
     if (_instance == nullptr){
@@ -26,13 +26,13 @@ api::AlphaVantage* api::AlphaVantage::instance()
     return _instance;
 }
 
-void api::AlphaVantage::updateInfoByTag(const sdk::Symbol& tag)
+void sdk::api::AlphaVantage::updateInfoByTag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
     data->request(Request::Info, tag);
 }
 
-void api::AlphaVantage::dailyCandleByTag(const sdk::Symbol& tag)
+void sdk::api::AlphaVantage::dailyCandleByTag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
     api::StringMap params;
@@ -40,7 +40,7 @@ void api::AlphaVantage::dailyCandleByTag(const sdk::Symbol& tag)
     data->request(Request::Candle, tag, params);
 }
 
-void api::AlphaVantage::todayCandleByTag(const sdk::Symbol& tag)
+void sdk::api::AlphaVantage::todayCandleByTag(const sdk::Symbol& tag)
 {
     AlphaVantage* data = AlphaVantage::instance();
     api::StringMap params;
@@ -48,17 +48,17 @@ void api::AlphaVantage::todayCandleByTag(const sdk::Symbol& tag)
     data->request(Request::Candle, tag, params);
 }
 
-void api::AlphaVantage::findSymbol(QString str) { findTag(str); }
-void api::AlphaVantage::findTag   (QString str)
+void sdk::api::AlphaVantage::findSymbol(QString str) { findTag(str); }
+void sdk::api::AlphaVantage::findTag   (QString str)
 {
     AlphaVantage* data = AlphaVantage::instance();
     data->request(Request::Tag, str);
 }
 
-bool api::AlphaVantage::request(Request type, const QString& name,
-                                const sdk::Symbol& tag, StringMap keys)
+bool sdk:: api::AlphaVantage::request(Request type, const QString& name,
+                                      const sdk::Symbol& tag, StringMap keys)
 {
-    Reply* post = add(type);
+    Call* post = add(type);
 
     QString subname;
     if (tag.us()) subname = tag.venue();
@@ -96,19 +96,19 @@ bool api::AlphaVantage::request(Request type, const QString& name,
             if (keys["func"] == "TIME_SERIES_INTRADAY")
                 post->addQueryItem("interval", "1min");
             post->addQueryItem("outputsize", "full");
-            post->addQueryItem("apikey", settings::network()->key_av());
+            post->addQueryItem("apikey", endpoints()->key_av());
             break;
         }
         case api::Request::Dividend: {
             post->addQueryItem("function", "DIVIDENDS");
             post->addQueryItem("symbol", subname);
-            post->addQueryItem("apikey", settings::network()->key_av());
+            post->addQueryItem("apikey", endpoints()->key_av());
             break;
         }
         case api::Request::Info: {
             post->addQueryItem("function", "OVERVIEW");
             post->addQueryItem("symbol", subname);
-            post->addQueryItem("apikey", settings::network()->key_av());
+            post->addQueryItem("apikey", endpoints()->key_av());
             break;
         }
         case api::Request::Peers:    break;
@@ -118,7 +118,7 @@ bool api::AlphaVantage::request(Request type, const QString& name,
         case api::Request::Tag: {
             post->addQueryItem("function", "SYMBOL_SEARCH");
             post->addQueryItem("keywords", subname);
-            post->addQueryItem("apikey", settings::network()->key_av());
+            post->addQueryItem("apikey", endpoints()->key_av());
             post->name = name;
             break;
         }
@@ -129,7 +129,7 @@ bool api::AlphaVantage::request(Request type, const QString& name,
     return true;
 }
 
-void api::AlphaVantage::handlerAnswer(Reply* reply)
+void sdk::api::AlphaVantage::handlerAnswer(Call* reply)
 {
     qDebug() << "handler answer";
 
@@ -142,7 +142,7 @@ void api::AlphaVantage::handlerAnswer(Reply* reply)
     }
 }
 
-void api::AlphaVantage::handleInfo(Reply* reply)
+void sdk::api::AlphaVantage::handleInfo(Call* reply)
 {
     auto ticker = Nexus.market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
@@ -191,7 +191,7 @@ void api::AlphaVantage::handleInfo(Reply* reply)
     ticker->instrument()->release();
 }
 
-void api::AlphaVantage::handleCandle(Reply* reply)
+void sdk::api::AlphaVantage::handleCandle(Call* reply)
 {
     auto ticker = Nexus.market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
@@ -238,7 +238,7 @@ void api::AlphaVantage::handleCandle(Reply* reply)
     ticker->instrument()->release();
 }
 
-void api::AlphaVantage::handleTag(Reply* reply)
+void sdk::api::AlphaVantage::handleTag(Call* reply)
 {
     QJsonObject root = QJsonDocument::fromJson(reply->receiveData()).object();
     QJsonArray list = root.value("bestMatches").toArray();
@@ -251,7 +251,7 @@ void api::AlphaVantage::handleTag(Reply* reply)
     // }
 }
 
-void api::AlphaVantage::handleDividend(Reply* reply)
+void sdk::api::AlphaVantage::handleDividend(Call* reply)
 {
     auto ticker = Nexus.market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){

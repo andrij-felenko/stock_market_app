@@ -1,9 +1,9 @@
 #ifndef STOCK_MARKET_SDK_DEFENITION_H
 #define STOCK_MARKET_SDK_DEFENITION_H
 
-#include "utilities/define.h" // IWYU pragma: keep
-#include "utilities/features.h" // IWYU pragma: keep
-#include "enum/enum.h" // IWYU pragma: keep
+#include "common/define.h" // IWYU pragma: keep
+#include "common/features.h" // IWYU pragma: keep
+#include "core/enum.h" // IWYU pragma: keep
 #include <optional>
 
 namespace sdk {
@@ -45,6 +45,25 @@ namespace sdk {
     // Utilities
     class ResDir;
     class Trackable;
+
+    namespace api {
+        class Syncer;
+        class Call;
+        class Provider;
+        class FileFetch;
+
+        class EndPoints;
+        class OpenAI;
+        class Ibkr;
+        class Tradernet;
+        class AlphaVantage;
+        class Eod;
+        class FinnHub;
+        class Figi;
+        class MarketStack;
+        class TwelveData;
+        class Yahoo;
+    }
 }
 
 using FieldTOpt = std::optional <sdk::FieldType>;
