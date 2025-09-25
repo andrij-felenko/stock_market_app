@@ -23,6 +23,7 @@ set (sdk_h
     include/api/transport/call.h
     include/api/transport/syncer.h
 
+    include/common/dtime.h
     include/common/json.h
     include/common/define.h
     include/common/features.h
@@ -96,6 +97,7 @@ set (sdk_cpp
     source/api/transport/call.cpp
     source/api/transport/syncer.cpp
 
+    source/common/dtime.cpp
     source/common/json.cpp
     source/common/features.cpp
     source/common/res_dir.cpp
