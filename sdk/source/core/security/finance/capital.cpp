@@ -63,21 +63,25 @@ bool sdk::Capital::lessByYearQuartel(const SharesPoint& a, const SharesPoint& b)
 
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Capital& d){
-        return s << d._shares_outstanding << d._shares_float
-                 << d._percent_of_insiders << d._percent_institution
-                 << d._outstand_shares;
+    QDataStream& operator << (QDataStream& s, Wire <const Capital::SharesPoint> d)
+    { return s << d->shares << d->year << d->quartel; }
+
+    QDataStream& operator >> (QDataStream& s, Wire <Capital::SharesPoint> d)
+    { return s >> d->shares >> d->year >> d->quartel; }
+
+    QDataStream& operator << (QDataStream& s, Wire <const Capital> d){
+        s << d->_shares_outstanding << d->_shares_float
+          << d->_percent_of_insiders << d->_percent_institution;
+          // << d->_outstand_shares;
+        if (d.recursive) s << static_cast <const Trackable&> (d.ref);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, Capital& d){
-        return s >> d._shares_outstanding >> d._shares_float
-                 >> d._percent_of_insiders >> d._percent_institution
-                 >> d._outstand_shares;
+    QDataStream& operator >> (QDataStream& s, Wire <Capital> d){
+        s >> d->_shares_outstanding >> d->_shares_float
+          >> d->_percent_of_insiders >> d->_percent_institution;
+          // >> d->_outstand_shares;
+        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
+        return s;
     }
-
-    QDataStream& operator << (QDataStream& s, const Capital::SharesPoint& d)
-    { return s << d.shares << d.year << d.quartel; }
-
-    QDataStream& operator >> (QDataStream& s, Capital::SharesPoint& d)
-    { return s >> d.shares >> d.year >> d.quartel; }
 }

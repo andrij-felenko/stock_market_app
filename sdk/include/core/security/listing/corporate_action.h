@@ -18,8 +18,8 @@ private:
     std::pair <int, int> _last_split_factor;
     QDate _last_split_date;
 
-    friend QDataStream& operator << (QDataStream& s, const CorporateAction& d);
-    friend QDataStream& operator >> (QDataStream& s,       CorporateAction& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const CorporateAction> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      CorporateAction> d);
 };
 
 #endif // SDK_INSTRUMENT_CORPORATE_ACTION_H

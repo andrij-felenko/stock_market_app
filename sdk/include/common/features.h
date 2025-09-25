@@ -42,6 +42,173 @@ namespace sdk {
     // ============================================================================================
 
 
+    // ----------------------- Wire ---------------------------------------------------------------
+    template <class T> class Wire {
+    public:
+        T& ref; bool recursive;
+        Wire(T& ref, bool recursive = true) : ref(ref), recursive(recursive) {}
+              T* operator->()       noexcept { return &ref; }
+        const T* operator->() const noexcept { return &ref; }
+    };
+    template <class T> Wire       <T> io(      T& t, bool recurs = true) { return { t, recurs }; }
+    // template <class T> Wire <const T> io(const T& t, bool recurs = true) { return { t, recurs }; }
+
+    template<class X>
+    concept WireLike = requires (std::remove_cvref_t <X>* p) { [] <class T> (Wire <T>*){}(p); };
+
+    template <class X>
+    using WireLess = std::conditional_t <WireLike <X>,
+        typename std::remove_cvref_t <X>::underlying,
+        std::remove_cvref_t <X>
+    >;
+
+    template<class U> concept WireWrite = requires (QDataStream& s, const U u)
+    { { s << io(u, true) } -> std::same_as <QDataStream&>; };
+
+    template<class U> concept WireRead = requires (QDataStream& s, U u)
+    { { s >> io(u, true) } -> std::same_as <QDataStream&>; };
+    // ============================================================================================
+
+
+
+    // --------------------------------------------------------------------------------------------
+    // ----------------------- QDataStream and std::vector ----------------------------------------
+    // --------------------------------------------------------------------------------------------
+    template <typename T> concept StreamReadable = requires(QDataStream& s, T& t)
+    { { s >> t } -> std::same_as <QDataStream&>; };
+
+    template <typename T> concept StreamWritable = requires(QDataStream& s, const T& t)
+    { { s << t } -> std::same_as <QDataStream&>; };
+
+    template <class T> concept StreamOrWireReadable = StreamReadable <T> || WireRead <T>;
+    template <class T> concept StreamOrWireWritable = StreamWritable <T> || WireWrite<T>;
+
+    template <typename T> concept StreamReadableFor =
+            (std::is_pointer_v <T> ? StreamOrWireReadable <std::remove_pointer_t <T>>
+                                   : StreamOrWireReadable <T>);
+
+    template <typename T> concept StreamWritableFor =
+            (std::is_pointer_v <T> ? StreamOrWireWritable <std::remove_pointer_t <T>>
+                                   : StreamOrWireWritable <T>);
+
+
+    // ----------------------- From / To Stream ---------------------------------------------------
+    template <typename T> requires StreamReadableFor <T>
+    QDataStream& from_stream(QDataStream& stream, bool recursive, T& d){
+        if constexpr (std::is_pointer_v <T>){
+            if constexpr (WireRead <std::remove_pointer_t <T>>) stream >> io(*d, recursive);
+            else                                                stream >> *d;
+        }
+        else {
+            if constexpr (WireRead <T>) stream >> io(d, recursive);
+            else                        stream >> d;
+        }
+        return stream;
+    }
+
+    template <typename T> requires StreamWritableFor <T>
+    QDataStream& to_stream(QDataStream& stream, bool recursive, const T& d){
+        if constexpr (std::is_pointer_v <T>){
+            if constexpr (WireWrite <std::remove_pointer_t <T>>) stream << io(*d, recursive);
+            else                                                 stream << *d;
+        }
+        else {
+            if constexpr (WireWrite <T>) stream << io(d, recursive);
+            else                         stream << d;
+        }
+        return stream;
+    }
+
+    template <typename T> requires StreamReadableFor <T>
+    QDataStream& from_stream(QDataStream& stream, T& d)
+    { return from_stream <T> (stream, true, d); }
+
+    template <typename T> requires StreamWritableFor <T>
+    QDataStream& to_stream(QDataStream& stream, T& d)
+    { return to_stream <T> (stream, true, d); }
+    // ============================================================================================
+
+
+    // ----------------------- From / To Bytes ----------------------------------------------------
+    template <typename T, typename... Args> requires StreamReadableFor <T>
+    T from_bytes(bool recursive, const QByteArray& data, Args&&...args){
+        QDataStream stream(data);
+        stream.setVersion(QDataStream::Qt_6_10);
+
+        if constexpr (std::is_pointer_v <T>){
+            using BaseT = std::remove_pointer_t <T>;
+            BaseT* t = new BaseT(std::forward <Args>(args)...);
+            from_stream(stream, recursive, t);
+            if (stream.status() != QDataStream::Ok) { delete t; return nullptr; }
+            return t;
+        }
+        else {
+            T t(std::forward <Args> (args)...);
+            from_stream(stream, recursive, t);
+            return t;
+        }
+    }
+
+    template <typename T> requires StreamWritableFor <T>
+    QByteArray to_bytes(bool recursive, const T& d){
+        QByteArray data;
+        QDataStream stream(&data, QIODevice::WriteOnly);
+        stream.setVersion(QDataStream::Qt_6_10);
+        to_stream(stream, recursive, d);
+        return data;
+    }
+
+    template <typename T, typename... Args> requires StreamReadableFor <T>
+    T from_bytes(const QByteArray& data, Args&&...args)
+    { return from_bytes <T, Args...> (true, data, std::forward <Args> (args)...); }
+
+    template <typename T, typename... Args> requires StreamWritableFor <T>
+    QByteArray to_bytes(const T& data) { return to_bytes <T, Args...> (true, data); }
+    // ============================================================================================
+
+
+    // ----------------------- List stream --------------------------------------------------------
+    template <typename T, typename... Args> requires StreamReadableFor <T>
+    QDataStream& list_from_stream(QDataStream& stream, bool recursive,
+                                  std::vector <T>& d, Args&&...args){
+        int32_t size; stream >> size;
+        d.reserve(d.size() + size);
+        for (int i = 0; i < size; i++){
+            if constexpr (std::is_pointer_v <T>){
+                using BaseT = std::remove_pointer_t <T>;
+                BaseT* t = new BaseT(std::forward <Args>(args)...);
+                from_stream(stream, recursive, t);
+                if (stream.status() != QDataStream::Ok) delete t;
+                else d.push_back(t);
+            }
+            else {
+                T t(std::forward <Args>(args)...);
+                from_stream(stream, recursive, t);
+                if (stream.status() == QDataStream::Ok) d.push_back(t);
+            }
+        }
+        return stream;
+    }
+
+    template <typename T> requires StreamWritableFor <T>
+    QDataStream& list_to_stream(QDataStream& stream, bool recursive, const std::vector <T>& d){
+        stream << int32_t(d.size());
+        for (const auto& it : d)
+            to_stream(stream, recursive, it);
+        return stream;
+    }
+
+    template <typename T, typename... Args> requires StreamReadableFor <T>
+    QDataStream& list_from_stream(QDataStream& stream, std::vector <T>& d, Args&&...args)
+    { return list_from_stream <T, Args...> (stream, true, d, std::forward <Args> (args)...); }
+
+    template <typename T> requires StreamWritableFor <T>
+    QDataStream& list_to_stream(QDataStream& stream, const std::vector <T>& d){
+        return list_to_stream(stream, true, d);
+    }
+    // ============================================================================================
+
+
     // ----------------------- List ---------------------------------------------------------------
     template <class T, typename Owner = void>
     class List {
@@ -71,117 +238,49 @@ namespace sdk {
         typename std::vector <T>::const_iterator begin() const noexcept { return _.begin(); }
         typename std::vector <T>::const_iterator end()   const noexcept { return _.end(); }
 
-        friend QDataStream& operator << (QDataStream& s, const List& d)
-        { list_to_stream(s, d._); return s; }
+        friend QDataStream& operator << (QDataStream& s, Wire <const List> d)
+        { return list_to_stream(s, d.recursive, d->_); }
 
-        friend QDataStream& operator >> (QDataStream& s, List& d){
+        friend QDataStream& operator >> (QDataStream& s, Wire <List> d){
             std::vector <T> tmp;
-            list_from_stream(s, tmp);
+            list_from_stream(s, d.recursive, tmp);
             if (s.status() == QDataStream::Ok)
-                d._.swap(tmp);
+                d->_.swap(tmp);
             return s;
         }
     };
     // ============================================================================================
 
 
-    // ----------------------- QDataStream and std::vector ----------------------------------------
-    // From -----------------------------------------------------------------------------
-    template <typename T>
-    concept DataStreamReadable = requires(QDataStream& s, T& t)
-    { { s >> t } -> std::same_as <QDataStream&>; };
-
+    // ----------------------- list Bytes ---------------------------------------------------------
     template <typename T, typename... Args>
-    requires (std::is_pointer_v <T> ? DataStreamReadable <std::remove_pointer_t <T>>
-                                    : DataStreamReadable <T>)
-    QDataStream& list_from_stream(QDataStream& stream, std::vector <T>& d, Args&&...args){
-        int32_t size; stream >> size;
-        d.reserve(d.size() + size);
-        for (int i = 0; i < size; i++){
-            if constexpr (std::is_pointer_v <T>){
-                using BaseT = std::remove_pointer_t <T>;
-                BaseT* t = new BaseT(std::forward <Args>(args)...);
-                stream >> *t;
-                if (stream.status() != QDataStream::Ok) delete t;
-                else d.push_back(t);
-            }
-            else {
-                T t(std::forward <Args>(args)...);
-                stream >> t;
-                d.push_back(t);
-            }
-        }
-        return stream;
-    }
-
-    template <typename T, typename... Args>
-    requires (std::is_pointer_v <T> ? DataStreamReadable <std::remove_pointer_t <T>>
-                                    : DataStreamReadable <T>)
-    T from_bytes(const QByteArray& data, Args&&...args){
-        QDataStream stream(data);
-        stream.setVersion(QDataStream::Qt_6_10);
-
-        if constexpr (std::is_pointer_v <T>){
-            using BaseT = std::remove_pointer_t <T>;
-            BaseT* t = new BaseT(std::forward <Args>(args)...);
-            stream >> *t;
-            if (stream.status() != QDataStream::Ok) { delete t; return nullptr; }
-            return t;
-        }
-        else {
-            T t(std::forward <Args> (args)...);
-            stream >> t;
-            return t;
-        }
-    }
-
-    template <typename T, typename... Args>
-    std::vector <T> list_from_bytes(const QByteArray& data, Args&&...args){
+    std::vector <T> list_from_bytes(bool recursive, const QByteArray& data, Args&&...args){
         std::vector <T> list;
         QDataStream stream(data);
         stream.setVersion(QDataStream::Qt_6_10);
-        list_from_stream(stream, list, std::forward <Args>(args)...);
+        list_from_stream <T, Args...> (stream, recursive, list, std::forward <Args>(args)...);
         return list;
     }
 
-
-    // To --------------------------------------------------------------------------
     template <typename T>
-    concept DataStreamWritable = requires(QDataStream& s, const T& t)
-    { { s << t } -> std::same_as <QDataStream&>; };
-
-    template <typename T>
-    requires (std::is_pointer_v <T> ? DataStreamWritable <std::remove_pointer_t <T>>
-                                    : DataStreamWritable <T>)
-    QDataStream& list_to_stream(QDataStream& stream, const std::vector <T>& d){
-        stream << int32_t(d.size());
-        for (const auto& it : d){
-            if constexpr (std::is_pointer_v <T>) stream << *it;
-            else stream << it;
-        }
-        return stream;
+    QByteArray list_to_bytes(bool recursive, const std::vector <T>& d){
+        QByteArray data;
+        QDataStream stream(&data, QIODevice::WriteOnly);
+        stream.setVersion(QDataStream::Qt_6_10);
+        list_to_stream(stream, recursive, d);
+        return data;
     }
 
     template <typename T, typename... Args>
-    requires (std::is_pointer_v <T> ? DataStreamWritable <std::remove_pointer_t <T>>
-                                    : DataStreamWritable <T>)
-    QByteArray to_bytes(const T& d, Args&&...args){
-        QByteArray data;
-        QDataStream stream(&data, QIODevice::WriteOnly);
-        stream.setVersion(QDataStream::Qt_6_10);
-        if constexpr (std::is_pointer_v <T>) stream << *d; else stream << d;
-        return data;
-    }
+    std::vector <T> list_from_bytes(const QByteArray& data, Args&&...args)
+    { return list_from_bytes <T, Args...> (true, data, std::forward <Args> (args)...); }
 
-    template <typename T>
-    QByteArray list_to_bytes(const std::vector <T>& d){
-        QByteArray data;
-        QDataStream stream(&data, QIODevice::WriteOnly);
-        stream.setVersion(QDataStream::Qt_6_10);
-        list_to_stream(stream, d);
-        return data;
-    }
+    template <typename T, typename... Args>
+    QByteArray list_to_bytes(const std::vector <T>& data, Args&&...args)
+    { return list_to_bytes <T, Args...> (true, data, std::forward <Args> (args)...); }
     // ============================================================================================
+    // ============================================================================================
+
 
 
     // ------------------------ Thread do - work - later ------------------------------------------
@@ -197,6 +296,7 @@ namespace sdk {
         thread->start();
     }
     // ============================================================================================
+
 
 
     // ----------------------- Set if functionality -----------------------------------------------

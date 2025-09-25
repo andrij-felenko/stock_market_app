@@ -41,17 +41,16 @@ private:
     friend class sdk::Instrument;
     friend class sdk::Market;
 
-    template <typename T, typename... Args>
-    requires (std::is_pointer_v <T> ? sdk::DataStreamReadable <std::remove_pointer_t <T>>
-                                    : sdk::DataStreamReadable <T>)
-    friend QDataStream& sdk::list_from_stream(QDataStream& s, std::vector <T>& d, Args&&...args);
+    template <typename T, typename... Args> requires StreamReadableFor <T>
+    friend QDataStream& sdk::list_from_stream(QDataStream& stream, bool recursive,
+                                              std::vector <T>& d, Args&&...args);
 
     // Ticker(const Ticker&) = delete;        // still disallow copy-construct
     // Ticker& operator = (Ticker&&) = delete;  // and moving, if you prefer
     Ticker& operator = (const Ticker& other);
 
-    friend QDataStream& operator << (QDataStream& s, const Ticker& d);
-    friend QDataStream& operator >> (QDataStream& s,       Ticker& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Ticker> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Ticker> d);
 };
 
 #endif // DATA_TICKER_H

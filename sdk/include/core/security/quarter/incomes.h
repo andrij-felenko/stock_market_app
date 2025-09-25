@@ -3,7 +3,7 @@
 
 #include "sdk_def.h"
 
-class sdk::Incomes : Trackable
+class sdk::Incomes : public Trackable
 {
 public:
     Incomes() = default;
@@ -139,8 +139,8 @@ private:
     int32_t _preferred_adj              = 0;
     int32_t _acctg_effects              = 0;
 
-    friend QDataStream& operator << (QDataStream& s, const Incomes& d);
-    friend QDataStream& operator >> (QDataStream& s,       Incomes& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Incomes> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Incomes> d);
 };
 
 #endif // SDK_INSTRUMENT_INCOMES_H

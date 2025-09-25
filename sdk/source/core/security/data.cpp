@@ -39,13 +39,22 @@ void sdk::Data::update_parent()
 }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Data& d){
-        return s << d.legal << d.meta << d.finance << d.tickers;
+    QDataStream& operator << (QDataStream& s, Wire <const Data> d){
+        s << io(d->legal, d.recursive)
+          << io(d->meta, d.recursive)
+          << io(d->finance, d.recursive)
+          << io(d->tickers, d.recursive);
+        if (d.recursive) s << static_cast <const Data&> (d.ref);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, Data& d){
-        s >> d.legal >> d.meta >> d.finance >> d.tickers;
-        d.update_parent();
+    QDataStream& operator >> (QDataStream& s, Wire <Data> d){
+        s >> io(d->legal, d.recursive)
+          >> io(d->meta, d.recursive)
+          >> io(d->finance, d.recursive)
+          >> io(d->tickers, d.recursive);
+        d->update_parent();
+        if (d.recursive) s >> static_cast <Data&> (d.ref);
         return s;
     }
 }

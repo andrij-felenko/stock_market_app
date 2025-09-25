@@ -107,53 +107,57 @@ FieldTOpt sdk::Trend::setEpsRevisionDownLast30d(uint16_t v)
 
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Trend& d){
-        return s << d._earnings_avg
-                 << d._earnings_low
-                 << d._earnings_high
-                 << d._earnings_year_ago_eps
-                 << d._earnings_analysts_count
+    QDataStream& operator << (QDataStream& s, Wire <const Trend> d){
+        s   << d->_earnings_avg
+             << d->_earnings_low
+             << d->_earnings_high
+             << d->_earnings_year_ago_eps
+             << d->_earnings_analysts_count
 
-                 << d._revenue_avg
-                 << d._revenue_low
-                 << d._revenue_high
-                 << d._revenue_year_ago_eps
-                 << d._revenue_analysts_count
+             << d->_revenue_avg
+             << d->_revenue_low
+             << d->_revenue_high
+             << d->_revenue_year_ago_eps
+             << d->_revenue_analysts_count
 
-                 << d._eps_trend_current
-                 << d._eps_trend_7d_ago
-                 << d._eps_trend_30d_ago
-                 << d._eps_trend_60d_ago
-                 << d._eps_trend_90d_ago
+             << d->_eps_trend_current
+             << d->_eps_trend_7d_ago
+             << d->_eps_trend_30d_ago
+             << d->_eps_trend_60d_ago
+             << d->_eps_trend_90d_ago
 
-                 << d._eps_revision_up_last_7d
-                 << d._eps_revision_up_last_30d
-                 << d._eps_revision_down_last_7d
-                 << d._eps_revision_down_last_30d;
+             << d->_eps_revision_up_last_7d
+             << d->_eps_revision_up_last_30d
+             << d->_eps_revision_down_last_7d
+             << d->_eps_revision_down_last_30d;
+        if (d.recursive) s << static_cast <const Trackable> (d.ref);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, Trend& d){
-        return s >> d._earnings_avg
-                 >> d._earnings_low
-                 >> d._earnings_high
-                 >> d._earnings_year_ago_eps
-                 >> d._earnings_analysts_count
+    QDataStream& operator >> (QDataStream& s, Wire <Trend> d){
+        s   >> d->_earnings_avg
+            >> d->_earnings_low
+            >> d->_earnings_high
+            >> d->_earnings_year_ago_eps
+            >> d->_earnings_analysts_count
 
-                 >> d._revenue_avg
-                 >> d._revenue_low
-                 >> d._revenue_high
-                 >> d._revenue_year_ago_eps
-                 >> d._revenue_analysts_count
+            >> d->_revenue_avg
+            >> d->_revenue_low
+            >> d->_revenue_high
+            >> d->_revenue_year_ago_eps
+            >> d->_revenue_analysts_count
 
-                 >> d._eps_trend_current
-                 >> d._eps_trend_7d_ago
-                 >> d._eps_trend_30d_ago
-                 >> d._eps_trend_60d_ago
-                 >> d._eps_trend_90d_ago
+            >> d->_eps_trend_current
+            >> d->_eps_trend_7d_ago
+            >> d->_eps_trend_30d_ago
+            >> d->_eps_trend_60d_ago
+            >> d->_eps_trend_90d_ago
 
-                 >> d._eps_revision_up_last_7d
-                 >> d._eps_revision_up_last_30d
-                 >> d._eps_revision_down_last_7d
-                 >> d._eps_revision_down_last_30d;
+            >> d->_eps_revision_up_last_7d
+            >> d->_eps_revision_up_last_30d
+            >> d->_eps_revision_down_last_7d
+            >> d->_eps_revision_down_last_30d;
+        if (d.recursive) s << static_cast <const Trackable> (d.ref);
+        return s;
     }
 }

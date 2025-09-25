@@ -96,53 +96,57 @@ FieldTOpt CashFlow::setStockBasedCompensation(int64_t v)
 { return set_if(this, _stock_based_compensation, from(v), sdk::Fundam_cashflow); }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const CashFlow& d){
-        return s << d._filing_date
-                 << d._investing_net_investments
-                 << d._operating_change_liabilities
-                 << d._investing_total
-                 << d._operating_other_adjustments
-                 << d._financing_equity_issuance
-                 << d._investing_other
-                 << d._financing_dividends_paid
-                 << d._operating_change_inventory
-                 << d._financing_buyback_net
-                 << d._financing_other
-                 << d._operating_net_income_adjust
-                 << d._investing_capital_spending
-                 << d._operating_change_receivables
-                 << d._operating_other
-                 << d._operating_noncash_other
-                 << d._free_cash
-                 << d._financing_net_borrowings
-                 << d._net_income
-                 << d._operating_total
-                 << d._depreciation
-                 << d._stock_based_compensation;
+    QDataStream& operator << (QDataStream& s, Wire <const CashFlow> d){
+        s   << d->_filing_date
+            << d->_investing_net_investments
+            << d->_operating_change_liabilities
+            << d->_investing_total
+            << d->_operating_other_adjustments
+            << d->_financing_equity_issuance
+            << d->_investing_other
+            << d->_financing_dividends_paid
+            << d->_operating_change_inventory
+            << d->_financing_buyback_net
+            << d->_financing_other
+            << d->_operating_net_income_adjust
+            << d->_investing_capital_spending
+            << d->_operating_change_receivables
+            << d->_operating_other
+            << d->_operating_noncash_other
+            << d->_free_cash
+            << d->_financing_net_borrowings
+            << d->_net_income
+            << d->_operating_total
+            << d->_depreciation
+            << d->_stock_based_compensation;
+        if (d.recursive) s << static_cast <const Trackable> (d.ref);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, CashFlow& d){
-        return s >> d._filing_date
-                 >> d._investing_net_investments
-                 >> d._operating_change_liabilities
-                 >> d._investing_total
-                 >> d._operating_other_adjustments
-                 >> d._financing_equity_issuance
-                 >> d._investing_other
-                 >> d._financing_dividends_paid
-                 >> d._operating_change_inventory
-                 >> d._financing_buyback_net
-                 >> d._financing_other
-                 >> d._operating_net_income_adjust
-                 >> d._investing_capital_spending
-                 >> d._operating_change_receivables
-                 >> d._operating_other
-                 >> d._operating_noncash_other
-                 >> d._free_cash
-                 >> d._financing_net_borrowings
-                 >> d._net_income
-                 >> d._operating_total
-                 >> d._depreciation
-                 >> d._stock_based_compensation;
+    QDataStream& operator >> (QDataStream& s, Wire <CashFlow> d){
+        s   >> d->_filing_date
+            >> d->_investing_net_investments
+            >> d->_operating_change_liabilities
+            >> d->_investing_total
+            >> d->_operating_other_adjustments
+            >> d->_financing_equity_issuance
+            >> d->_investing_other
+            >> d->_financing_dividends_paid
+            >> d->_operating_change_inventory
+            >> d->_financing_buyback_net
+            >> d->_financing_other
+            >> d->_operating_net_income_adjust
+            >> d->_investing_capital_spending
+            >> d->_operating_change_receivables
+            >> d->_operating_other
+            >> d->_operating_noncash_other
+            >> d->_free_cash
+            >> d->_financing_net_borrowings
+            >> d->_net_income
+            >> d->_operating_total
+            >> d->_depreciation
+            >> d->_stock_based_compensation;
+        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
+        return s;
     }
 }

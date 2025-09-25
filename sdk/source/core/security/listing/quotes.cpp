@@ -145,10 +145,16 @@ namespace sdk {
     QDataStream& operator >> (QDataStream& s,       QuotesTime& q)
     { return s >> q.time >> q.open >> q.close >> q.high >> q.low >> q.volume; }
 // --------------------------------------------------------------------------------------
-    QDataStream& operator << (QDataStream& s, const Quotes& q)
-    { return s << q._points << q._intraday << q._last_intraday << q._beta; }
+    QDataStream& operator << (QDataStream& s, Wire <const Quotes> q){
+        s << q->_points << q->_intraday << q->_last_intraday << q->_beta;
+        if (q.recursive) s << static_cast <const Trackable&> (q.ref);
+        return s;
+    }
 
-    QDataStream& operator >> (QDataStream& s, Quotes& q)
-    { return s >> q._points >> q._intraday >> q._last_intraday >> q._beta; }
+    QDataStream& operator >> (QDataStream& s, Wire <Quotes> q){
+        s >> q->_points >> q->_intraday >> q->_last_intraday >> q->_beta;
+        if (q.recursive) s >> static_cast <Trackable&> (q.ref);
+        return s;
+    }
 // --------------------------------------------------------------------------------------
 }

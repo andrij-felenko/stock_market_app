@@ -7,7 +7,7 @@
 #include "fundamental.h"
 #include "core/security/quarter/quarter_data.h"
 
-class sdk::Finance : Trackable
+class sdk::Finance : public Trackable
 {
 public:
     Finance();
@@ -61,8 +61,8 @@ public:
 private:
     sdk::List <QuartelData, Finance> _quartel_data;
 
-    friend QDataStream& operator << (QDataStream& s, const Finance& d);
-    friend QDataStream& operator >> (QDataStream& s,       Finance& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Finance> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Finance> d);
 };
 
 #endif // SDK_INSTRUMENT_FINANCE_H

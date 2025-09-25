@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Balance : Trackable
+class sdk::Balance : public Trackable
 {
 public:
     Balance() = default;
@@ -321,8 +321,8 @@ private:
     int32_t _capital_surplus = 0;
 
     friend class QuartelData;
-    friend QDataStream& operator << (QDataStream& s, const Balance& d);
-    friend QDataStream& operator >> (QDataStream& s,       Balance& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Balance> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Balance> d);
 };
 
 #endif // SDK_INSTRUMENT_BALANCE_H

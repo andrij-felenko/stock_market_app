@@ -13,15 +13,17 @@ FieldTOpt sdk::CorporateAction::setLastSplitFactor(int a, int b)
 
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const CorporateAction& d){
-        return s << static_cast <const Trackable&> (d)
-               << d._last_split_factor
-               << d._last_split_date;
+    QDataStream& operator << (QDataStream& s, Wire <const CorporateAction> d){
+        s << d->_last_split_factor
+          << d->_last_split_date;
+        if (d.recursive) s << static_cast <const Trackable&> (d.ref);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, CorporateAction& d){
-        return s >> static_cast <Trackable&> (d)
-               >> d._last_split_factor
-               >> d._last_split_date;
+    QDataStream& operator >> (QDataStream& s, Wire <CorporateAction> d){
+        s >> d->_last_split_factor
+          >> d->_last_split_date;
+        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
+        return s;
     }
 }

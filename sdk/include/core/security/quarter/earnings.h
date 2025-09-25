@@ -4,7 +4,7 @@
 #include "sdk_def.h" // IWYU pragma: keep
 #include "core/symbol.h"
 
-class sdk::Earnings : Trackable
+class sdk::Earnings : public Trackable
 {
 public:
     Earnings() = default;
@@ -41,8 +41,8 @@ private:
     float _eps_actual;
     float _eps_estimate;
 
-    friend QDataStream& operator << (QDataStream& s, const Earnings& d);
-    friend QDataStream& operator >> (QDataStream& s,       Earnings& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Earnings> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Earnings> d);
 };
 
 #endif // SDK_INSTRUMENT_EARNINGS_H

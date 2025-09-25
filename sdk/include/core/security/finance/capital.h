@@ -43,11 +43,11 @@ private:
     static inline bool lessByYearQuartel(const SharesPoint& a, const SharesPoint& b);
     sdk::List <SharesPoint, Capital> _outstand_shares;
 
-    friend QDataStream& operator << (QDataStream& s, const Capital& d);
-    friend QDataStream& operator >> (QDataStream& s,       Capital& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Capital> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Capital> d);
 
-    friend QDataStream& operator << (QDataStream& s, const SharesPoint& d);
-    friend QDataStream& operator >> (QDataStream& s,       SharesPoint& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const SharesPoint> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      SharesPoint> d);
 };
 
 /**

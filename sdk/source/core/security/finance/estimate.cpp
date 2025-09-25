@@ -55,27 +55,31 @@ const sdk::Estimate::Analyst& sdk::Estimate::analyst() const { return _analyst; 
 // ================================================================================================
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Estimate& d){
-        return s << d._wall_street_target_price
-                 << d._eps_estimate_current_year << d._eps_estimate_next_year
-                 << d._eps_estimate_current_quart << d._eps_estimate_next_quart
-                 << d._recent_quart
+    QDataStream& operator << (QDataStream& s, Wire <const Estimate> d){
+        s << d->_wall_street_target_price
+          << d->_eps_estimate_current_year << d->_eps_estimate_next_year
+          << d->_eps_estimate_current_quart << d->_eps_estimate_next_quart
+          << d->_recent_quart
 
-                 << d._analyst.consensus_rate
-                 << d._analyst.target_price
-                 << d._analyst.strongbuy << d._analyst.buy << d._analyst.hold
-                 << d._analyst.sell << d._analyst.strongsell;
+          << d->_analyst.consensus_rate
+          << d->_analyst.target_price
+          << d->_analyst.strongbuy << d->_analyst.buy << d->_analyst.hold
+          << d->_analyst.sell << d->_analyst.strongsell;
+        if (d.recursive) s << static_cast <const Trackable&> (d.ref);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, Estimate& d){
-        return s >> d._wall_street_target_price
-                 >> d._eps_estimate_current_year >> d._eps_estimate_next_year
-                 >> d._eps_estimate_current_quart >> d._eps_estimate_next_quart
-                 >> d._recent_quart
+    QDataStream& operator >> (QDataStream& s, Wire <Estimate> d){
+        s >> d->_wall_street_target_price
+          >> d->_eps_estimate_current_year >> d->_eps_estimate_next_year
+          >> d->_eps_estimate_current_quart >> d->_eps_estimate_next_quart
+          >> d->_recent_quart
 
-                 >> d._analyst.consensus_rate
-                 >> d._analyst.target_price
-                 >> d._analyst.strongbuy >> d._analyst.buy >> d._analyst.hold
-                 >> d._analyst.sell >> d._analyst.strongsell;
+          >> d->_analyst.consensus_rate
+          >> d->_analyst.target_price
+          >> d->_analyst.strongbuy >> d->_analyst.buy >> d->_analyst.hold
+          >> d->_analyst.sell >> d->_analyst.strongsell;
+        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
+        return s;
     }
 }

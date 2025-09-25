@@ -81,8 +81,8 @@ private:
     sdk::List <QuotesTime, Quotes> _intraday;
     sdk::List <QuotesDate, Quotes> _points;
 
-    friend QDataStream& operator << (QDataStream& s, const Quotes& q);
-    friend QDataStream& operator >> (QDataStream& s,       Quotes& q);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Quotes> q);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Quotes> q);
 };
 
 #endif // SDK_INSTRUMENT_QUOTES_H

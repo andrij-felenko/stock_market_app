@@ -43,6 +43,7 @@ namespace sdk {
     // Utilities
     class ResDir;
     class Trackable;
+    class DTime;
 
     namespace api {
         class Syncer;

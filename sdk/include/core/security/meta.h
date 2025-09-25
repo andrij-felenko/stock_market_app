@@ -91,8 +91,8 @@ private:
     QUrl _logo;
     QSize _logo_size;
 
-    friend QDataStream& operator << (QDataStream& s, const Meta& d);
-    friend QDataStream& operator >> (QDataStream& s,       Meta& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Meta> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Meta> d);
 };
 
 #endif // SDK_INSTRUMENT_META_H

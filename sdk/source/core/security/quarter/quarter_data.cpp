@@ -1,4 +1,5 @@
 #include "core/security/quarter/quarter_data.h"
+#include "common/features.h"
 
 sdk::QuartelData::QuartelData(uint16_t year, Quartel q) : _year(year), _quartel(q)
 {
@@ -26,9 +27,25 @@ void sdk::QuartelData::setCurrency(sdk::Currency new_c)
 }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const QuartelData& d)
-    { return s << d._year << d._quartel << d._currency; }
+    QDataStream& operator << (QDataStream& s, Wire <const QuartelData> d){
+        s << d->_year << d->_quartel << d->_currency;
+        if (d.recursive)
+            s << io(d->balance, d.recursive)
+              << io(d->cashflow, d.recursive)
+              << io(d->earning, d.recursive)
+              << io(d->incomes, d.recursive)
+              << io(d->trend, d.recursive);
+        return s;
+    }
 
-    QDataStream& operator >> (QDataStream& s, QuartelData& d)
-    { return s >> d._year >> d._quartel >> d._currency; }
+    QDataStream& operator >> (QDataStream& s, Wire <QuartelData> d){
+        s >> d->_year >> d->_quartel >> d->_currency;
+        if (d.recursive)
+            s >> io(d->balance, d.recursive)
+              >> io(d->cashflow, d.recursive)
+              >> io(d->earning, d.recursive)
+              >> io(d->incomes, d.recursive)
+              >> io(d->trend, d.recursive);
+        return s;
+    }
 }

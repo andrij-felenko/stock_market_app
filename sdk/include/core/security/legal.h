@@ -68,8 +68,8 @@ private:
     QString _address;
     QJsonObject _address_json;
 
-    friend QDataStream& operator << (QDataStream& s, const Legal& d);
-    friend QDataStream& operator >> (QDataStream& s,       Legal& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Legal> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Legal> d);
 };
 
 #endif // SDK_INSTRUMENT_LEGAL_H

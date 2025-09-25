@@ -19,11 +19,19 @@ bool sdk::Finance::hasQuartel(uint16_t year, Quartel q) const
 }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Finance& d){
-        return s << d._quartel_data << d.capital << d.estimates << d.fundamental;
+    QDataStream& operator << (QDataStream& s, Wire <const Finance> d){
+        s << io(d->_quartel_data, d.recursive)
+          << io(d->capital, d.recursive)
+          << io(d->estimates, d.recursive)
+          << io(d->fundamental, d.recursive);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, Finance& d){
-        return s >> d._quartel_data >> d.capital >> d.estimates >> d.fundamental;
+    QDataStream& operator >> (QDataStream& s, Wire <Finance> d){
+        s >> io(d->_quartel_data, d.recursive)
+          >> io(d->capital, d.recursive)
+          >> io(d->estimates, d.recursive)
+          >> io(d->fundamental, d.recursive);
+        return s;
     }
 }

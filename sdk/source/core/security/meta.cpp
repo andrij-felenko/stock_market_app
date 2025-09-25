@@ -73,19 +73,23 @@ QByteArray sdk::Meta::logoFull(const Isin& isin)
 }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Meta& d){
-        return s << d._sector << d._industry
-                 << d._gic_sector << d._gic_group << d._gic_industry << d._gic_subinddustry
-                 << d._description << d._officers << d._phone_number
-                 << d._website << d._fulltime_employees
-                 << d._logo_url << d._logo << d._logo_size;
+    QDataStream& operator << (QDataStream& s, Wire <const Meta> d){
+        s << d->_sector << d->_industry
+          << d->_gic_sector << d->_gic_group << d->_gic_industry << d->_gic_subinddustry
+          << d->_description << d->_officers << d->_phone_number
+          << d->_website << d->_fulltime_employees
+          << d->_logo_url << d->_logo << d->_logo_size;
+        if (d.recursive) s << static_cast <const Trackable&> (d.ref);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, Meta& d){
-        return s >> d._sector >> d._industry
-                 >> d._gic_sector >> d._gic_group >> d._gic_industry >> d._gic_subinddustry
-                 >> d._description >> d._officers >> d._phone_number
-                 >> d._website >> d._fulltime_employees
-                 >> d._logo_url >> d._logo << d._logo_size;
+    QDataStream& operator >> (QDataStream& s, Wire <Meta> d){
+        s >> d->_sector >> d->_industry
+          >> d->_gic_sector >> d->_gic_group >> d->_gic_industry >> d->_gic_subinddustry
+          >> d->_description >> d->_officers >> d->_phone_number
+          >> d->_website >> d->_fulltime_employees
+          >> d->_logo_url >> d->_logo << d->_logo_size;
+        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
+        return s;
     }
 }

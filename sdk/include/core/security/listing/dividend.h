@@ -53,8 +53,8 @@ private:
     QDate _date;
     QDate _ex_date;
 
-    friend QDataStream& operator << (QDataStream& s, const Dividend& d);
-    friend QDataStream& operator >> (QDataStream& s,       Dividend& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Dividend> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Dividend> d);
 };
 
 #endif // SDK_INSTRUMENT_DIVIDEND_H

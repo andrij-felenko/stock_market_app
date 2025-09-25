@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Trend : Trackable
+class sdk::Trend : public Trackable
 {
 public:
     Trend() = default;
@@ -111,8 +111,8 @@ private:
     uint16_t _eps_revision_down_last_30d = 0;
 
     friend class QuartelData;
-    friend QDataStream& operator << (QDataStream& s, const Trend& d);
-    friend QDataStream& operator >> (QDataStream& s,       Trend& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Trend> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Trend> d);
 };
 
 #endif // SDK_INSTRUMENT_TREND_H

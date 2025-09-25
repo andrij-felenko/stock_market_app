@@ -140,59 +140,63 @@ FieldTOpt Incomes::setAccountingEffects(int64_t v)
 // ================================================================================================
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Incomes& d){
-        return s << d._filing_date
-                 << d._total_revenue
-                 << d._cost_of_revenue
+    QDataStream& operator << (QDataStream& s, Wire <const Incomes> d){
+        s   << d->_filing_date
+            << d->_total_revenue
+            << d->_cost_of_revenue
 
-                 << d._research_development
-                 << d._selling_general_admin
-                 << d._selling_marketing_expenses
-                 << d._other_operating_expenses
+            << d->_research_development
+            << d->_selling_general_admin
+            << d->_selling_marketing_expenses
+            << d->_other_operating_expenses
 
-                 << d._depr_amortization
-                 << d._reconciled_depreciation
+            << d->_depr_amortization
+            << d->_reconciled_depreciation
 
-                 << d._interest_income
-                 << d._interest_expense
-                 << d._other_income_expense_net
+            << d->_interest_income
+            << d->_interest_expense
+            << d->_other_income_expense_net
 
-                 << d._income_tax_expense
+            << d->_income_tax_expense
 
-                 << d._net_income_cont_ops
-                 << d._discontinued_ops
-                 << d._minority_interest
+            << d->_net_income_cont_ops
+            << d->_discontinued_ops
+            << d->_minority_interest
 
-                 << d._net_income
-                 << d._preferred_adj
-                 << d._acctg_effects;
+            << d->_net_income
+            << d->_preferred_adj
+            << d->_acctg_effects;
+        if (d.recursive) s << static_cast <const Trackable> (d.ref);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, Incomes& d){
-        return s >> d._filing_date
-                 >> d._total_revenue
-                 >> d._cost_of_revenue
+    QDataStream& operator >> (QDataStream& s, Wire <Incomes> d){
+        s   >> d->_filing_date
+            >> d->_total_revenue
+            >> d->_cost_of_revenue
 
-                 >> d._research_development
-                 >> d._selling_general_admin
-                 >> d._selling_marketing_expenses
-                 >> d._other_operating_expenses
+            >> d->_research_development
+            >> d->_selling_general_admin
+            >> d->_selling_marketing_expenses
+            >> d->_other_operating_expenses
 
-                 >> d._depr_amortization
-                 >> d._reconciled_depreciation
+            >> d->_depr_amortization
+            >> d->_reconciled_depreciation
 
-                 >> d._interest_income
-                 >> d._interest_expense
-                 >> d._other_income_expense_net
+            >> d->_interest_income
+            >> d->_interest_expense
+            >> d->_other_income_expense_net
 
-                 >> d._income_tax_expense
+            >> d->_income_tax_expense
 
-                 >> d._net_income_cont_ops
-                 >> d._discontinued_ops
-                 >> d._minority_interest
+            >> d->_net_income_cont_ops
+            >> d->_discontinued_ops
+            >> d->_minority_interest
 
-                 >> d._net_income
-                 >> d._preferred_adj
-                 >> d._acctg_effects;
+            >> d->_net_income
+            >> d->_preferred_adj
+            >> d->_acctg_effects;
+        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
+        return s;
     }
 }

@@ -53,6 +53,7 @@ sdk::Data* sdk::Instrument::create()
         _data = new Data(_index);
         _usages.fetch_or(0b1, std::memory_order_acq_rel);
     }
+    load();
     return _data;
 }
 
@@ -175,7 +176,7 @@ void sdk::Instrument::findBetterName(const QString& str)
 
 bool sdk::Instrument::save() const
 {
-    if (locker)
+    if (locker or not has_data())
         return false;
 
     qDebug() << Q_FUNC_INFO;

@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::CashFlow : Trackable
+class sdk::CashFlow : public Trackable
 {
 public:
     CashFlow() = default;
@@ -226,8 +226,8 @@ private:
     int32_t _depreciation;
     int32_t _stock_based_compensation;
 
-    friend QDataStream& operator << (QDataStream& s, const CashFlow& d);
-    friend QDataStream& operator >> (QDataStream& s,       CashFlow& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const CashFlow> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      CashFlow> d);
 };
 
 #endif // SDK_INSTRUMENT_CASHFLOW_H

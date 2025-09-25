@@ -49,8 +49,8 @@ private:
     int64_t _shares;
     int64_t _shares_prior_month;
 
-    friend QDataStream& operator << (QDataStream& s, const ShortInterest& d);
-    friend QDataStream& operator >> (QDataStream& s,       ShortInterest& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const ShortInterest> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      ShortInterest> d);
 };
 
 #endif // SDK_INSTRUMENT_SHORT_INTEREST_H

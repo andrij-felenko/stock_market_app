@@ -45,9 +45,7 @@ private:
     friend QDataStream& operator << (QDataStream& s, const Transaction& d);
     friend QDataStream& operator >> (QDataStream& s,       Transaction& d);
 
-    template <typename T, typename... Args>
-    requires (std::is_pointer_v <T> ? sdk::DataStreamReadable <std::remove_pointer_t <T>>
-                                    : sdk::DataStreamReadable <T>)
+    template <typename T, typename... Args> requires StreamReadableFor <T>
     friend QDataStream& sdk::list_from_stream(QDataStream& s, std::vector <T>& d, Args&&...args);
 };
 

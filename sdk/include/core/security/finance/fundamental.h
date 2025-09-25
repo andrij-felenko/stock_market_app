@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Fundamental : sdk::Trackable
+class sdk::Fundamental : public sdk::Trackable
 {
 public:
     Fundamental() = default;
@@ -30,8 +30,8 @@ private:
     double _revenue_ttm = 0.0;
     double _gross_profit_ttm = 0.0;
 
-    friend QDataStream& operator << (QDataStream& s, const Fundamental& d);
-    friend QDataStream& operator >> (QDataStream& s,       Fundamental& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Fundamental> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Fundamental> d);
 };
 
 #endif // SDK_INSTRUMENT_FUNDAMENTAL_H

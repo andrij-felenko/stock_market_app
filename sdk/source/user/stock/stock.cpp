@@ -86,12 +86,12 @@ void Stock::updateBroker(Transaction& t, const QString& broker)
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, const Stock& d) {
-        sdk::list_to_stream(s, d._list);
+        // sdk::list_to_stream(s, d._list);
         return s << d._tag;
     }
 
     QDataStream& operator >> (QDataStream& s, Stock& d) {
-        sdk::list_from_stream(s, d._list);
+        // sdk::list_from_stream(s, d._list);
         s >> d._tag;
 
         // Symbol tag; s >> tag;

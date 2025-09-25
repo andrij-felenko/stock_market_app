@@ -7,7 +7,7 @@
 #include "meta.h"
 #include "finance/finance.h"
 
-class sdk::Data : Trackable
+class sdk::Data : public Trackable
 {
 public:
     // публічні частини моделі
@@ -39,8 +39,8 @@ private:
     void update_parent();
     Ticker& addTicker(const sdk::Symbol& symbol);
 
-    friend QDataStream& operator << (QDataStream& s, const Data& d);
-    friend QDataStream& operator >> (QDataStream& s,       Data& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Data> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Data> d);
 };
 
 #endif // SDK_DATA_H
