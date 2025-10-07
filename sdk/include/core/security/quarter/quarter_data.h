@@ -26,6 +26,7 @@ public:
     void setCurrency(sdk::Currency new_c);
 
 private:
+    Trackable _track;
     sdk::Currency _currency;
     uint16_t _year = QDate().year();
     Quartel _quartel = Quartel::Annual;

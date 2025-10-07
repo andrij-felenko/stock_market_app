@@ -425,10 +425,13 @@ namespace country {
 
     // Розпізнавання з рядка: аліаси/повна назва/ISO
     Country from_string(const QString& any);
+    Country from(const QString& any);
+    Country from(uint16_t any);
 
     Continent continent(Country c);
     Region region   (Country c);
 
+    bool contains(uint16_t value);
     std::vector <Country> all(Region    r = Region::Unknown);
     std::vector <Country> all(Continent c = Continent::None);
 

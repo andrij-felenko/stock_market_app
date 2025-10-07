@@ -3,28 +3,29 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Fundamental : public sdk::Trackable
+class sdk::Fundamental
 {
 public:
     Fundamental() = default;
 
     double ebitda() const { return _ebitda; }
     FieldTOpt setEbitda(double ebitda)
-    { return sdk::set_if(this, _ebitda, ebitda, sdk::Fundam_ebitda); }
+    { return sdk::set_if(&_track, _ebitda, ebitda, sdk::Fundam_ebitda); }
 
     double boolValue() const { return _ebitda; }
     FieldTOpt setBookValue(double value)
-    { return sdk::set_if(this, _book_value, value, sdk::Fundam_bookvalue); }
+    { return sdk::set_if(&_track, _book_value, value, sdk::Fundam_bookvalue); }
 
     double revenueTtm() const { return _revenue_ttm; }
     FieldTOpt setRevenueTtm(double v)
-    { return sdk::set_if(this, _revenue_ttm, v, sdk::Fundam_revenue_ttm, 1e-6); }
+    { return sdk::set_if(&_track, _revenue_ttm, v, sdk::Fundam_revenue_ttm, 1e-6); }
 
     double grossProfitTtm() const { return _gross_profit_ttm; }
     FieldTOpt setGrossProfitTtm(double v)
-    { return sdk::set_if(this, _gross_profit_ttm, v, sdk::Fundam_gross_profit_ttm, 1e-6); }
+    { return sdk::set_if(&_track, _gross_profit_ttm, v, sdk::Fundam_gross_profit_ttm, 1e-6); }
 
 private:
+    Trackable _track;
     double _ebitda;
     double _book_value;
     double _revenue_ttm = 0.0;

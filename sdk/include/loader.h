@@ -5,16 +5,14 @@
 
 #include "sdk_def.h"
 #include "service/market.h"
-// #include "data/user.h"
-// #include "data/market.h"
+#include "service/roster.h"
 #include "api/connectors/endpoints.h"
-
 
 class SDK final : public QObject
 {
     Q_OBJECT
-//     Q_PROPERTY(data::User*   user   READ account CONSTANT)
-    Q_PROPERTY(sdk::Market* market READ market  CONSTANT)
+    Q_PROPERTY(sdk::Roster* roster READ roster CONSTANT)
+    Q_PROPERTY(sdk::Market* market READ market CONSTANT)
     Q_PROPERTY(sdk::api::EndPoints* settings_network READ network CONSTANT)
 public:
     static SDK* const instance();
@@ -22,8 +20,8 @@ public:
 
     void init();
 
-//     data::User* account() const;
     sdk::Market* market() const;
+    sdk::Roster* roster() const;
     sdk::api::EndPoints* network() const;
 
 signals:
@@ -42,8 +40,8 @@ signals:
 private:
     SDK();
 
-//     data::User* _user;
     sdk::Market* _market;
+    sdk::Roster* _roster;
 };
 
 inline SDK& Nexus = SDK::reference();

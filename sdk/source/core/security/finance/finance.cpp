@@ -1,5 +1,13 @@
 #include "core/security/finance/finance.h"
 
+sdk::Finance::Finance()
+{
+    //
+}
+
+sdk::QuartelData& sdk::Finance::quartel(const QDate& date)
+{ return quartel(date.year(), sdk::quartel::from_month(date.month())); }
+
 sdk::QuartelData& sdk::Finance::quartel(uint16_t year, Quartel q)
 {
     for (auto& it : _quartel_data)
@@ -9,6 +17,9 @@ sdk::QuartelData& sdk::Finance::quartel(uint16_t year, Quartel q)
     _quartel_data->emplace_back(year, q);
     return _quartel_data->back();
 }
+
+bool sdk::Finance::hasQuartel(const QDate& date) const
+{ return hasQuartel(date.year(), sdk::quartel::from_month(date.month())); }
 
 bool sdk::Finance::hasQuartel(uint16_t year, Quartel q) const
 {
@@ -20,18 +31,20 @@ bool sdk::Finance::hasQuartel(uint16_t year, Quartel q) const
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const Finance> d){
-        s << io(d->_quartel_data, d.recursive)
-          << io(d->capital, d.recursive)
-          << io(d->estimates, d.recursive)
-          << io(d->fundamental, d.recursive);
-        return s;
+        if (d.subs()) s << io(d->_quartel_data, d)
+                        << io(d->capital, d)
+                        << io(d->estimates, d)
+                        << io(d->fundamental, d);
+
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Finance> d){
-        s >> io(d->_quartel_data, d.recursive)
-          >> io(d->capital, d.recursive)
-          >> io(d->estimates, d.recursive)
-          >> io(d->fundamental, d.recursive);
-        return s;
+        if (d.subs()) s >> io(d->_quartel_data, d)
+                        >> io(d->capital, d)
+                        >> io(d->estimates, d)
+                        >> io(d->fundamental, d);
+
+        return s >> io(d->_track, d);
     }
 }

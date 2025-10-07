@@ -28,24 +28,22 @@ void sdk::QuartelData::setCurrency(sdk::Currency new_c)
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const QuartelData> d){
-        s << d->_year << d->_quartel << d->_currency;
-        if (d.recursive)
-            s << io(d->balance, d.recursive)
-              << io(d->cashflow, d.recursive)
-              << io(d->earning, d.recursive)
-              << io(d->incomes, d.recursive)
-              << io(d->trend, d.recursive);
-        return s;
+        if (d.data()) s << d->_year << d->_quartel << d->_currency;
+        if (d.subs()) s << io(d->balance, d)
+                        << io(d->cashflow, d)
+                        << io(d->earning, d)
+                        << io(d->incomes, d)
+                        << io(d->trend, d);
+        return s << d->_track;
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <QuartelData> d){
-        s >> d->_year >> d->_quartel >> d->_currency;
-        if (d.recursive)
-            s >> io(d->balance, d.recursive)
-              >> io(d->cashflow, d.recursive)
-              >> io(d->earning, d.recursive)
-              >> io(d->incomes, d.recursive)
-              >> io(d->trend, d.recursive);
-        return s;
+        if (d.data()) s >> d->_year >> d->_quartel >> d->_currency;
+        if (d.subs()) s >> io(d->balance, d)
+                        >> io(d->cashflow, d)
+                        >> io(d->earning, d)
+                        >> io(d->incomes, d)
+                        >> io(d->trend, d);
+        return s >> d->_track;
     }
 }

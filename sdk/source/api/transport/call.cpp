@@ -47,9 +47,9 @@ void sdk::api::Call::send()
     _request.setUrl(temp);
 
     if (send_data.isEmpty()) // post
-        _reply = provider()->_netmanager.post(_request, send_data);
-    else // get
         _reply = provider()->_netmanager.get(_request);
+    else // get
+        _reply = provider()->_netmanager.post(_request, send_data);
 
     connect(_reply, &QNetworkReply::readyRead, this, &Call::readyRead);
     connect(_reply, &QNetworkReply::finished,  this, &Call::done);

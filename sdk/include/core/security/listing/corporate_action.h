@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::CorporateAction : Trackable
+class sdk::CorporateAction
 {
 public:
     CorporateAction() = default;
@@ -15,6 +15,7 @@ public:
     FieldTOpt setLastSplitFactor(int a, int b);
 
 private:
+    Trackable _track;
     std::pair <int, int> _last_split_factor;
     QDate _last_split_date;
 

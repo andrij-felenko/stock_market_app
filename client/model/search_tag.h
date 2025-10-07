@@ -6,7 +6,7 @@
 #include <QtCore/QUrl>
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
-#include "data/market.h"
+#include "service/market.h"
 
 class Loader;
 namespace model { class SearchTag; }
@@ -31,7 +31,7 @@ private:
 
     friend class ::Loader;
 
-    std::vector <data::Instrument*> _list;
+    std::vector <sdk::Instrument*> _list;
 };
 
 #endif // MODEL_SEARCH_TAG_H

@@ -5,14 +5,14 @@ using namespace sdk;
 
 QDate Incomes::filingDate() const { return _filing_date; }
 FieldTOpt Incomes::setFilingDate(const QDate& date)
-{ return sdk::set_if(this, _filing_date, date, sdk::Fundam_balance); }
+{ return sdk::set_if(&_track, _filing_date, date, sdk::Fundam_balance); }
 
 
 int64_t Incomes::to  (int32_t d) const { return int64_t(d) * sdk::currency::scale(_currency); }
 int32_t Incomes::from(int64_t d) const { return         d  / sdk::currency::scale(_currency); }
 
 std::optional<sdk::FieldType> Incomes::set_if(int32_t& field, const int64_t& value)
-{ return sdk::set_if(this, field, from(value), sdk::Fundam_incomes); }
+{ return sdk::set_if(&_track, field, from(value), sdk::Fundam_incomes); }
 
 
 
@@ -141,62 +141,62 @@ FieldTOpt Incomes::setAccountingEffects(int64_t v)
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const Incomes> d){
-        s   << d->_filing_date
-            << d->_total_revenue
-            << d->_cost_of_revenue
+        if (d.data()) s << d->_filing_date
+                        << d->_total_revenue
+                        << d->_cost_of_revenue
 
-            << d->_research_development
-            << d->_selling_general_admin
-            << d->_selling_marketing_expenses
-            << d->_other_operating_expenses
+                        << d->_research_development
+                        << d->_selling_general_admin
+                        << d->_selling_marketing_expenses
+                        << d->_other_operating_expenses
 
-            << d->_depr_amortization
-            << d->_reconciled_depreciation
+                        << d->_depr_amortization
+                        << d->_reconciled_depreciation
 
-            << d->_interest_income
-            << d->_interest_expense
-            << d->_other_income_expense_net
+                        << d->_interest_income
+                        << d->_interest_expense
+                        << d->_other_income_expense_net
 
-            << d->_income_tax_expense
+                        << d->_income_tax_expense
 
-            << d->_net_income_cont_ops
-            << d->_discontinued_ops
-            << d->_minority_interest
+                        << d->_net_income_cont_ops
+                        << d->_discontinued_ops
+                        << d->_minority_interest
 
-            << d->_net_income
-            << d->_preferred_adj
-            << d->_acctg_effects;
-        if (d.recursive) s << static_cast <const Trackable> (d.ref);
-        return s;
+                        << d->_net_income
+                        << d->_preferred_adj
+                        << d->_acctg_effects;
+
+        return s << d->_track;
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Incomes> d){
-        s   >> d->_filing_date
-            >> d->_total_revenue
-            >> d->_cost_of_revenue
+        if (d.data()) s >> d->_filing_date
+                        >> d->_total_revenue
+                        >> d->_cost_of_revenue
 
-            >> d->_research_development
-            >> d->_selling_general_admin
-            >> d->_selling_marketing_expenses
-            >> d->_other_operating_expenses
+                        >> d->_research_development
+                        >> d->_selling_general_admin
+                        >> d->_selling_marketing_expenses
+                        >> d->_other_operating_expenses
 
-            >> d->_depr_amortization
-            >> d->_reconciled_depreciation
+                        >> d->_depr_amortization
+                        >> d->_reconciled_depreciation
 
-            >> d->_interest_income
-            >> d->_interest_expense
-            >> d->_other_income_expense_net
+                        >> d->_interest_income
+                        >> d->_interest_expense
+                        >> d->_other_income_expense_net
 
-            >> d->_income_tax_expense
+                        >> d->_income_tax_expense
 
-            >> d->_net_income_cont_ops
-            >> d->_discontinued_ops
-            >> d->_minority_interest
+                        >> d->_net_income_cont_ops
+                        >> d->_discontinued_ops
+                        >> d->_minority_interest
 
-            >> d->_net_income
-            >> d->_preferred_adj
-            >> d->_acctg_effects;
-        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
-        return s;
+                        >> d->_net_income
+                        >> d->_preferred_adj
+                        >> d->_acctg_effects;
+
+        return s >> d->_track;
     }
 }

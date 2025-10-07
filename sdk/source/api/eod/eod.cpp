@@ -28,6 +28,7 @@ void sdk::api::Eod::getAllTag(const QString& exchange)
 
 void sdk::api::Eod::getAllExchangeTag()
 {
+    qDebug() << Q_FUNC_INFO;
     Eod* data = Eod::instance();
     QStringList list = sdk::exchange::all_exchange_venue();
     for (const auto& it : std::as_const(list))
@@ -59,6 +60,7 @@ void sdk::api::Eod::historicalYear(const sdk::Symbol& tag, int8_t year, char per
 bool sdk::api::Eod::request(Request type, const QString& name,
                             const sdk::Symbol& symbol, StringMap keys)
 {
+    qDebug() << Q_FUNC_INFO << name << symbol << keys;
     Call* post = add(type);
 
     switch (type){

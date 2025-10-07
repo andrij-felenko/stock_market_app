@@ -38,6 +38,7 @@ namespace sdk {
 
     // services
     class Market;
+    class Roster;
     namespace market { class Finder; }
 
     // Utilities
@@ -67,6 +68,7 @@ namespace sdk {
     // user
     class Account;
     class Profile;
+    class Identity;
     class Session;
     class Ledger;
     class Pending;

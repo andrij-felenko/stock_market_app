@@ -1,17 +1,15 @@
 #include "loader.h"
 #include <QtCore/QCoreApplication>
-#include <QtQuick/QQuickWindow>
+#include "api/eod/eod.h"
 
-// #include "api/ibkr.h"
-// #include "api/yahoo.h"
-
-SDK* const SDK::instance() {
+SDK& SDK::reference() { return *instance(); }
+SDK* const SDK::instance()
+{
     static SDK* instance = nullptr;
     if (instance == nullptr)
         instance = new SDK();
     return instance;
 }
-SDK& SDK::reference() { return *instance(); }
 
 void SDK::init()
 {
@@ -21,11 +19,16 @@ void SDK::init()
 
     _market = new sdk::Market(qApp);
     _market->loadMeta();
+    if (_market->empty())
+        sdk::api::Eod::getAllExchangeTag();
+
+    _roster = new sdk::Roster(qApp);
+    _roster->loadMeta();
 }
 
 sdk::api::EndPoints* SDK::network() const { return sdk::api::endpoints(); }
-// data::User*        sdk::Loader::account() const { return _user; }
-sdk::Market*       SDK::market()  const { return _market; }
+sdk::Market*         SDK::market()  const { return _market; }
+sdk::Roster*         SDK::roster()  const { return _roster; }
 
 SDK::SDK() : QObject(qApp)
 {
@@ -33,7 +36,7 @@ SDK::SDK() : QObject(qApp)
 }
 
 
-// // ------------------------------------------------------------------------------------------------
+// // ---------------------------------------------------------------------------------------------
 // void sdk::Loader::prepare()
 // {
 //     qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
@@ -48,12 +51,12 @@ SDK::SDK() : QObject(qApp)
 //     load_data();
 //     load_user();
 // }
-// // ================================================================================================
+// // =============================================================================================
 
 
 
 
-// // ------------------------------------------------------------------------------------------------
+// // ---------------------------------------------------------------------------------------------
 // void sdk::Loader::load_pre_data()
 // {
 //     market()->load_meta();
@@ -81,14 +84,14 @@ SDK::SDK() : QObject(qApp)
 //     qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
 //     _user = new data::User(this);
 // }
-// // ================================================================================================
+// // =============================================================================================
 
 
 
 
-// // ------------------------------------------------------------------------------------------------
+// // ---------------------------------------------------------------------------------------------
 // void sdk::Loader::update_data()
 // {
 //     //
 // }
-// // ================================================================================================
+// // =============================================================================================

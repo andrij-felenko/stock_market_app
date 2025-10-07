@@ -33,7 +33,7 @@ private:
     float _price;
     float _count;
     QString   _broker;
-    QDateTime _dtime;
+    DTime _dtime;
 
     friend class Stock;
     FieldTOpt setPrice(float price) { return set_if(this, _price, price, Transaction_price); }

@@ -10,31 +10,28 @@
 */
 
 #include "sdk_def.h"
+#include "identity.h"
 
 class sdk::Profile
 {
 public:
     Profile();
+    Profile(const Identity identity);
 
-    uint32_t id() const;
-
-    QString username() const;
-    void setUsername(const QString& newUsername);
-
-    QString email() const;
-    void setEmail(const QString& newEmail);
+    Identity identity;
 
     QDateTime created() const;
-    void setCreated(const QDateTime& newCreated);
+    void   setCreated(const QDateTime& newCreated);
 
 private:
-    uint32_t _id;
-    QString _username;
-    QString _email;
-    QDateTime _created;
+    Identity _identity;
+    DTime _created;
+    DTime _upd;
 
-    friend QDataStream& operator << (QDataStream& s, const Profile& d);
-    friend QDataStream& operator >> (QDataStream& s,       Profile& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Profile> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Profile> d);
+
+    friend class sdk::Session;
 };
 
 #endif // SDK_USER_ACCOUNT_PROFILE_H

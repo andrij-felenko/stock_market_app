@@ -41,7 +41,7 @@ struct sdk::QuotesTime {
  *
  * \note \c set_intraday() переключає джерело на внутрішньоденні дані за обраною датою.
  */
-class sdk::Quotes : Trackable
+class sdk::Quotes
 {
 public:
     Quotes();
@@ -73,16 +73,17 @@ public:
 
     double beta() const { return _beta; }
     FieldTOpt setBeta(double value)
-    { return sdk::set_if(this, _beta, value, sdk::Quotes_beta); }
+    { return sdk::set_if(&_track, _beta, value, sdk::Quotes_beta); }
 
 private:
+    Trackable _track;
     double _beta = 0.0;
     QDate _last_intraday;
     sdk::List <QuotesTime, Quotes> _intraday;
     sdk::List <QuotesDate, Quotes> _points;
 
-    friend QDataStream& operator << (QDataStream& s, Wire <const Quotes> q);
-    friend QDataStream& operator >> (QDataStream& s, Wire <      Quotes> q);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Quotes> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Quotes> d);
 };
 
 #endif // SDK_INSTRUMENT_QUOTES_H

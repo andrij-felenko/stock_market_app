@@ -6,13 +6,13 @@ using namespace sdk;
 
 QDate Balance::filingDate() const { return _filing_date; }
 FieldTOpt Balance::setFilingDate(const QDate& date)
-{ return sdk::set_if(this, _filing_date, date, sdk::Fundam_balance); }
+{ return sdk::set_if(&_track, _filing_date, date, sdk::Fundam_balance); }
 
 double  Balance::to  (int32_t d) const { return double(d) * sdk::currency::scale(_currency); }
 int32_t Balance::from(double d)  const { return        d  / sdk::currency::scale(_currency); }
 
 std::optional<sdk::FieldType> Balance::set_if(int32_t& field, const double& value)
-{ return sdk::set_if(this, field, from(value), sdk::Fundam_balance); }
+{ return sdk::set_if(&_track, field, from(value), sdk::Fundam_balance); }
 // ================================================================================================
 
 
@@ -323,140 +323,140 @@ FieldTOpt Balance::setCapitalSurplus(double v)
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const Balance> d){
-        s   << d->_filing_date
-            << d->_total_assets
-            << d->_total_liabilities
-            << d->_total_shareholders_equity
-            << d->_liabilities_and_shareholders_equity
+        if (d.data()) s << d->_filing_date
+                        << d->_total_assets
+                        << d->_total_liabilities
+                        << d->_total_shareholders_equity
+                        << d->_liabilities_and_shareholders_equity
 
-            << d->_cash
-            << d->_cash_and_cash_equivalents
-            << d->_short_term_investments
+                        << d->_cash
+                        << d->_cash_and_cash_equivalents
+                        << d->_short_term_investments
 
-            << d->_net_receivables
-            << d->_inventory
-            << d->_other_current_assets
-            << d->_total_current_assets
+                        << d->_net_receivables
+                        << d->_inventory
+                        << d->_other_current_assets
+                        << d->_total_current_assets
 
-            << d->_long_term_investments
-            << d->_property_plant_and_equipment
-            << d->_property_plant_and_equipment_gross
-            << d->_property_plant_and_equipment_net
-            << d->_accumulated_depreciation
-            << d->_intangible_assets
-            << d->_goodwill
+                        << d->_long_term_investments
+                        << d->_property_plant_and_equipment
+                        << d->_property_plant_and_equipment_gross
+                        << d->_property_plant_and_equipment_net
+                        << d->_accumulated_depreciation
+                        << d->_intangible_assets
+                        << d->_goodwill
 
-            << d->_other_non_current_assets
-            << d->_non_current_assets_other
-            << d->_non_current_assets_total
-            << d->_deferred_long_term_asset_charges
-            << d->_accumulated_amortization
-            << d->_net_tangible_assets
+                        << d->_other_non_current_assets
+                        << d->_non_current_assets_other
+                        << d->_non_current_assets_total
+                        << d->_deferred_long_term_asset_charges
+                        << d->_accumulated_amortization
+                        << d->_net_tangible_assets
 
-            << d->_accounts_payable
-            << d->_other_current_liabilities
-            << d->_total_current_liabilities
-            << d->_current_deferred_revenue
+                        << d->_accounts_payable
+                        << d->_other_current_liabilities
+                        << d->_total_current_liabilities
+                        << d->_current_deferred_revenue
 
-            << d->_short_term_debt
-            << d->_current_portion_of_long_term_debt
-            << d->_long_term_debt
-            << d->_long_term_debt_total
-            << d->_total_debt
+                        << d->_short_term_debt
+                        << d->_current_portion_of_long_term_debt
+                        << d->_long_term_debt
+                        << d->_long_term_debt_total
+                        << d->_total_debt
 
-            << d->_common_stock
-            << d->_capital_stock
-            << d->_retained_earnings
-            << d->_other_shareholders_equity
-            << d->_common_stock_total_equity
-            << d->_preferred_stock_total_equity
-            << d->_retained_earnings_total_equity
-            << d->_treasury_stock
-            << d->_additional_paid_in_capital
-            << d->_total_permanent_equity
-            << d->_noncontrolling_interest
-            << d->_redeemable_noncontrol_interests
-            << d->_other_comprehens_income_accumulat
+                        << d->_common_stock
+                        << d->_capital_stock
+                        << d->_retained_earnings
+                        << d->_other_shareholders_equity
+                        << d->_common_stock_total_equity
+                        << d->_preferred_stock_total_equity
+                        << d->_retained_earnings_total_equity
+                        << d->_treasury_stock
+                        << d->_additional_paid_in_capital
+                        << d->_total_permanent_equity
+                        << d->_noncontrolling_interest
+                        << d->_redeemable_noncontrol_interests
+                        << d->_other_comprehens_income_accumulat
 
-            << d->_deferred_long_term_liabilities
-            << d->_other_liabilities
-            << d->_non_current_liabilities_other
-            << d->_non_current_liabilities_total
-            << d->_capital_lease_obligations
-            << d->_warrants
-            << d->_redeemable_preferred_stock
-            << d->_negative_goodwill
-            << d->_capital_surplus;
-        if (d.recursive) s << static_cast <const Trackable&> (d.ref);
-        return s;
+                        << d->_deferred_long_term_liabilities
+                        << d->_other_liabilities
+                        << d->_non_current_liabilities_other
+                        << d->_non_current_liabilities_total
+                        << d->_capital_lease_obligations
+                        << d->_warrants
+                        << d->_redeemable_preferred_stock
+                        << d->_negative_goodwill
+                        << d->_capital_surplus;
+
+        return s << d->_track;
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Balance> d){
-        s   >> d->_filing_date
-            >> d->_total_assets
-            >> d->_total_liabilities
-            >> d->_total_shareholders_equity
-            >> d->_liabilities_and_shareholders_equity
+        if (d.data()) s >> d->_filing_date
+                        >> d->_total_assets
+                        >> d->_total_liabilities
+                        >> d->_total_shareholders_equity
+                        >> d->_liabilities_and_shareholders_equity
 
-            >> d->_cash
-            >> d->_cash_and_cash_equivalents
-            >> d->_short_term_investments
+                        >> d->_cash
+                        >> d->_cash_and_cash_equivalents
+                        >> d->_short_term_investments
 
-            >> d->_net_receivables
-            >> d->_inventory
-            >> d->_other_current_assets
-            >> d->_total_current_assets
+                        >> d->_net_receivables
+                        >> d->_inventory
+                        >> d->_other_current_assets
+                        >> d->_total_current_assets
 
-            >> d->_long_term_investments
-            >> d->_property_plant_and_equipment
-            >> d->_property_plant_and_equipment_gross
-            >> d->_property_plant_and_equipment_net
-            >> d->_accumulated_depreciation
-            >> d->_intangible_assets
-            >> d->_goodwill
+                        >> d->_long_term_investments
+                        >> d->_property_plant_and_equipment
+                        >> d->_property_plant_and_equipment_gross
+                        >> d->_property_plant_and_equipment_net
+                        >> d->_accumulated_depreciation
+                        >> d->_intangible_assets
+                        >> d->_goodwill
 
-            >> d->_other_non_current_assets
-            >> d->_non_current_assets_other
-            >> d->_non_current_assets_total
-            >> d->_deferred_long_term_asset_charges
-            >> d->_accumulated_amortization
-            >> d->_net_tangible_assets
+                        >> d->_other_non_current_assets
+                        >> d->_non_current_assets_other
+                        >> d->_non_current_assets_total
+                        >> d->_deferred_long_term_asset_charges
+                        >> d->_accumulated_amortization
+                        >> d->_net_tangible_assets
 
-            >> d->_accounts_payable
-            >> d->_other_current_liabilities
-            >> d->_total_current_liabilities
-            >> d->_current_deferred_revenue
+                        >> d->_accounts_payable
+                        >> d->_other_current_liabilities
+                        >> d->_total_current_liabilities
+                        >> d->_current_deferred_revenue
 
-            >> d->_short_term_debt
-            >> d->_current_portion_of_long_term_debt
-            >> d->_long_term_debt
-            >> d->_long_term_debt_total
-            >> d->_total_debt
+                        >> d->_short_term_debt
+                        >> d->_current_portion_of_long_term_debt
+                        >> d->_long_term_debt
+                        >> d->_long_term_debt_total
+                        >> d->_total_debt
 
-            >> d->_common_stock
-            >> d->_capital_stock
-            >> d->_retained_earnings
-            >> d->_other_shareholders_equity
-            >> d->_common_stock_total_equity
-            >> d->_preferred_stock_total_equity
-            >> d->_retained_earnings_total_equity
-            >> d->_treasury_stock
-            >> d->_additional_paid_in_capital
-            >> d->_total_permanent_equity
-            >> d->_noncontrolling_interest
-            >> d->_redeemable_noncontrol_interests
-            >> d->_other_comprehens_income_accumulat
+                        >> d->_common_stock
+                        >> d->_capital_stock
+                        >> d->_retained_earnings
+                        >> d->_other_shareholders_equity
+                        >> d->_common_stock_total_equity
+                        >> d->_preferred_stock_total_equity
+                        >> d->_retained_earnings_total_equity
+                        >> d->_treasury_stock
+                        >> d->_additional_paid_in_capital
+                        >> d->_total_permanent_equity
+                        >> d->_noncontrolling_interest
+                        >> d->_redeemable_noncontrol_interests
+                        >> d->_other_comprehens_income_accumulat
 
-            >> d->_deferred_long_term_liabilities
-            >> d->_other_liabilities
-            >> d->_non_current_liabilities_other
-            >> d->_non_current_liabilities_total
-            >> d->_capital_lease_obligations
-            >> d->_warrants
-            >> d->_redeemable_preferred_stock
-            >> d->_negative_goodwill
-            >> d->_capital_surplus;
-        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
-        return s;
+                        >> d->_deferred_long_term_liabilities
+                        >> d->_other_liabilities
+                        >> d->_non_current_liabilities_other
+                        >> d->_non_current_liabilities_total
+                        >> d->_capital_lease_obligations
+                        >> d->_warrants
+                        >> d->_redeemable_preferred_stock
+                        >> d->_negative_goodwill
+                        >> d->_capital_surplus;
+
+        return s >> d->_track;
     }
 }

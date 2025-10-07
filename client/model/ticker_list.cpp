@@ -2,9 +2,9 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
-#include "api/finnhub.h"
+#include <api/eod/finnhub.h>
 #include <QTimer>
-#include "data/instrument.h"
+#include <core/security/instrument.h>
 
 enum InstrumentRoles {
     TickerRole = Qt::UserRole + 1,
@@ -37,23 +37,23 @@ QVariant model::TickerList::data(const QModelIndex& index, int role) const
     if (!index.isValid() || index.row() >= static_cast<int>(_tickers.size()))
         return QVariant();
 
-    data::Ticker* in = _tickers[index.row()];
+    sdk::Ticker* in = _tickers[index.row()];
 
     switch (role) {
         case TickerRole:   return in->symbol().full();
-        case QuoteRole:    return in->quotes()->current();
-        case TitleRole:    return in->instrument()->identity()->title();
-        case CountryRole:  return ~in->instrument()->meta()->isin_country();
-        case CountryTagRole: return sdk::country::alpha2(in->instrument()->meta()->isin_country());
-        case IndustryRole: return in->instrument()->identity()->industry();
-        case LogoRole:     return in->instrument()->identity()->logo();
-        case PrimaryTickerRole: return QVariant::fromValue(in->instrument()->primary_ticker());
-        case YearMaxRole: return in->quotes()->yearMax();
-        case YearMinRole: return in->quotes()->yearMin();
-        case CurrencyRole: return in->currency_str();
-        case CurrentPriceRole: return in->quotes()->current();
-        case LogoUrlRole: return in->instrument()->identity()->logo_url();
-        case LogoSizeRole: return in->instrument()->identity()->logo_size();
+        // case QuoteRole:    return in->quotes()->current();
+        // case TitleRole:    return in->instrument()->identity()->title();
+        // case CountryRole:  return ~in->instrument()->meta()->isin_country();
+        // case CountryTagRole: return sdk::country::alpha2(in->instrument()->meta()->isin_country());
+        // case IndustryRole: return in->instrument()->identity()->industry();
+        // case LogoRole:     return in->instrument()->identity()->logo();
+        // case PrimaryTickerRole: return QVariant::fromValue(in->instrument()->primary_ticker());
+        // case YearMaxRole: return in->quotes()->yearMax();
+        // case YearMinRole: return in->quotes()->yearMin();
+        // case CurrencyRole: return in->currency_str();
+        // case CurrentPriceRole: return in->quotes()->current();
+        // case LogoUrlRole: return in->instrument()->identity()->logo_url();
+        // case LogoSizeRole: return in->instrument()->identity()->logo_size();
         case Code: return in->symbol().code();
         case Venue: return in->symbol().venue();
     }

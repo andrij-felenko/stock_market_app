@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Capital : Trackable
+class sdk::Capital
 {
 public:
     Capital() = default;
@@ -28,6 +28,7 @@ public:
     FieldTOpt setOutstandShare(uint64_t shares, QDate date);
 
 private:
+    Trackable _track;
     int64_t _shares_outstanding = -1;
     int64_t _shares_float = -1;
     double _percent_of_insiders = 0.0;

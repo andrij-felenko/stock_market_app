@@ -43,15 +43,56 @@ namespace sdk {
 
 
     // ----------------------- Wire ---------------------------------------------------------------
+    enum class WireMode : uint8_t {
+        All       = 0b1111'1111,
+        Meta      = 0b0000'0100,
+        Data      = 0b0000'0001,
+        AllData   = 0b0000'0011,
+        Storage   = All,
+        Update    = Data,
+        UpdateAll = AllData,
+        SyncTime  = Meta,
+    };
+
     template <class T> class Wire {
     public:
-        T& ref; bool recursive;
-        Wire(T& ref, bool recursive = true) : ref(ref), recursive(recursive) {}
+        bool meta() const { return (static_cast <uint8_t> (_mode) & 0b100) != 0; }
+        bool subs() const { return (static_cast <uint8_t> (_mode) & 0b010) != 0; }
+        bool data() const { return (static_cast <uint8_t> (_mode) & 0b001) != 0; }
+
+        void setMode(WireMode mode) { _mode = mode; }
+
+        T& ref;
+
+        template <typename T2>
+        Wire(T& ref, const Wire <T2>& from)         : ref(ref), _mode(from.mode()) { /* */ }
+        Wire(T& ref, WireMode mode = WireMode::All) : ref(ref), _mode(mode)        { /* */ }
+
               T* operator->()       noexcept { return &ref; }
         const T* operator->() const noexcept { return &ref; }
+
+        operator Wire <const std::remove_reference_t <T>> () const {
+            using U = std::remove_reference_t <T>;
+            Wire <const U> w(static_cast <const U&> (ref));
+            w.setMode(_mode);
+            return w;
+        }
+
+        WireMode mode() const { return _mode; }
+
+    private:
+        WireMode _mode;
     };
-    template <class T> Wire       <T> io(      T& t, bool recurs = true) { return { t, recurs }; }
-    // template <class T> Wire <const T> io(const T& t, bool recurs = true) { return { t, recurs }; }
+
+    // io section --------------------------------------------------------
+    template <class T> Wire <T> io(T& t) { return Wire <T> (t); }
+
+    template <class T, class T2> Wire <T> io(T& t, const Wire <T2>& from)
+    { return Wire <T> (t, from); }
+
+    template <class T> Wire <T> io(T& t, WireMode mode)
+    { return Wire <T> (t, mode); }
+    // ===================================================================
 
     template<class X>
     concept WireLike = requires (std::remove_cvref_t <X>* p) { [] <class T> (Wire <T>*){}(p); };
@@ -94,26 +135,26 @@ namespace sdk {
 
     // ----------------------- From / To Stream ---------------------------------------------------
     template <typename T> requires StreamReadableFor <T>
-    QDataStream& from_stream(QDataStream& stream, bool recursive, T& d){
+    QDataStream& from_stream(QDataStream& stream, WireMode mode, T& d){
         if constexpr (std::is_pointer_v <T>){
-            if constexpr (WireRead <std::remove_pointer_t <T>>) stream >> io(*d, recursive);
+            if constexpr (WireRead <std::remove_pointer_t <T>>) stream >> io(*d, mode);
             else                                                stream >> *d;
         }
         else {
-            if constexpr (WireRead <T>) stream >> io(d, recursive);
+            if constexpr (WireRead <T>) stream >> io(d, mode);
             else                        stream >> d;
         }
         return stream;
     }
 
     template <typename T> requires StreamWritableFor <T>
-    QDataStream& to_stream(QDataStream& stream, bool recursive, const T& d){
+    QDataStream& to_stream(QDataStream& stream, WireMode mode, const T& d){
         if constexpr (std::is_pointer_v <T>){
-            if constexpr (WireWrite <std::remove_pointer_t <T>>) stream << io(*d, recursive);
+            if constexpr (WireWrite <std::remove_pointer_t <T>>) stream << io(*d, mode);
             else                                                 stream << *d;
         }
         else {
-            if constexpr (WireWrite <T>) stream << io(d, recursive);
+            if constexpr (WireWrite <T>) stream << io(d, mode);
             else                         stream << d;
         }
         return stream;
@@ -121,55 +162,55 @@ namespace sdk {
 
     template <typename T> requires StreamReadableFor <T>
     QDataStream& from_stream(QDataStream& stream, T& d)
-    { return from_stream <T> (stream, true, d); }
+    { return from_stream <T> (stream, WireMode::All, d); }
 
     template <typename T> requires StreamWritableFor <T>
     QDataStream& to_stream(QDataStream& stream, T& d)
-    { return to_stream <T> (stream, true, d); }
+    { return to_stream <T> (stream, WireMode::All, d); }
     // ============================================================================================
 
 
     // ----------------------- From / To Bytes ----------------------------------------------------
     template <typename T, typename... Args> requires StreamReadableFor <T>
-    T from_bytes(bool recursive, const QByteArray& data, Args&&...args){
+    T from_bytes(WireMode mode, const QByteArray& data, Args&&...args){
         QDataStream stream(data);
         stream.setVersion(QDataStream::Qt_6_10);
 
         if constexpr (std::is_pointer_v <T>){
             using BaseT = std::remove_pointer_t <T>;
             BaseT* t = new BaseT(std::forward <Args>(args)...);
-            from_stream(stream, recursive, t);
+            from_stream(stream, mode, t);
             if (stream.status() != QDataStream::Ok) { delete t; return nullptr; }
             return t;
         }
         else {
             T t(std::forward <Args> (args)...);
-            from_stream(stream, recursive, t);
+            from_stream(stream, mode, t);
             return t;
         }
     }
 
     template <typename T> requires StreamWritableFor <T>
-    QByteArray to_bytes(bool recursive, const T& d){
+    QByteArray to_bytes(WireMode mode, const T& d){
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
         stream.setVersion(QDataStream::Qt_6_10);
-        to_stream(stream, recursive, d);
+        to_stream(stream, mode, d);
         return data;
     }
 
     template <typename T, typename... Args> requires StreamReadableFor <T>
     T from_bytes(const QByteArray& data, Args&&...args)
-    { return from_bytes <T, Args...> (true, data, std::forward <Args> (args)...); }
+    { return from_bytes <T, Args...> (WireMode::All, data, std::forward <Args> (args)...); }
 
     template <typename T, typename... Args> requires StreamWritableFor <T>
-    QByteArray to_bytes(const T& data) { return to_bytes <T, Args...> (true, data); }
+    QByteArray to_bytes(const T& data) { return to_bytes <T, Args...> (WireMode::All, data); }
     // ============================================================================================
 
 
     // ----------------------- List stream --------------------------------------------------------
     template <typename T, typename... Args> requires StreamReadableFor <T>
-    QDataStream& list_from_stream(QDataStream& stream, bool recursive,
+    QDataStream& list_from_stream(QDataStream& stream, WireMode mode,
                                   std::vector <T>& d, Args&&...args){
         int32_t size; stream >> size;
         d.reserve(d.size() + size);
@@ -177,13 +218,13 @@ namespace sdk {
             if constexpr (std::is_pointer_v <T>){
                 using BaseT = std::remove_pointer_t <T>;
                 BaseT* t = new BaseT(std::forward <Args>(args)...);
-                from_stream(stream, recursive, t);
+                from_stream(stream, mode, t);
                 if (stream.status() != QDataStream::Ok) delete t;
                 else d.push_back(t);
             }
             else {
                 T t(std::forward <Args>(args)...);
-                from_stream(stream, recursive, t);
+                from_stream(stream, mode, t);
                 if (stream.status() == QDataStream::Ok) d.push_back(t);
             }
         }
@@ -191,20 +232,21 @@ namespace sdk {
     }
 
     template <typename T> requires StreamWritableFor <T>
-    QDataStream& list_to_stream(QDataStream& stream, bool recursive, const std::vector <T>& d){
+    QDataStream& list_to_stream(QDataStream& stream, WireMode mode, const std::vector <T>& d){
         stream << int32_t(d.size());
         for (const auto& it : d)
-            to_stream(stream, recursive, it);
+            to_stream(stream, mode, it);
         return stream;
     }
 
     template <typename T, typename... Args> requires StreamReadableFor <T>
     QDataStream& list_from_stream(QDataStream& stream, std::vector <T>& d, Args&&...args)
-    { return list_from_stream <T, Args...> (stream, true, d, std::forward <Args> (args)...); }
+    { return list_from_stream <T, Args...> (stream, WireMode::All,
+                                            d, std::forward <Args> (args)...); }
 
     template <typename T> requires StreamWritableFor <T>
     QDataStream& list_to_stream(QDataStream& stream, const std::vector <T>& d){
-        return list_to_stream(stream, true, d);
+        return list_to_stream(stream, WireMode::All, d);
     }
     // ============================================================================================
 
@@ -239,11 +281,11 @@ namespace sdk {
         typename std::vector <T>::const_iterator end()   const noexcept { return _.end(); }
 
         friend QDataStream& operator << (QDataStream& s, Wire <const List> d)
-        { return list_to_stream(s, d.recursive, d->_); }
+        { return list_to_stream(s, d.mode(), d->_); }
 
         friend QDataStream& operator >> (QDataStream& s, Wire <List> d){
             std::vector <T> tmp;
-            list_from_stream(s, d.recursive, tmp);
+            list_from_stream(s, d.mode(), tmp);
             if (s.status() == QDataStream::Ok)
                 d->_.swap(tmp);
             return s;
@@ -254,30 +296,30 @@ namespace sdk {
 
     // ----------------------- list Bytes ---------------------------------------------------------
     template <typename T, typename... Args>
-    std::vector <T> list_from_bytes(bool recursive, const QByteArray& data, Args&&...args){
+    std::vector <T> list_from_bytes(WireMode mode, const QByteArray& data, Args&&...args){
         std::vector <T> list;
         QDataStream stream(data);
         stream.setVersion(QDataStream::Qt_6_10);
-        list_from_stream <T, Args...> (stream, recursive, list, std::forward <Args>(args)...);
+        list_from_stream <T, Args...> (stream, mode, list, std::forward <Args>(args)...);
         return list;
     }
 
     template <typename T>
-    QByteArray list_to_bytes(bool recursive, const std::vector <T>& d){
+    QByteArray list_to_bytes(WireMode mode, const std::vector <T>& d){
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
         stream.setVersion(QDataStream::Qt_6_10);
-        list_to_stream(stream, recursive, d);
+        list_to_stream(stream, mode, d);
         return data;
     }
 
     template <typename T, typename... Args>
     std::vector <T> list_from_bytes(const QByteArray& data, Args&&...args)
-    { return list_from_bytes <T, Args...> (true, data, std::forward <Args> (args)...); }
+    { return list_from_bytes <T, Args...> (WireMode::All, std::forward <Args> (args)...); }
 
     template <typename T, typename... Args>
     QByteArray list_to_bytes(const std::vector <T>& data, Args&&...args)
-    { return list_to_bytes <T, Args...> (true, data, std::forward <Args> (args)...); }
+    { return list_to_bytes <T, Args...> (WireMode::All, data, std::forward <Args> (args)...); }
     // ============================================================================================
     // ============================================================================================
 
@@ -303,22 +345,34 @@ namespace sdk {
     template<typename T>
     static inline bool nearly_equal(T a, T b, T eps) {
         if constexpr (std::is_floating_point_v<T>)
-            return std::fabs(a - b) <= eps*std::max<T>(T(1), std::max(std::fabs(a), std::fabs(b)));
+            return std::fabs(a - b) <= eps * std::max <T> (T(1),
+                                                           std::max(std::fabs(a), std::fabs(b)));
         else
             return a == b;
     }
 
-    template <typename T, typename Flag> static inline std::optional <Flag>
-    set_if(Trackable* ptr, T& field, const T& value, Flag flag, T eps = T{}) {
-        if constexpr (std::is_floating_point_v<T>) {
-            if (nearly_equal(field, value, eps)) return std::nullopt;
-        } else {
-            if (field == value) return std::nullopt;
+    template <typename T, typename T2, typename Flag> static inline std::optional <Flag>
+    set_if(Trackable* ptr, T& field, const T2& value, Flag flag, T eps) {
+        if constexpr (std::is_floating_point_v <T>) {
+            if (nearly_equal(field, value, eps))
+                return std::nullopt;
+        }
+        else {
+            if (field == value)
+                return std::nullopt;
         }
         field = value;
-        ptr->_last_updated = QDateTime::currentDateTime();
+        ptr->refresh();
         return flag;
     }
+    // ============================================================================================
+
+
+    // ----------------------- Mask pack ----------------------------------------------------------
+    template <uint8_t bits_count>
+    class MaskPack {
+        //
+    };
     // ============================================================================================
 }
 

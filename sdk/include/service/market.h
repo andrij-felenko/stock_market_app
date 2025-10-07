@@ -45,6 +45,7 @@ private:
     market::Finder addTicker(const sdk::Symbol& tag, const Isin& isin,
                              const QString& name, Instype type);
 
+    friend sdk::Instrument* sdk::Data::parent() const;
     friend sdk::Instrument* sdk::Ticker::parent() const;
     Instrument* findInstrument(uint16_t id){ return &_instruments[id]; }
 

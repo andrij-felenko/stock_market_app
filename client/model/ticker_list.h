@@ -7,7 +7,7 @@
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QTimer>
 
-#include "data/instrument.h"
+#include <core/security/instrument.h>
 
 namespace model { class TickerList; }
 
@@ -16,7 +16,7 @@ class model::TickerList : public QAbstractListModel
     Q_OBJECT
 public:
     template <typename Sender, typename Signal>
-    TickerList(std::vector <data::Ticker*>& list, Sender* source, Signal signal)
+    TickerList(std::vector <sdk::Ticker*>& list, Sender* source, Signal signal)
         : QAbstractListModel(source), _tickers(list)
     {
         qDebug() << "polipoli" << list.size();
@@ -31,7 +31,7 @@ public:
     QHash<int, QByteArray> roleNames() const override;
 
 private:
-    std::vector <data::Ticker*>& _tickers;
+    std::vector <sdk::Ticker*>& _tickers;
 
     void updateAllData();
 

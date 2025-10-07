@@ -176,7 +176,7 @@ void sdk::Instrument::findBetterName(const QString& str)
 
 bool sdk::Instrument::save() const
 {
-    if (locker or not has_data())
+    if (_track.islock() or not has_data())
         return false;
 
     qDebug() << Q_FUNC_INFO;
@@ -194,14 +194,14 @@ bool sdk::Instrument::save() const
 
     QDataStream out(&file);
     out.setVersion(QDataStream::Qt_6_10);
-    out << *this;
+    out << io(*this, WireMode::All);
     file.close();
     return true;
 }
 
 bool sdk::Instrument::load()
 {
-    locker = true;
+    _track.lock();
     std::function load_data = [this](QString path) -> bool{
         QFile file(path + "/stocks/" + _isin.full() + ".tdsm");
         if (!file.open(QIODevice::ReadOnly))
@@ -210,7 +210,7 @@ bool sdk::Instrument::load()
         // TODO перевірити, чи при завантаженні тікера як масив ми не затерли новододаний
         QDataStream in(&file);
         in.setVersion(QDataStream::Qt_6_10);
-        in >> *this;
+        in >> io(*this, WireMode::All);
         file.close();
         return true;
     };
@@ -218,24 +218,32 @@ bool sdk::Instrument::load()
     bool result = load_data(":/rc");
     if (not load_data(":/rc"))
         result = load_data(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-    locker = false;
+    _track.unlock();
     return result;
 }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Instrument& d){
-        s << d._isin << d._name << d._type;
-        sdk::list_to_stream(s, d.tickers());
-        return s;
+    QDataStream& operator << (QDataStream& s, Wire <const Instrument> d){
+        if (d.data()) sdk::list_to_stream(s, d->tickers());
+        if (d.meta()) s << d->_isin << d->_name << d->_type;
+        if (d.subs() && d->has_data()) s << io(*d->data(), d);
+        return s << d->_track;
     }
 
-    QDataStream& operator >> (QDataStream& s, Instrument& d){
-        s >> d._isin >> d._name >> d._type;
-        std::vector <sdk::Symbol> list;
-        sdk::list_from_stream(s, list);
-        if (not d.has_data())
-            *d._tickers = list;
-        return s;
+    QDataStream& operator >> (QDataStream& s, Wire <Instrument> d){
+        if (d.data()){
+            std::vector <sdk::Symbol> list;
+            sdk::list_from_stream(s, list);
+            if (not d->has_data())
+                *d->_tickers = list;
+        }
+        if (d.meta()) s >> d->_isin >> d->_name >> d->_type;
+        if (d.subs()){
+            d->create();
+            s >> io(*d->data(), d);
+            d->release();
+        }
+        return s >> d->_track;
     }
 }
 

@@ -73,6 +73,13 @@ QString sdk::country::alpha3(Country c)
     return "---";
 }
 
+bool sdk::country::contains(uint16_t value){
+    for (const auto& it : metadata())
+        if (+it._enum == value)
+            return true;
+    return false;
+}
+
 // Розпізнавання з рядка: аліаси/повна назва/ISO
 sdk::Country sdk::country::from_string(const QString& any)
 {
@@ -82,6 +89,19 @@ sdk::Country sdk::country::from_string(const QString& any)
             it.alpha3.compare(any, Qt::CaseInsensitive) == 0)
             return it._enum;
     qDebug() << Q_FUNC_INFO << any;
+    return Country::Unknown;
+}
+
+sdk::Country sdk::country::from(const QString& any)
+{
+    return from_string(any);
+}
+
+sdk::Country sdk::country::from(uint16_t any)
+{
+    for (const auto& it : metadata())
+        if (+it._enum == any)
+            return it._enum;
     return Country::Unknown;
 }
 

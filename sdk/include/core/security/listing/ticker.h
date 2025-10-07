@@ -36,13 +36,14 @@ private:
 
     sdk::Symbol _symbol;
 
+    Trackable _track;
     uint16_t _parent;
     friend class sdk::Data;
     friend class sdk::Instrument;
     friend class sdk::Market;
 
     template <typename T, typename... Args> requires StreamReadableFor <T>
-    friend QDataStream& sdk::list_from_stream(QDataStream& stream, bool recursive,
+    friend QDataStream& sdk::list_from_stream(QDataStream& stream, WireMode mode,
                                               std::vector <T>& d, Args&&...args);
 
     // Ticker(const Ticker&) = delete;        // still disallow copy-construct

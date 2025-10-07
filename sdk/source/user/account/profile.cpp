@@ -1,49 +1,31 @@
 #include "user/account/profile.h"
 
-uint32_t sdk::Profile::id() const
+sdk::Profile::Profile()
 {
-    return _id;
+    _created.setDateTime(QDateTime::currentDateTime());
 }
 
-QString sdk::Profile::username() const
+sdk::Profile::Profile(const Identity identity) : Profile()
 {
-    return _username;
+    //
 }
 
-void sdk::Profile::setUsername(const QString& newUsername)
-{
-    _username = newUsername;
-}
-
-QString sdk::Profile::email() const
-{
-    return _email;
-}
-
-void sdk::Profile::setEmail(const QString& newEmail)
-{
-    _email = newEmail;
-}
-
-QDateTime sdk::Profile::created() const
-{
-    return _created;
-}
-
-void sdk::Profile::setCreated(const QDateTime& newCreated)
-{
-    _created = newCreated;
-}
-
+QDateTime sdk::Profile::   created() const{    return _created; }
+void      sdk::Profile::setCreated(const QDateTime& newCreated) { _created = newCreated; }
 
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Profile& d) {
-        return s << d._id << d._created << d._email << d._username;
+    QDataStream& operator << (QDataStream& s, Wire <const Profile> d) {
+        if (d.data()) s << d->_identity;
+        if (d.subs()) s << d->_created;
+        s << io(d->_upd, d);
+        return s;
     }
 
-    QDataStream& operator >> (QDataStream& s, Profile& d) {
-        s >> d._id >> d._created >> d._email >> d._username;
+    QDataStream& operator >> (QDataStream& s, Wire <Profile> d) {
+        if (d.data()) s >> d->_identity;
+        if (d.subs()) s >> d->_created;
+        s >> io(d->_upd, d);
         return s;
     }
 }

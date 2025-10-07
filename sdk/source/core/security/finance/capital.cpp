@@ -3,19 +3,19 @@
 
 uint64_t sdk::Capital::sharesOutstanding() const { return _shares_outstanding; }
 FieldTOpt sdk::Capital::setSharesOutstanding(int64_t value)
-{ return sdk::set_if(this, _shares_outstanding, value, sdk::Cap_shares_outstand); }
+{ return sdk::set_if(&_track, _shares_outstanding, value, sdk::Cap_shares_outstand); }
 
 uint64_t sdk::Capital::sharesFloat() const { return _shares_float; }
 FieldTOpt sdk::Capital::setSharesFloat(int64_t value)
-{ return sdk::set_if(this, _shares_float, value, sdk::Cap_shares_float); }
+{ return sdk::set_if(&_track, _shares_float, value, sdk::Cap_shares_float); }
 
 double sdk::Capital::percentOfInsiders() const { return _percent_of_insiders; }
 FieldTOpt sdk::Capital::setPercentOfInsiders(double perc)
-{ return sdk::set_if(this, _percent_of_insiders, perc, sdk::Cap_percent_of_insiders, 1e-12); }
+{ return sdk::set_if(&_track, _percent_of_insiders, perc, sdk::Cap_percent_of_insiders, 1e-12); }
 
 double sdk::Capital::percentOfInstitution() const { return _percent_institution; }
 FieldTOpt sdk::Capital::setPercentOfInsitution(double perc)
-{ return sdk::set_if(this, _percent_institution, perc, sdk::Cap_percent_institution, 1e-12); }
+{ return sdk::set_if(&_track, _percent_institution, perc, sdk::Cap_percent_institution, 1e-12); }
 
 int64_t sdk::Capital::outstandShare(uint16_t year, sdk::Quartel quart)
 {
@@ -35,12 +35,12 @@ FieldTOpt sdk::Capital::setOutstandShare(uint64_t shares, uint16_t year, sdk::Qu
             if (shares == it.shares)
                 return std::nullopt;
             it.shares = shares;
-            _last_updated = QDateTime::currentDateTime();
+            _track.refresh();
             return sdk::Cap_outstand_shares;
         }
 
     _outstand_shares->emplace_back(year, quart, shares);
-    _last_updated = QDateTime::currentDateTime();
+    _track.refresh();
     return sdk::Cap_outstand_shares;
 }
 
@@ -70,18 +70,18 @@ namespace sdk {
     { return s >> d->shares >> d->year >> d->quartel; }
 
     QDataStream& operator << (QDataStream& s, Wire <const Capital> d){
-        s << d->_shares_outstanding << d->_shares_float
-          << d->_percent_of_insiders << d->_percent_institution;
-          // << d->_outstand_shares;
-        if (d.recursive) s << static_cast <const Trackable&> (d.ref);
-        return s;
+        if (d.data()) s << d->_shares_outstanding  << d->_shares_float
+                        << d->_percent_of_insiders << d->_percent_institution
+                        << d->_outstand_shares;
+
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Capital> d){
-        s >> d->_shares_outstanding >> d->_shares_float
-          >> d->_percent_of_insiders >> d->_percent_institution;
-          // >> d->_outstand_shares;
-        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
-        return s;
+        if (d.data()) s >> d->_shares_outstanding  >> d->_shares_float
+                        >> d->_percent_of_insiders >> d->_percent_institution
+                        >> d->_outstand_shares;
+
+        return s >> io(d->_track, d);
     }
 }

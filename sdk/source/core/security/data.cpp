@@ -1,19 +1,23 @@
 #include "core/security/data.h"
 #include "common/features.h"
+#include "loader.h"
 
 sdk::Data::Data(uint16_t parent) : _parent(parent)
 {
     tickers->reserve(10);
 }
 
+sdk::Instrument* sdk::Data::parent() const { return Nexus.market()->findInstrument(_parent); }
+sdk::Instrument* sdk::Data::instrument() const { return parent(); }
+
 void sdk::Data::save() const
 {
-    //
+    instrument()->save();
 }
 
 void sdk::Data::load()
 {
-    //
+    instrument()->load();
 }
 
 std::vector <sdk::Symbol> sdk::Data::tickersSymbolList() const
@@ -40,21 +44,20 @@ void sdk::Data::update_parent()
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const Data> d){
-        s << io(d->legal, d.recursive)
-          << io(d->meta, d.recursive)
-          << io(d->finance, d.recursive)
-          << io(d->tickers, d.recursive);
-        if (d.recursive) s << static_cast <const Data&> (d.ref);
-        return s;
+        if (d.subs()) s << io(d->legal, d)
+                        << io(d->meta, d)
+                        << io(d->finance, d)
+                        << io(d->tickers, d);
+        return s << d->_track;
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Data> d){
-        s >> io(d->legal, d.recursive)
-          >> io(d->meta, d.recursive)
-          >> io(d->finance, d.recursive)
-          >> io(d->tickers, d.recursive);
+        if (d.subs()) s >> io(d->legal, d)
+                        >> io(d->meta, d)
+                        >> io(d->finance, d)
+                        >> io(d->tickers, d);
+
         d->update_parent();
-        if (d.recursive) s >> static_cast <Data&> (d.ref);
-        return s;
+        return s >> d->_track;
     }
 }

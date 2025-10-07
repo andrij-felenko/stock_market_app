@@ -6,6 +6,11 @@
 #include <QtCore/QStandardPaths>
 #include "api/transport/filefetch.h"
 
+sdk::Meta::Meta()
+{
+    //
+}
+
 FieldTOpt sdk::Meta::updateLogo(const Isin& isin, const QByteArray& data)
 {
     if (data.isEmpty() || not isin.valid())
@@ -52,7 +57,7 @@ FieldTOpt sdk::Meta::updateLogo(const Isin& isin, const QByteArray& data)
     if (temp == _logo)
         return std::nullopt;
 
-    return set_if(this, _logo, temp, sdk::Meta_logo);
+    return set_if(&_track, _logo, temp, sdk::Meta_logo);
 }
 
 void sdk::Meta::loadLogo(const Isin& isin) const
@@ -74,22 +79,22 @@ QByteArray sdk::Meta::logoFull(const Isin& isin)
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const Meta> d){
-        s << d->_sector << d->_industry
-          << d->_gic_sector << d->_gic_group << d->_gic_industry << d->_gic_subinddustry
-          << d->_description << d->_officers << d->_phone_number
-          << d->_website << d->_fulltime_employees
-          << d->_logo_url << d->_logo << d->_logo_size;
-        if (d.recursive) s << static_cast <const Trackable&> (d.ref);
-        return s;
+        if (d.data()) s << d->_sector << d->_industry
+                        << d->_gic_sector << d->_gic_group
+                        << d->_gic_industry << d->_gic_subinddustry
+                        << d->_description << d->_officers << d->_phone_number
+                        << d->_website << d->_fulltime_employees
+                        << d->_logo_url << d->_logo << d->_logo_size;
+        return s << d->_track;
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Meta> d){
-        s >> d->_sector >> d->_industry
-          >> d->_gic_sector >> d->_gic_group >> d->_gic_industry >> d->_gic_subinddustry
-          >> d->_description >> d->_officers >> d->_phone_number
-          >> d->_website >> d->_fulltime_employees
-          >> d->_logo_url >> d->_logo << d->_logo_size;
-        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
-        return s;
+        if (d.data()) s >> d->_sector >> d->_industry
+                        >> d->_gic_sector >> d->_gic_group
+                        >> d->_gic_industry >> d->_gic_subinddustry
+                        >> d->_description >> d->_officers >> d->_phone_number
+                        >> d->_website >> d->_fulltime_employees
+                        >> d->_logo_url >> d->_logo << d->_logo_size;
+        return s >> d->_track;
     }
 }

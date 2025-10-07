@@ -154,7 +154,7 @@ double sales_ps_ttm = ttm_revenue / finance.capital().dilutedSharesTTM();
 
 namespace api { class Eod; }
 
-class sdk::Instrument : Trackable
+class sdk::Instrument
 {
 public:
     Instrument(const Isin& isin, uint16_t index);
@@ -191,20 +191,21 @@ private:
     };
     void unload();
 
-    uint16_t _index = 0;
-    std::atomic <uint32_t> _usages = 0; // 0 - bit is union flag
-
-    Isin _isin;
     QString _name;
     sdk::Instype _type;
+    Isin _isin;
+
+    Trackable _track;
+    uint16_t _index = 0;
+    std::atomic <uint32_t> _usages = 0; // 0 - bit is union flag
 
     void findBetterName(const QString& str);
 
     Instrument& operator ++ () noexcept;
     Instrument& operator -- () noexcept;
 
-    friend QDataStream& operator << (QDataStream& s, const Instrument& d);
-    friend QDataStream& operator >> (QDataStream& s,       Instrument& d);
+    friend QDataStream& operator << (QDataStream& s, Wire <const Instrument> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Instrument> d);
 
     friend class sdk::Market;
 

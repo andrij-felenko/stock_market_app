@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Balance : public Trackable
+class sdk::Balance
 {
 public:
     Balance() = default;
@@ -254,7 +254,8 @@ private:
     std::optional <FieldType> set_if(int32_t& field, const double& value);
 
     Currency _currency = Currency::None;
-    QDate _filing_date = QDate();
+    DTime _filing_date = DTime();
+    Trackable _track;
 
     int32_t _total_assets = 0;
     int32_t _total_liabilities = 0;

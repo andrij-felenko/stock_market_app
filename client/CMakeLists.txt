@@ -19,7 +19,7 @@ set (client_cpp
 )
 
 set (client_qml
-    loader.h loader.cpp
+    client.h client.cpp
 )
 
 set (client_src

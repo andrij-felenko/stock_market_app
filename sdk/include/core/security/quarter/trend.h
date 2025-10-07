@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Trend : public Trackable
+class sdk::Trend
 {
 public:
     Trend() = default;
@@ -86,6 +86,7 @@ private:
     int32_t from_rev(double v) const;
 
     Currency _currency = Currency::None;
+    Trackable _track;
 
     int32_t  _earnings_avg  = 0;
     int32_t  _earnings_low  = 0;

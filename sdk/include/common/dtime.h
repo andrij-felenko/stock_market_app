@@ -5,12 +5,18 @@
 #include <QtCore/QDataStream>
 #include <array>
 
-namespace sdk { class DTime; }
+namespace sdk {
+    class DTime;
+    template <class T> class Wire;
+}
 
 class sdk::DTime
 {
+    constexpr static uint8_t  core_mask() { return 0b1000'0111; }
     constexpr static uint8_t  free_mask() { return 0b0111'1000; }
     constexpr static uint8_t nfree_mask() { return static_cast <uint8_t> (~free_mask()); }
+
+    constexpr static uint8_t n_mask(uint8_t mask) { return static_cast <uint8_t> (~mask); }
 
     template <uint8_t i> requires (i <= 3)
     constexpr static uint8_t boolmask() { return 0b1000u << i; }
@@ -39,6 +45,7 @@ class sdk::DTime
 
 public:
     DTime();
+    DTime(const QDate& d);
     DTime(const QDateTime& dt);
 
     [[nodiscard]] QDate date() const;
@@ -47,6 +54,8 @@ public:
     [[nodiscard]] QTime time() const;
     bool setTime(const QTime& time);
 
+    operator QDate() const;
+    operator QTime() const;
     operator QDateTime() const;
 
     [[nodiscard]] QDateTime dateTime() const;
@@ -83,6 +92,9 @@ private:
     std::array <std::byte, 5> _ = {};
 
     void setValid(bool valid);
+
+    friend QDataStream& operator << (QDataStream& s, Wire <const DTime> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      DTime> d);
 
     friend QDataStream& operator << (QDataStream& s, const DTime& d);
     friend QDataStream& operator >> (QDataStream& s,       DTime& d);

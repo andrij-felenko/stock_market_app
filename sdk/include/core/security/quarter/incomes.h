@@ -3,7 +3,7 @@
 
 #include "sdk_def.h"
 
-class sdk::Incomes : public Trackable
+class sdk::Incomes
 {
 public:
     Incomes() = default;
@@ -103,6 +103,7 @@ public:
     FieldTOpt setAccountingEffects(int64_t v);
 
 private:
+    Trackable _track;
     sdk::Currency _currency;
     friend class QuartelData;
 

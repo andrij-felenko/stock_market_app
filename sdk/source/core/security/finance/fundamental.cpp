@@ -2,14 +2,12 @@
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const Fundamental> d){
-        s << d->_ebitda << d->_book_value << d->_revenue_ttm << d->_gross_profit_ttm;
-        if (d.recursive) s << static_cast <const Trackable&> (d.ref);
-        return s;
+        if (d.data()) s << d->_ebitda << d->_book_value << d->_revenue_ttm << d->_gross_profit_ttm;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Fundamental> d){
-        s >> d->_ebitda >> d->_book_value >> d->_revenue_ttm >> d->_gross_profit_ttm;
-        if (d.recursive) s >> static_cast <Trackable&> (d.ref);
-        return s;
+        if (d.data()) s >> d->_ebitda >> d->_book_value >> d->_revenue_ttm >> d->_gross_profit_ttm;
+        return s >> io(d->_track, d);
     }
 }

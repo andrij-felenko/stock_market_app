@@ -1,20 +1,15 @@
 #include <QtGui/QGuiApplication>
-#include <QQuickStyle>
-#include <QIcon>
-
 #include <QSslSocket>
 
-#include "loader.h"
+#include "nexus.h"
 
 int main(int argc, char** argv)
 {
     QGuiApplication app(argc, argv);
-    QQuickStyle::setStyle("Fusion");
 
     app.setOrganizationDomain("some.io");
     app.setOrganizationName("AndrijFelenko");
     app.setApplicationName("StockManager");
-    app.setWindowIcon(QIcon(":/rc/images/Stock_app_logo2.png"));
 
     qDebug() << "Device supports OpenSSL: ";
     qDebug() << "Supports SSL: " << QSslSocket::supportsSsl();
@@ -23,7 +18,7 @@ int main(int argc, char** argv)
     qDebug() << "";
 
     // util::ResDir::list_qrc_files();
-    Nexus.init();
+    DB.init();
 
     return app.exec();
 }

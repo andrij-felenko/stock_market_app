@@ -27,20 +27,22 @@ sdk::Instrument* sdk::Ticker::instrument() const { return parent(); }
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const sdk::Ticker> d){
-        return s << io(d->corp_action, d.recursive)
-                 << io(d->dividend, d.recursive)
-                 << io(d->quotes, d.recursive)
-                 << io(d->short_interst, d.recursive)
-                 // << d.valuation
-                 << d->_symbol;
+        if (d.data()) s << d->_symbol;
+        if (d.subs()) s << io(d->corp_action, d)
+                        << io(d->dividend, d)
+                        << io(d->quotes, d)
+                        << io(d->short_interst, d);
+                           // << d.valuation
+        return s << d->_track;
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <sdk::Ticker> d){
-        return s >> io(d->corp_action, d.recursive)
-                 >> io(d->dividend, d.recursive)
-                 >> io(d->quotes, d.recursive)
-                 >> io(d->short_interst, d.recursive)
-                 // >> d.valuation
-                 >> d->_symbol;
+        if (d.data()) s >> d->_symbol;
+        if (d.subs()) s >> io(d->corp_action, d)
+                        >> io(d->dividend, d)
+                        >> io(d->quotes, d)
+                        >> io(d->short_interst, d);
+                        // >> d.valuation
+        return s >> d->_track;
     }
 }

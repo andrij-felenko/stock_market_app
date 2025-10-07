@@ -3,14 +3,14 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::Dividend : Trackable
+class sdk::Dividend
 {
 public:
     Dividend();
 
     double perShare() const { return _per_share; }
     FieldTOpt setPerShare(double v)
-    { return sdk::set_if(this, _per_share, v, sdk::Dividend_per_share); }
+    { return sdk::set_if(&_track, _per_share, v, sdk::Dividend_per_share); }
 
     // TODO Дивідендна дохідність (Dividend Yield).
     // Показує відсоток доходу від дивідендів відносно ціни акції. DividendPerShare / Price
@@ -18,23 +18,23 @@ public:
 
     double forwardAnnualRate() const { return _forward_annual_rate; }
     FieldTOpt setForwardAnnualRate(double v)
-    { return sdk::set_if(this, _forward_annual_rate, v, sdk::Dividend_fw_anno_rate); }
+    { return sdk::set_if(&_track, _forward_annual_rate, v, sdk::Dividend_fw_anno_rate); }
 
     double forwardAnnualYield() const { return _forward_annual_yield; }
     FieldTOpt setForwardAnnualYield(double v)
-    { return sdk::set_if(this, _forward_annual_yield, v, sdk::Dividend_fw_anno_yield); }
+    { return sdk::set_if(&_track, _forward_annual_yield, v, sdk::Dividend_fw_anno_yield); }
 
     double payout_ratio() const { return _payout_ratio; }
     FieldTOpt setPayoutRatio(double v)
-    { return sdk::set_if(this, _payout_ratio, v, sdk::Dividend_payout_ratio); }
+    { return sdk::set_if(&_track, _payout_ratio, v, sdk::Dividend_payout_ratio); }
 
     const QDate& exDate() const { return _ex_date; }
     FieldTOpt setExDate(const QDate& date)
-    { return sdk::set_if(this, _ex_date, date, sdk::Dividend_exdate); }
+    { return sdk::set_if(&_track, _ex_date, date, sdk::Dividend_exdate); }
 
     const QDate& date() const { return _date; }
     FieldTOpt setDate(const QDate& date)
-    { return sdk::set_if(this, _date, date, sdk::Dividend_date); }
+    { return sdk::set_if(&_track, _date, date, sdk::Dividend_date); }
 
     // TODO @brief Кількість дивідендних виплат на рік, історично по роках. */
     // std::optional<sdk::FieldType> setNumberOfDividendsByYear(const QMap<int,int>& v) {
@@ -52,6 +52,7 @@ private:
     double _payout_ratio;
     QDate _date;
     QDate _ex_date;
+    Trackable _track;
 
     friend QDataStream& operator << (QDataStream& s, Wire <const Dividend> d);
     friend QDataStream& operator >> (QDataStream& s, Wire <      Dividend> d);

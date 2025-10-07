@@ -1,4 +1,5 @@
 #include "common/dtime.h"
+#include "common/features.h"
 
 constexpr  uint8_t valid_mask()   { return 0b1000'0000; }
 constexpr  uint8_t date_lowmask() { return 0b0000'0111; }
@@ -12,8 +13,10 @@ constexpr uint32_t date_shiftmask() { return 0b10'0100'0000'0000'0000'0000; } //
 
 sdk::DTime::DTime() { /* */ }
 
+sdk::DTime::DTime(const QDate& d)      : DTime() { setDate(d); }
 sdk::DTime::DTime(const QDateTime& dt) : DTime() { setDateTime(dt); }
 
+sdk::DTime::operator QDate() const { return date(); }
 QDate sdk::DTime::date() const
 {
     uint64_t jd = date_shiftmask() |
@@ -38,6 +41,7 @@ bool sdk::DTime::setDate(const QDate& date)
     return true;
 }
 
+sdk::DTime::operator QTime() const { return time(); }
 QTime sdk::DTime::time() const
 {
     return QTime::fromMSecsSinceStartOfDay(1000 * (get32() & time_mask()));
@@ -73,9 +77,33 @@ void sdk::DTime::setValid(bool valid) {
 }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const DTime& d)
-    { s.writeRawData(reinterpret_cast<const char*> (d._.data()), 5); return s; }
+    QDataStream& operator << (QDataStream& s, Wire <const DTime> d){
+        uint8_t i8 = d->get8();
+        if (not d.data()) i8 &= d->n_mask(d->free_mask());
+        if (not d.meta()) i8 &= d->n_mask(d->core_mask());
+        if (d.data() || d.meta()) s << i8;
+        if (d.meta()) s << d->get32();
+        return s;
+    }
 
-    QDataStream& operator >> (QDataStream& s, DTime& d)
-    { s.readRawData(reinterpret_cast <char*> (d._.data()), 5); return s; }
+    QDataStream& operator >> (QDataStream& s, Wire <DTime> d){
+        if (d.data() || d.meta()){
+            uint8_t i8 = 0;
+            s >> i8;
+            if (d.data()) d->set8((d->get8() & d->n_mask(d->free_mask())) | (i8 & d->free_mask()));
+            if (d.meta()) d->set8((d->get8() & d->n_mask(d->core_mask())) | (i8 & d->core_mask()));
+        }
+        if (d.meta()){
+            uint32_t i32 = 0;
+            s >> i32;
+            d->set32(i32);
+        }
+        return s;
+    }
+
+    QDataStream& operator << (QDataStream& s, const DTime& d)
+    { return s << Wire (d, WireMode::Meta); }
+
+    QDataStream& operator >> (QDataStream& s, DTime& d){ return s >> Wire (d, WireMode::Meta); }
 }
+

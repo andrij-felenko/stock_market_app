@@ -3,7 +3,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 #include <QTimer>
-#include "data/instrument.h"
+#include <core/security/instrument.h>
 
 enum AssetRoles {
     TickerRole = Qt::UserRole + 50,
@@ -14,7 +14,7 @@ enum AssetRoles {
     LogoRole,
 };
 
-model::AssetList::AssetList(std::vector <data::Stock*>& list, QObject* parent)
+model::AssetList::AssetList(std::vector <sdk::Stock*>& list, QObject* parent)
     : QAbstractListModel(parent), _assets(list)
 {
     _assets.clear();
@@ -31,15 +31,15 @@ QVariant model::AssetList::data(const QModelIndex& index, int role) const
     if (!index.isValid() || index.row() >= static_cast<int>(_assets.size()))
         return QVariant();
 
-    data::Stock* stock = _assets[index.row()];
+    sdk::Stock* stock = _assets[index.row()];
 
     switch (role) {
-        case TickerRole:  return stock->ticker()->symbol().full();
-        case QuoteRole:   return stock->ticker()->quotes()->current();
-        case TitleRole:   return stock->instrument()->identity()->title();
-        case CountryRole: return stock->instrument()->identity()->country_str();
-        case IndustryRole:return stock->instrument()->identity()->industry();
-        case LogoRole:    return stock->instrument()->identity()->logo();
+        // case TickerRole:  return stock->ticker()->symbol().full();
+        // case QuoteRole:   return stock->ticker()->quotes()->current();
+        // case TitleRole:   return stock->instrument()->identity()->title();
+        // case CountryRole: return stock->instrument()->identity()->country_str();
+        // case IndustryRole:return stock->instrument()->identity()->industry();
+        // case LogoRole:    return stock->instrument()->identity()->logo();
         default:          return QVariant();
     }
 }

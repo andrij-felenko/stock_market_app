@@ -30,8 +30,8 @@ private:
     uint32_t _userid;
     QByteArray _token_access; // short token, 10 - 60 minute
     QByteArray _token_refresh; // long token,  7 - 30 days
-    QDateTime _expired_short;
-    QDateTime _expired_long;
+    DTime _expired_short;
+    DTime _expired_long;
     //
 };
 

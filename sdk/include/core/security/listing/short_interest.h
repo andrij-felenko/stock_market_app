@@ -3,19 +3,19 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::ShortInterest : Trackable
+class sdk::ShortInterest
 {
 public:
     ShortInterest();
 
     int64_t shares() const { return _shares; }
     FieldTOpt setShortInterestShares(int64_t value)
-    { return sdk::set_if(this, _shares, value, sdk::Short_shares); }
+    { return sdk::set_if(&_track, _shares, value, sdk::Short_shares); }
 
 
     int64_t sharesPriorMonth() const { return _shares_prior_month; }
     FieldTOpt setSharesPriorMonth(int64_t value)
-    { return sdk::set_if(this, _shares_prior_month, value, sdk::Short_shares_priormonth); }
+    { return sdk::set_if(&_track, _shares_prior_month, value, sdk::Short_shares_priormonth); }
 
     // TODO ShortInterestRatio (Days To Cover) — скільки днів потрібно, щоб покрити шорт.
     // Формула: DaysToCover = SharesShort / AverageDailyVolume
@@ -46,6 +46,7 @@ public:
 
 
 private:
+    Trackable _track;
     int64_t _shares;
     int64_t _shares_prior_month;
 

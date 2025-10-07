@@ -2,10 +2,10 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
-#include "data/instrument.h"
-#include "data/market.h"
-#include "loader.h"
-#include "data/geo/geo.h"
+#include <core/security/instrument.h>
+#include <service/market.h>
+#include <loader.h>
+#include <core/enum.h>
 
 enum Tag {
     NameRole = Qt::UserRole + 1,
@@ -35,12 +35,12 @@ QVariant model::SearchTag::data(const QModelIndex& index, int role) const
         return QVariant();
 
     switch (role) {
-        case TagRole:      return _list[index.row()]->primary_symbol(true).full();
-        case NameRole:     return _list[index.row()]->meta()->title();
-        case TypeRole:     return _list[index.row()]->meta()->type_str();
-        case ExchangeRole: return _list[index.row()]->primary_symbol(true).venue();
-        case CodeRole:     return _list[index.row()]->primary_symbol().code();
-        case VenueRole:    return _list[index.row()]->primary_symbol().venue();
+        // case TagRole:      return _list[index.row()]->primary_symbol(true).full();
+        // case NameRole:     return _list[index.row()]->meta()->title();
+        // case TypeRole:     return _list[index.row()]->meta()->type_str();
+        // case ExchangeRole: return _list[index.row()]->primary_symbol(true).venue();
+        // case CodeRole:     return _list[index.row()]->primary_symbol().code();
+        // case VenueRole:    return _list[index.row()]->primary_symbol().venue();
         case TickerSize: {
             // TODO make list of values of symbols
             QStringList list;
@@ -94,16 +94,13 @@ void model::SearchTag::find_by_part(QString str)
     if (str.isEmpty())
         return;
 
-    auto list = Loader::instance()->market()->search_by(str);
+    // auto list = Loader::instance()->market()->search_by(str);
 
     // --------------------------------------------------------------
-    beginInsertRows(QModelIndex(), 0, list.size() - 1);
+    // beginInsertRows(QModelIndex(), 0, list.size() - 1);
 
-    for (const auto& it : std::as_const(list))
-        _list.push_back(it);
-
-    // for (const auto& it : _list)
+    // for (const auto& it : std::as_const(list))
         // _list.push_back(it);
 
-    endInsertRows();
+    // endInsertRows();
 }

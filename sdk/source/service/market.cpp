@@ -3,11 +3,6 @@
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 #include "core/security/instrument.h"
-// #include <QTimer>
-// #include "data/instrument.h"
-// #include <QThread>
-// #include <QMap>
-// #include "data/instrument/meta.h"
 
 sdk::Market::Market(QObject* parent) : QObject(parent)
 {
@@ -114,65 +109,6 @@ sdk::market::Finder sdk::Market::addTicker(const Symbol& tag, const Isin& isin,
 //     return ret;
 // }
 
-// std::optional <data::Ticker*> data::Market::find(ticker::Symbol tag)
-// {
-//     for (auto& it : _instruments){
-//         auto ret = (*it)[tag];
-//         if (ret != nullptr)
-//             return ret;
-//     }
-//     return std::nullopt;
-// }
-
-// data::Instrument* const data::Market::ensure(ticker::Symbol tag)
-// {
-//     Instrument* instr = nullptr;
-
-//     auto ticker = find(tag);
-//     if (ticker.has_value())
-//         instr = ticker.value()->instrument();
-//     else {
-//         instr = new Instrument(tag, this);
-//         _instruments.push_back(instr);
-//     }
-
-//     return instr;
-// }
-
-// data::Instrument* const data::Market::ensure(const data::Meta& meta, ticker::Symbol symbol)
-// {
-//     if (meta._isin_code.size() != 10)
-//         return nullptr;
-
-//     Instrument* in = nullptr;
-
-//     for (const auto& it : _instruments){
-//         if (it->meta()->isin_country() == meta.isin_country() &&
-//             it->meta()->isin_code() == meta.isin_code()){
-//             in = it;
-//             break;
-//         }
-//     }
-
-//     if (in == nullptr){
-//         in = ensure(symbol);
-//         *in->meta() = meta;
-//         qDebug() << Q_FUNC_INFO << _instruments.size();
-//         return in;
-//     }
-
-//     in->ensure(symbol);
-//     in->meta()->_title.push_back("|" + meta.title());
-//     qDebug() << Q_FUNC_INFO << _instruments.size();
-//     return in;
-// }
-
-// void data::Market::detect_main_ticker()
-// {
-//     for (const auto& in : _instruments)
-//         in->_sort_tickers();
-// }
-
 void sdk::Market::loadMeta()
 {
     qDebug() << Q_FUNC_INFO;
@@ -181,6 +117,7 @@ void sdk::Market::loadMeta()
         QDir().mkpath(path);
 
         QFile file(path + "meta.edsm");
+        qDebug() << Q_FUNC_INFO << file.fileName();
         if (!file.open(QIODevice::ReadOnly)){
             qDebug() << "can`t open" << file.errorString();
             return false;
@@ -191,7 +128,7 @@ void sdk::Market::loadMeta()
 
         int32_t size = 0; out >> size;
         for (int i = 0; i < size; i++){
-            Instrument in(++_last_index); out >> in;
+            Instrument in(++_last_index); out >> io(in, WireMode::Data);
             _instruments.push_back(std::move(in));
         }
 
@@ -226,9 +163,9 @@ void sdk::Market::saveMeta() const
     qDebug() << Q_FUNC_INFO << "WRITE SAVE SIZE" << int32_t(_instruments.size());
     int32_t index = 0;
     for (const auto& it : std::as_const(_instruments))
-        out << it;
+        out << io(it, WireMode::Data);
 
     file.close();
 }
 
-bool sdk::Market::empty() const { return _instruments.empty(); }
+bool sdk::Market::empty() const { qDebug() << _instruments.size(); return _instruments.empty(); }

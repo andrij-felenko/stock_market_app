@@ -7,7 +7,7 @@
 #include "meta.h"
 #include "finance/finance.h"
 
-class sdk::Data : public Trackable
+class sdk::Data
 {
 public:
     // публічні частини моделі
@@ -35,6 +35,10 @@ private:
     friend class api::Eod;
 
     uint16_t _parent;
+    Trackable _track;
+
+    Instrument* parent() const;
+    Instrument* instrument() const;
 
     void update_parent();
     Ticker& addTicker(const sdk::Symbol& symbol);

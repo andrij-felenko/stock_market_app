@@ -62,10 +62,12 @@ set (sdk_h
     include/service/finder.h
     include/service/forex.h
     include/service/market.h
+    include/service/roster.h
 
     include/user/account/account.h
     include/user/account/profile.h
     include/user/account/session.h
+    include/user/account/identity.h
 
     include/user/ledger/ledger.h
     include/user/ledger/pending.h
@@ -144,10 +146,12 @@ set (sdk_cpp
     source/service/finder.cpp
     source/service/forex.cpp
     source/service/market.cpp
+    source/service/roster.cpp
 
     source/user/account/account.cpp
     source/user/account/profile.cpp
     source/user/account/session.cpp
+    source/user/account/identity.cpp
 
     source/user/ledger/ledger.cpp
     source/user/ledger/pending.cpp
@@ -166,7 +170,7 @@ set (sdk_files
 
 add_library(sdk STATIC ${sdk_files})
 target_include_directories(sdk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_link_libraries (sdk PUBLIC ${Qt_lib_core})
+target_link_libraries (sdk PUBLIC ${Qt_lib_core} ${Qt_lib_gui})
 
 qt_add_resources(sdk "rc_images"
     PREFIX "/"

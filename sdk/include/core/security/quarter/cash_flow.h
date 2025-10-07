@@ -3,7 +3,7 @@
 
 #include "sdk_def.h" // IWYU pragma: keep
 
-class sdk::CashFlow : public Trackable
+class sdk::CashFlow
 {
 public:
     CashFlow() = default;
@@ -196,10 +196,11 @@ public:
 
 
 private:
-    sdk::Currency _currency;
     friend class QuartelData;
 
-    QDate _filing_date;
+    sdk::Currency _currency;
+    Trackable _track;
+    DTime _filing_date;
 
     int64_t  to (int32_t d) const;
     int32_t from(int64_t d) const;

@@ -4,7 +4,7 @@
 #include "sdk_def.h" // IWYU pragma: keep
 #include <QtCore/QDate>
 
-class sdk::Estimate : Trackable
+class sdk::Estimate
 {
 public:
     Estimate() = default;
@@ -48,14 +48,14 @@ public:
     FieldTOpt setRecentQuart(const QDate& date);
 
 private:
+    Trackable _track;
+    Analyst _analyst;
     double _wall_street_target_price = 0.0;
     double _eps_estimate_current_year = 0.0;
     double _eps_estimate_next_year = 0.0;
     double _eps_estimate_current_quart = 0.0;
     double _eps_estimate_next_quart = 0.0;
     QDate _recent_quart;
-
-    Analyst _analyst;
 
     friend QDataStream& operator << (QDataStream& s, Wire <const Estimate> d);
     friend QDataStream& operator >> (QDataStream& s, Wire <      Estimate> d);
