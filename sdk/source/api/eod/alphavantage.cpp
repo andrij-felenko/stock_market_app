@@ -144,7 +144,7 @@ void sdk::api::AlphaVantage::handlerAnswer(Call* reply)
 
 void sdk::api::AlphaVantage::handleInfo(Call* reply)
 {
-    auto ticker = Nexus.market()->findTicker(reply->symbol);
+    auto ticker = Nexus->market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;
@@ -193,7 +193,7 @@ void sdk::api::AlphaVantage::handleInfo(Call* reply)
 
 void sdk::api::AlphaVantage::handleCandle(Call* reply)
 {
-    auto ticker = Nexus.market()->findTicker(reply->symbol);
+    auto ticker = Nexus->market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;
@@ -253,7 +253,7 @@ void sdk::api::AlphaVantage::handleTag(Call* reply)
 
 void sdk::api::AlphaVantage::handleDividend(Call* reply)
 {
-    auto ticker = Nexus.market()->findTicker(reply->symbol);
+    auto ticker = Nexus->market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;

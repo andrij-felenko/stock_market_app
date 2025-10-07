@@ -31,7 +31,7 @@ void Client_t::init()
     setParent(qApp);
     QObject::connect(this, &Client_t::prepared, this, &Client_t::start);
 
-    Nexus.init();
+    sdk::Nexus->init();
     prepare();
 }
 

@@ -7,7 +7,7 @@ sdk::Data::Data(uint16_t parent) : _parent(parent)
     tickers->reserve(10);
 }
 
-sdk::Instrument* sdk::Data::parent() const { return Nexus.market()->findInstrument(_parent); }
+sdk::Instrument* sdk::Data::parent() const { return Nexus->market()->findInstrument(_parent); }
 sdk::Instrument* sdk::Data::instrument() const { return parent(); }
 
 void sdk::Data::save() const

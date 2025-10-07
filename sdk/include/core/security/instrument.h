@@ -200,6 +200,13 @@ private:
     std::atomic <uint32_t> _usages = 0; // 0 - bit is union flag
 
     void findBetterName(const QString& str);
+    Ticker* findTicker(const Symbol& tag){
+        if (has_data())
+            for (auto& it : _data->tickers)
+                if (it.symbol() == tag)
+                    return &it;
+        return nullptr;
+    }
 
     Instrument& operator ++ () noexcept;
     Instrument& operator -- () noexcept;

@@ -45,8 +45,8 @@ void sdk::Isin::_fill(const QByteArray& code, sdk::Country country)
 
 std::strong_ordering sdk::Isin::operator <=> (const Isin& other) const
 {
-    auto c1 = country();
-    auto c2 = other.country();
+    auto c1 = country_v();
+    auto c2 = other.country_v();
     if (c1 != c2)
         return c1 <=> c2;
 
@@ -60,7 +60,16 @@ std::strong_ordering sdk::Isin::operator <=> (const Isin& other) const
 }
 
 bool sdk::Isin::operator == (const Isin& other) const
-{ return operator <=> (other) == std::strong_ordering::equal; }
+{
+    if (country_v() != other.country_v())
+        return false;
+    for (int i = 7; i >= 1; i--)
+        if (_[i] != other._[i])
+            return false;
+
+    return (head_v() & hash_mask8) == (other.head_v() & hash_mask8);
+}
+
 
 sdk::Isin& sdk::Isin::operator = (const Isin& other)
 {

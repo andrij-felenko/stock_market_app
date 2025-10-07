@@ -91,7 +91,7 @@ void sdk::api::TwelveData::handlerAnswer(Call* reply)
     }
     qDebug() << 2;
 
-    auto t = Nexus.market()->findTicker(reply->name);
+    auto t = Nexus->market()->findTicker(reply->name);
     if (t.ensure() == false)
         return;
 

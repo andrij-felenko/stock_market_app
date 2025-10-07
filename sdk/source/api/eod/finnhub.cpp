@@ -114,7 +114,7 @@ void sdk::api::FinnHub::handlerAnswer(Call* reply)
     qDebug() << reply->name << reply->symbol << "return data" << doc;
     // qDebug() << response;
 
-    auto ticker = Nexus.market()->findTicker(reply->symbol);
+    auto ticker = Nexus->market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;

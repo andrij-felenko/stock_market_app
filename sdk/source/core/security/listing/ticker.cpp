@@ -22,7 +22,7 @@ sdk::Ticker& sdk::Ticker::operator = (const Ticker& other)
 void sdk::Ticker::save() { parent()->save(); }
 sdk::Symbol sdk::Ticker::   symbol()     const { return _symbol; }
 
-sdk::Instrument* sdk::Ticker::parent() const { return Nexus.market()->findInstrument(_parent); }
+sdk::Instrument* sdk::Ticker::parent() const { return Nexus->market()->findInstrument(_parent); }
 sdk::Instrument* sdk::Ticker::instrument() const { return parent(); }
 
 namespace sdk {

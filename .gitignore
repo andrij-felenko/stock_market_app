@@ -57,3 +57,6 @@ compile_commands.json
 *_qmlcache.qrc
 
 build/cpp/*
+
+# cmake generated files
+sdk/Headers/*

@@ -44,7 +44,7 @@ void sdk::api::FileFetch::handlerAnswer(Call* reply)
 {
     // знайти тикер за tag (так само, як у AlphaVantage)
     qDebug() << Q_FUNC_INFO << reply->symbol << reply->name;
-    auto in = Nexus.market()->findInstrument(reply->name.toLatin1());
+    auto in = Nexus->market()->findInstrument(reply->name.toLatin1());
     if (in == nullptr)
         return;
 

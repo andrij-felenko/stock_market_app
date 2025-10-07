@@ -237,6 +237,7 @@ const std::vector <sdk::country::Meta>& sdk::country::metadata()
     push(Country::BosniaAndHerzegovina, "BA", "BIH", "Bosnia and Herzegovina", "BiH");
     push(Country::Montenegro, "ME", "MNE", "Montenegro", "Crna Gora");
     push(Country::Kosovo, "XK", "XKX", "Kosovo", "Republic of Kosovo");
+    push(Country::Serbia, "CS", "SCG", "Serbia and Montenegro", "Srbija i Crna Gora");
 
     push(Country::Italy, "IT", "ITA", "Italy", "Italia");
     push(Country::Croatia, "HR", "HRV", "Croatia", "Hrvatska");
@@ -261,11 +262,13 @@ const std::vector <sdk::country::Meta>& sdk::country::metadata()
     push(Country::Jersey, "JE", "JEY", "Jersey");
     push(Country::Guernsey, "GG", "GGY", "Guernsey");
     push(Country::Ireland, "IE", "IRL", "Ireland", "Éire");
+    push(Country::FaroeIslands, "FO", "FRO", "Faroe Islands", "Føroyar", "Faeroe Islands");
 
     push(Country::France, "FR", "FRA", "France", "République française");
     push(Country::Germany, "DE", "DEU", "Germany", "Deutschland");
     push(Country::Switzerland, "CH", "CHE", "Switzerland", "Schweiz", "Suisse", "Svizzera");
     push(Country::Austria, "AT", "AUT", "Austria", "Österreich");
+    push(Country::Liechtenstein,  "LI", "LIE", "Liechtenstein", "Fürstentum Liechtenstein");
 
     // ----------------------- Asia ---------------------------------------------------------------
     push(Country::SaudiArabia,        "SA", "SAU", "Saudi Arabia", "Kingdom of Saudi Arabia");
@@ -293,6 +296,7 @@ const std::vector <sdk::country::Meta>& sdk::country::metadata()
     push(Country::Kyrgyzstan,   "KG", "KGZ", "Kyrgyzstan", "Kyrgyz Republic");
     push(Country::Tajikistan,   "TJ", "TJK", "Tajikistan", "Republic of Tajikistan");
     push(Country::Uzbekistan,   "UZ", "UZB", "Uzbekistan", "Republic of Uzbekistan");
+    push(Country::Rossiya,      "RU", "RUS", "Russia", "Russian Federation", "Rossiya");
 
     push(Country::India,     "IN", "IND", "India", "Republic of India");
     push(Country::Nepal,     "NP", "NPL", "Nepal", "Federal Democratic Republic of Nepal");
@@ -422,6 +426,9 @@ const std::vector <sdk::country::Meta>& sdk::country::metadata()
     push(Country::CaymanIslands,     "KY", "CYM", "Cayman Islands"); // UK territory
     push(Country::DominicanRepublic, "DO", "DOM", "Dominican Republic");
     push(Country::VirginIslands,     "VG", "VGB", "Virgin Islands, British"); // UK territory
+    push(Country::AntiguaBarbuda,  "AG", "ATG", "Antigua and Barbuda", "Antigua & Barbuda");
+    push(Country::Anguilla,        "AI", "AIA", "Anguilla");
+    push(Country::NetherlAntilles, "AN", "ANT", "Netherlands Antilles", "Nederlandse Antillen");
 
     push(Country::Brazil,    "BR", "BRA", "Brazil", "Federative Republic of Brazil");
     push(Country::Argentina, "AR", "ARG", "Argentina", "Argentine Republic");
@@ -435,6 +442,7 @@ const std::vector <sdk::country::Meta>& sdk::country::metadata()
     push(Country::Suriname,  "SR", "SUR", "Suriname", "Republic of Suriname");
     push(Country::Venezuela, "VE", "VEN", "Venezuela", "Bolivarian Republic of Venezuela");
     push(Country::Falklands, "FK", "FLK", "Falkland Islands", "Islas Malvinas"); // UK territory
+    push(Country::FrenchGuiana, "GF", "GUF", "French Guiana", "Guyane française");
 
     // ----------------------- Oceania ------------------------------------------------------------
     push(Country::Australia,  "AU", "AUS", "Australia", "Commonwealth of Australia");

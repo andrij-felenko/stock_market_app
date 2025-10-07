@@ -141,7 +141,7 @@ void sdk::api::Eod::handlerError(Call* reply, QNetworkReply::NetworkError error)
     case api::Request::Info: {
         if (error == QNetworkReply::ContentNotFoundError){
             qDebug() << "Info";
-            auto ticker = Nexus.market()->findTicker(reply->symbol);
+            auto ticker = Nexus->market()->findTicker(reply->symbol);
             if (not ticker.exist()) {
                 qDebug() << reply->symbol << "in info eod not found";
                 return;
@@ -168,15 +168,17 @@ void sdk::api::Eod::handlerError(Call* reply, QNetworkReply::NetworkError error)
 
 void sdk::api::Eod::_handleExchange(Call* reply)
 {
+    static uint32_t count = 0;
     QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
-    auto market = Nexus.market();
+    auto market = Nexus->market();
     QJsonArray root = doc.array();
+    count += root.size();
     for (const auto& it : std::as_const(root)){
         QJsonObject obj = it.toObject();
-        Nexus.market()->addTicker(sdk::Symbol(obj["Code"].toString(), reply->name),
-                                  obj["Isin"].toString().toLatin1(),
-                                  obj["Name"].toString(),
-                                  sdk::instype::from_string(obj["Type"].toString()));
+        Nexus->market()->addTicker(sdk::Symbol(obj["Code"].toString(), reply->name),
+                                   obj["Isin"].toString().toLatin1(),
+                                   obj["Name"].toString(),
+                                   sdk::instype::from_string(obj["Type"].toString()));
     }
 
     // handle exchange queue list
@@ -184,13 +186,15 @@ void sdk::api::Eod::_handleExchange(Call* reply)
     // if (not _queue_contains(Request::Exchange))
         // Nexus.market()->detect_main_ticker();
 
+    qDebug() << "TOTAL CPUNT -----------------------------------------------------" << root.size()
+             << "--------" << count << reply->request()->url();
     market->saveMeta();
 }
 
 void sdk::api::Eod::_handleCandle(Call* reply)
 {
     QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
-    auto ticker = Nexus.market()->findTicker(reply->symbol);
+    auto ticker = Nexus->market()->findTicker(reply->symbol);
     if (ticker.ensure() == false){
         qDebug() << Q_FUNC_INFO << reply->symbol << "FALSE";
         return;
@@ -216,7 +220,7 @@ void sdk::api::Eod::_handleCandle(Call* reply)
 void sdk::api::Eod::_handleInfo(Call* reply)
 {
     qDebug() << Q_FUNC_INFO;
-    auto finded = Nexus.market()->findTicker(reply->symbol);
+    auto finded = Nexus->market()->findTicker(reply->symbol);
     if (finded.ensure() == false) {
         qDebug() << reply->symbol << "not found";
         return;

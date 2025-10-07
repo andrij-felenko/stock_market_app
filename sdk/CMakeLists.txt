@@ -169,7 +169,8 @@ set (sdk_files
 )
 
 add_library(sdk STATIC ${sdk_files})
-target_include_directories(sdk PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+include(sdk_preinclude.cmake)
+target_include_directories(sdk PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_link_libraries (sdk PUBLIC ${Qt_lib_core} ${Qt_lib_gui})
 
 qt_add_resources(sdk "rc_images"

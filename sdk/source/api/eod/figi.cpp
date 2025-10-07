@@ -140,7 +140,7 @@ void sdk::api::Figi::handlerAnswer(Call* reply)
     qDebug() << reply->name << reply->symbol << "return data" << doc;
     return;
 
-    auto t = Nexus.market()->findTicker(reply->symbol);
+    auto t = Nexus->market()->findTicker(reply->symbol);
     if (t.ensure() == false)
         return;
 

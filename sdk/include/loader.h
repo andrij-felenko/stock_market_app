@@ -44,6 +44,8 @@ private:
     sdk::Roster* _roster;
 };
 
-inline SDK& Nexus = SDK::reference();
+namespace sdk {
+    inline constexpr sdk::Singleton <SDK> Nexus {};
+}
 
 #endif // STOCK_MANAGER_SDK_LOADER_H

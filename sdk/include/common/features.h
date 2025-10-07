@@ -374,6 +374,30 @@ namespace sdk {
         //
     };
     // ============================================================================================
+
+
+    // ----------------------- Singleton inline ---------------------------------------------------
+    template <typename T>
+    concept SingletonLike = requires { { T::reference() } -> std::same_as<T&>; } ||
+                            requires { { T::instance()  } -> std::same_as<T*>; };
+
+    template <SingletonLike T>
+    struct Singleton {
+        constexpr T* operator -> () const noexcept {
+            if constexpr (requires { T::instance(); })
+                return T::instance();
+            else
+                return &T::reference();
+        }
+
+        constexpr T& operator * () const noexcept {
+            if constexpr (requires { T::instance(); })
+                return *T::instance();
+            else
+                return T::reference();
+        }
+    };
+    // ============================================================================================
 }
 
 #endif // UTIL_FEATURES_H

@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     qDebug() << "";
 
     // util::ResDir::list_qrc_files();
-    Nexus.init();
+    sdk::Nexus->init();
 
     return app.exec();
 }

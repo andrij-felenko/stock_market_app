@@ -38,6 +38,11 @@ public:
         UpdateQuart,
         UpdateTicker,
         UpdateLedger,
+
+        Login,
+        Registration,
+        RemindPassword,
+        ResetPassword,
     };
 
     // explicit Syncer(QUrl url, QObject* parent = nullptr);

@@ -9,7 +9,7 @@ int main(int argc, char** argv)
 
     app.setOrganizationDomain("some.io");
     app.setOrganizationName("AndrijFelenko");
-    app.setApplicationName("StockManager");
+    app.setApplicationName("StockManagerServer");
 
     qDebug() << "Device supports OpenSSL: ";
     qDebug() << "Supports SSL: " << QSslSocket::supportsSsl();
@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     qDebug() << "";
 
     // util::ResDir::list_qrc_files();
-    DB.init();
+    DB->init();
 
     return app.exec();
 }

@@ -23,7 +23,8 @@ Call* Provider::add(api::Request type)
 
 void Provider::finish(QNetworkReply* reply)
 {
-    qDebug() << Q_FUNC_INFO << reply->error();
+    if (reply->error() != QNetworkReply::NoError)
+        qDebug() << Q_FUNC_INFO << reply->error();
     // _queue.pop_front();
 
     bool error = false;
@@ -35,7 +36,6 @@ void Provider::finish(QNetworkReply* reply)
 
     std::erase_if(_queue, [reply, this, error](Call* r) {
         if (r && r->_reply == reply) {
-            qDebug() << "same reply" << error;
             if (error) handlerError (r, reply->error());
             else       handlerAnswer(r);
             r->deleteLater();
@@ -70,7 +70,7 @@ void Provider::_next()
         if (it->available()){
             _lock = true;
             it->send();
-            qDebug() << "It need also" << _queue.size();
+            qDebug() << "It need also" << _queue.size() << QDateTime::currentDateTime();
             return;
         }
     }

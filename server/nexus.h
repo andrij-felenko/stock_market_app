@@ -1,7 +1,7 @@
 #ifndef STOCK_MANAGER_SERVER_NEXUS_H
 #define STOCK_MANAGER_SERVER_NEXUS_H
 
-#include <loader.h>
+#include <StockSDK/Loader>
 
 class Nexus_t final : public QObject
 {
@@ -26,6 +26,6 @@ private:
     sdk::Roster* _roster;
 };
 
-inline Nexus_t& DB = Nexus_t::reference();
+inline constexpr sdk::Singleton <Nexus_t> DB {};
 
 #endif // STOCK_MANAGER_SERVER_NEXUS_H

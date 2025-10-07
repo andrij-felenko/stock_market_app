@@ -14,13 +14,10 @@ sdk::market::Finder sdk::Market::findTicker(const sdk::Symbol& tag)
 {
     market::Finder ret(tag);
     for (auto& it : _instruments){
-        if (it.has_data()){
-            for (auto& t : it.data()->tickers)
-                if (t.symbol() == tag){
-                    ret.ticker = &t;
-                    ret.instrument = &it;
-                    return ret;
-                }
+        if (auto t = it.findTicker(tag); t != nullptr){
+            ret.ticker = t;
+            ret.instrument = &it;
+            return ret;
         }
         else {
             for (const auto& t : it.tickers())
@@ -44,12 +41,18 @@ sdk::Instrument* sdk::Market::findInstrument(const sdk::Isin& isin)
 sdk::market::Finder sdk::Market::addTicker(const Symbol& tag, const Isin& isin,
                                            const QString& name, Instype type)
 {
-    market::Finder data = findTicker(tag);
-    if (data.exist())
-        return data;
+    // qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime() << "start";
+    // market::Finder data = findTicker(tag);
+    // if (data.exist())
+    //     return data;
 
+    market::Finder data(tag);
     data.instrument = findInstrument(isin);
     if (data.exist()){ // isin founded
+        data.ticker = data.instrument->findTicker(tag);
+        if (data.ticker != nullptr || data.instrument->contains(tag))
+            return data;
+
         data.instrument->findBetterName(name);
     }
     else { // isin not found, add new instrument
@@ -63,6 +66,7 @@ sdk::market::Finder sdk::Market::addTicker(const Symbol& tag, const Isin& isin,
 
     // add new ticker
     data.ticker = data.instrument->_addTicker(tag);
+    // qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime() << "end";
     return data;
 }
 
@@ -141,11 +145,19 @@ void sdk::Market::loadMeta()
             return;
         saveMeta();
     }
+
+    QMap <int, int> map;
+    for (const auto& it : _instruments){
+        int i = it.tickers().size();
+        map.insert(i, map.value(i, 0) + 1);
+    }
+    for (auto it = map.begin(); it != map.end(); it++){
+        qDebug() << "LOAD META sizes" << it.key() << it.value();
+    }
 }
 
 void sdk::Market::saveMeta() const
 {
-    qDebug() << Q_FUNC_INFO;
     QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     path += "/tickers_meta/";
     QDir().mkpath(path);
