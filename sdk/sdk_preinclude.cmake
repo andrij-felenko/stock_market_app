@@ -1,22 +1,43 @@
+set(PROXY_ROOT  ${CMAKE_CURRENT_SOURCE_DIR}/Headers)
+
 # очистити стару папку з проксі, якщо вона існує
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
-  file(REMOVE_RECURSE "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+if(EXISTS "${PROXY_ROOT}")
+  file(REMOVE_RECURSE "${PROXY_ROOT}")
 endif()
 
 # створити заново корінь
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/Headers")
+file(MAKE_DIRECTORY "${PROXY_ROOT}")
 
-set(PROXY_ROOT  ${CMAKE_CURRENT_SOURCE_DIR}/Headers)
 set(PROOT_ ${PROXY_ROOT}/StockSDK)
 
+set_property(GLOBAL PROPERTY SDK_PROXY_FILES "")
+
+# function(make_proxy _proxy_path _real_header)
+#   get_filename_component(_dir "${_proxy_path}" DIRECTORY)
+#   file(MAKE_DIRECTORY "${_dir}")
+#   file(WRITE "${_proxy_path}"
+# "#include <${_real_header}> // IWYU pragma: export")
+# endfunction()
+
 function(make_proxy _proxy_path _real_header)
-  get_filename_component(_dir "${_proxy_path}" DIRECTORY)
+  get_filename_component(_dir  "${_proxy_path}" DIRECTORY)
+  get_filename_component(_name "${_proxy_path}" NAME)
   file(MAKE_DIRECTORY "${_dir}")
-  file(WRITE "${_proxy_path}"
-"// auto-generated proxy
-#pragma once
-#include <${_real_header}> // IWYU pragma: keep
-")
+
+  # 1) без розширення (як у Qt)
+  set(_proxy_null "${_dir}/${_name}")
+  file(WRITE "${_proxy_null}"
+"#include <${_real_header}> // IWYU pragma: export")
+
+  # 2) .h-двійник — корисно для IDE, можна прибрати якщо не хочеш
+  set(_proxy_h "${_dir}/${_name}.h")
+  file(WRITE "${_proxy_h}"
+"#include <${_real_header}> // IWYU pragma: export")
+
+  # 3) додати обидва у глобальний список
+  # set_property(GLOBAL APPEND PROPERTY SDK_PROXY_FILES "${_proxy_path}")
+  set_property(GLOBAL APPEND PROPERTY SDK_PROXY_FILES "${_proxy_h}")
+  set_property(GLOBAL APPEND PROPERTY SDK_PROXY_FILES "${_proxy_null}")
 endfunction()
 
 make_proxy("${PROOT_}/Loader" "loader.h")
@@ -100,5 +121,23 @@ target_include_directories(sdk PUBLIC
   $<BUILD_INTERFACE:${PROXY_ROOT}>
   $<INSTALL_INTERFACE:include>
 )
+
+# дістати список усіх згенерованих проксі
+get_property(_SDK_PROXIES GLOBAL PROPERTY SDK_PROXY_FILES)
+
+# Якщо у тебе CMake 3.23+ — ідеально: FILE_SET HEADERS (як це робить Qt)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.23")
+  target_sources(sdk
+    PUBLIC
+      FILE_SET sdk_public_headers TYPE HEADERS
+      BASE_DIRS ${PROXY_ROOT}
+      FILES ${_SDK_PROXIES}
+  )
+else()
+  # fallback: просто додай у target_sources і познач як HEADER_FILE_ONLY
+  target_sources(sdk PUBLIC ${_SDK_PROXIES})
+  set_source_files_properties(${_SDK_PROXIES} PROPERTIES HEADER_FILE_ONLY TRUE)
+endif()
+
 install(DIRECTORY "${PROXY_ROOT}/" DESTINATION include)
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION include)

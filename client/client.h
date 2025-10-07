@@ -4,11 +4,11 @@
 #include <QtCore/QObject>
 #include <QtQml/QQmlApplicationEngine>
 
-#include <loader.h>
+#include <StockSDK/Loader>
+#include <StockSDK/api/connectors/EndPoints>
 #include "model/asset_list.h"
 #include "model/ticker_list.h"
 #include "model/search_tag.h"
-#include <api/connectors/endpoints.h>
 
 class Client_t final : public QObject
 {

@@ -1,7 +1,7 @@
 #ifndef STOCK_MANAGER_SERVER_NEXUS_H
 #define STOCK_MANAGER_SERVER_NEXUS_H
 
-#include <StockSDK/Loader>
+#include <StockSDK/Loader.h>
 
 class Nexus_t final : public QObject
 {
