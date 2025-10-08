@@ -9,10 +9,6 @@
 
 #include "sdk_def.h"
 
-namespace sdk::api {
-    EndPoints* endpoints();
-}
-
 class sdk::api::EndPoints : public QObject
 {
     Q_OBJECT
@@ -23,16 +19,18 @@ class sdk::api::EndPoints : public QObject
     Q_PROPERTY(QString key_twelve_data READ key_td WRITE setTwelveDataKey NOTIFY key_tdChanged)
     Q_PROPERTY(QString key_marketstack READ key_ms WRITE setMarketStackKey NOTIFY key_msChanged)
     Q_PROPERTY(QString key_figi READ key_figi WRITE setFigiKey NOTIFY key_figiChanged)
+    Q_PROPERTY(QUrl url_stock READ url_stock WRITE setStockUrl NOTIFY url_stockChanged)
 public:
     static EndPoints* instance();
 
-    QString key_av()  const;
-    QString key_eod() const;
-    QString key_fh()  const;
-    QString key_oai() const;
-    QString key_td()  const;
-    QString key_ms()  const;
-    QString key_figi()const;
+    QString key_av()    const;
+    QString key_eod()   const;
+    QString key_fh()    const;
+    QString key_oai()   const;
+    QString key_td()    const;
+    QString key_ms()    const;
+    QString key_figi()  const;
+    QUrl    url_stock() const;
 
 public slots:
     void setAlphaVantageKey(const QString& new_key);
@@ -42,6 +40,7 @@ public slots:
     void setTwelveDataKey  (const QString& new_key);
     void setMarketStackKey (const QString& new_key);
     void setFigiKey        (const QString& new_key);
+    void setStockUrl       (const QUrl& new_url);
 
 signals:
     void key_avChanged    (QString key);
@@ -51,10 +50,13 @@ signals:
     void key_tdChanged    (QString key);
     void key_msChanged    (QString key);
     void key_figiChanged  (QString key);
+    void url_stockChanged (QUrl url);
 
 private:
     EndPoints(QObject* parent = nullptr);
     EndPoints& operator = (const EndPoints&) = delete;
 };
+
+namespace sdk { constexpr inline sdk::Singleton <api::EndPoints> apiEndPoints {}; }
 
 #endif // SDK_API_CONNECTORS_ENDPOINTS_H

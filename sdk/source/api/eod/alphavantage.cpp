@@ -96,19 +96,19 @@ bool sdk:: api::AlphaVantage::request(Request type, const QString& name,
             if (keys["func"] == "TIME_SERIES_INTRADAY")
                 post->addQueryItem("interval", "1min");
             post->addQueryItem("outputsize", "full");
-            post->addQueryItem("apikey", endpoints()->key_av());
+            post->addQueryItem("apikey", apiEndPoints->key_av());
             break;
         }
         case api::Request::Dividend: {
             post->addQueryItem("function", "DIVIDENDS");
             post->addQueryItem("symbol", subname);
-            post->addQueryItem("apikey", endpoints()->key_av());
+            post->addQueryItem("apikey", apiEndPoints->key_av());
             break;
         }
         case api::Request::Info: {
             post->addQueryItem("function", "OVERVIEW");
             post->addQueryItem("symbol", subname);
-            post->addQueryItem("apikey", endpoints()->key_av());
+            post->addQueryItem("apikey", apiEndPoints->key_av());
             break;
         }
         case api::Request::Peers:    break;
@@ -118,7 +118,7 @@ bool sdk:: api::AlphaVantage::request(Request type, const QString& name,
         case api::Request::Tag: {
             post->addQueryItem("function", "SYMBOL_SEARCH");
             post->addQueryItem("keywords", subname);
-            post->addQueryItem("apikey", endpoints()->key_av());
+            post->addQueryItem("apikey", apiEndPoints->key_av());
             post->name = name;
             break;
         }

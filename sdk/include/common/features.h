@@ -383,7 +383,8 @@ namespace sdk {
 
     template <SingletonLike T>
     struct Singleton {
-        constexpr T* operator -> () const noexcept {
+        constexpr T* operator -> () const noexcept { return ptr(); }
+        constexpr T* ptr() const noexcept {
             if constexpr (requires { T::instance(); })
                 return T::instance();
             else

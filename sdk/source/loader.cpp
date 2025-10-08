@@ -26,7 +26,7 @@ void SDK::init()
     _roster->loadMeta();
 }
 
-sdk::api::EndPoints* SDK::network() const { return sdk::api::endpoints(); }
+sdk::api::EndPoints* SDK::network() const { return sdk::apiEndPoints.ptr(); }
 sdk::Market*         SDK::market()  const { return _market; }
 sdk::Roster*         SDK::roster()  const { return _roster; }
 

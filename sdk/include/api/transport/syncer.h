@@ -13,6 +13,8 @@
 // #include "settings/network.h" // IWYU pragma: keep
 #include "core/symbol.h"
 
+#include "api/transport/provider.h"
+
 /*!
  * \brief The sdk::api::Syncer class
  * Є пару видів як саме йде робота з-до пам'ятті
@@ -28,7 +30,7 @@
  * 2, 6 - скоріше всього теж з рекурсією, бо треба вводити тртій параметр тоді
  */
 
-class sdk::api::Syncer : public QObject {
+class sdk::api::Syncer : public Provider {
     Q_OBJECT
 public:
     enum class Reason {
@@ -44,13 +46,19 @@ public:
         RemindPassword,
         ResetPassword,
     };
+    struct Date { DTime dt; sdk::DataType type; };
 
-    // explicit Syncer(QUrl url, QObject* parent = nullptr);
+    static Syncer* instance();
 
-    struct Date {
-        DTime dt;
-        sdk::DataType type;
-    };
+private:
+    explicit Syncer(QObject* parent = nullptr);
+    using api::Provider::request;
+
+    virtual bool request(Request type, const QString& name, const sdk::Symbol& symbol,
+                         StringMap keys = {}) override;
+    virtual void handlerAnswer(Call* reply) override;
 };
+
+namespace sdk { constexpr inline Singleton <api::Syncer> apiSyncer {}; }
 
 #endif // SDK_API_TRANSPORT_SYNCER_H

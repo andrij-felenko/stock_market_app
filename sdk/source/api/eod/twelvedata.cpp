@@ -50,7 +50,7 @@ bool sdk::api::TwelveData::request(Request type, const QString& name, const sdk:
             post->addQueryItem("interval", keys["interval"]);
             post->addQueryItem("start_date", keys["start_date"]);
             post->addQueryItem("end_date", keys["end_date"]);
-            post->addQueryItem("apikey", endpoints()->key_td());
+            post->addQueryItem("apikey", apiEndPoints->key_td());
             break;
         default:
             return false;

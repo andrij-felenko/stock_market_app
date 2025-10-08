@@ -19,9 +19,11 @@ private:
     explicit FileFetch(QObject* parent = nullptr);
     using api::Provider::request;
 
-    bool request(Request type, const QString& name, const sdk::Symbol& symbol,
-                 StringMap keys = {}) override;
-    void handlerAnswer(Call* reply) override;
+    virtual bool request(Request type, const QString& name, const sdk::Symbol& symbol,
+                         StringMap keys = {}) override;
+    virtual void handlerAnswer(Call* reply) override;
 };
+
+namespace sdk { constexpr inline Singleton <api::FileFetch> apiFileFetch {}; }
 
 #endif // SDK_API_TRANSPORT_FILEFETCH_H

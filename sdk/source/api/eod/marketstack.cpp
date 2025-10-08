@@ -83,7 +83,7 @@ bool sdk::api::MarketStack::request(Request type, const QString& name, const sdk
     }
 
     post->addQueryItem("symbol", subname);
-    post->addQueryItem("token", endpoints()->key_fh());
+    post->addQueryItem("token", apiEndPoints->key_fh());
 
     switch (type){
         case api::Request::MetricAll:       post->addQueryItem("metric", "all");       break;
@@ -114,13 +114,13 @@ bool sdk::api::MarketStack::request(Request type, const QString& name, const sdk
             break;
         }
         case api::Request::Info: {
-            post->addQueryItem("access_key", endpoints()->key_ms());
+            post->addQueryItem("access_key", apiEndPoints->key_ms());
             break;
         }
         case api::Request::Peers:    break;
         case api::Request::Quote: {
             // ?access_key=c68c8ac43610203b7b46616e0bb8124a&symbols=VK.PA
-            post->addQueryItem("access_key", endpoints()->key_ms());
+            post->addQueryItem("access_key", apiEndPoints->key_ms());
             post->addQueryItem("symbols", name);
             post->addQueryItem("limit", "999");
             break;

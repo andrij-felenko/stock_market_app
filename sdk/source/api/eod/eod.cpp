@@ -87,13 +87,13 @@ bool sdk::api::Eod::request(Request type, const QString& name,
         case api::Request::Exchange:
         case api::Request::Info:
         {
-            post->addQueryItem("api_token", endpoints()->key_eod());
+            post->addQueryItem("api_token", apiEndPoints->key_eod());
             post->addQueryItem("fmt", "json");
             break;
         }
         case api::Request::Candle: {
             // https://eodhd.com/api/eod/MCD.US?api_token=683ebb8bc59b60.11043967&fmt=json
-            post->addQueryItem("api_token", endpoints()->key_eod());
+            post->addQueryItem("api_token", apiEndPoints->key_eod());
             post->addQueryItem("period", keys.value("period", "d"));
             post->addQueryItem("fmt", "json");
             post->addQueryItem("from", keys.value("from"));

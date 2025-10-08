@@ -67,7 +67,7 @@ bool sdk::api::Figi::request(Request type, const QString& name, const sdk::Symbo
     }
 
     post->request()->setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    post->request()->setRawHeader("X-OPENFIGI-APIKEY", endpoints()->key_figi().toUtf8());
+    post->request()->setRawHeader("X-OPENFIGI-APIKEY", apiEndPoints->key_figi().toUtf8());
     QJsonObject to_send;
 
     switch (type){

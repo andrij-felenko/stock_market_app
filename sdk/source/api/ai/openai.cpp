@@ -31,7 +31,7 @@ bool sdk::api::OpenAI::request(Request type, const QString& text,
     Call* post = add(type);
     post->request()->setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     post->request()->setRawHeader("Authorization",
-                                  "Bearer " + endpoints()->key_oai().toUtf8());
+                                  "Bearer " + apiEndPoints->key_oai().toUtf8());
 
     int max_chars = keys.value("max", "50").toInt();
     bool stream = keys.value("stream", "false") == "true";

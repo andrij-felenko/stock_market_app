@@ -63,4 +63,6 @@ private:
     void _handleInfoFinancialsIncome  (const market::Finder& finded, const QJsonObject& obj);
 };
 
+namespace sdk { constexpr inline Singleton <api::Eod> apiEod {}; }
+
 #endif

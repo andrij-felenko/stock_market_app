@@ -62,7 +62,7 @@ bool sdk::api::FinnHub::request(Request type, const QString& name,
     }
 
     post->addQueryItem("symbol", subname);
-    post->addQueryItem("token", endpoints()->key_fh());
+    post->addQueryItem("token", apiEndPoints->key_fh());
 
     switch (type){
         case api::Request::MetricAll:       post->addQueryItem("metric", "all");       break;
