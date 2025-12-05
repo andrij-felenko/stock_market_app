@@ -92,7 +92,7 @@ bool sdk::api::Eod::request(Request type, const QString& name,
             break;
         }
         case api::Request::Candle: {
-            // https://eodhd.com/api/eod/MCD.US?api_token=683ebb8bc59b60.11043967&fmt=json
+            // Example: https://eodhd.com/api/eod/MCD.US?api_token=<token>&fmt=json
             post->addQueryItem("api_token", apiEndPoints->key_eod());
             post->addQueryItem("period", keys.value("period", "d"));
             post->addQueryItem("fmt", "json");

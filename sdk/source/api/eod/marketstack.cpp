@@ -12,7 +12,6 @@
 sdk::api::MarketStack::MarketStack(QObject* parent)
     : Provider(QUrl("https://api.marketstack.com/"), parent)
 {
-    // set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
 }
 
 sdk::api::MarketStack* sdk::api::MarketStack::instance()
@@ -31,7 +30,6 @@ void sdk::api::MarketStack::updateInfoByTag(const sdk::Symbol& tag)
     MarketStack::instance()->request(Request::Info, tag);
 }
 
-// https://api.marketstack.com/v2/eod?access_key=c68c8ac43610203b7b46616e0bb8124a&symbols=VK.PA
 void sdk::api::MarketStack::updateQuotesByTag(sdk::SymbolList tags)
 {
     QString name;
@@ -119,7 +117,7 @@ bool sdk::api::MarketStack::request(Request type, const QString& name, const sdk
         }
         case api::Request::Peers:    break;
         case api::Request::Quote: {
-            // ?access_key=c68c8ac43610203b7b46616e0bb8124a&symbols=VK.PA
+            // Example: ?access_key=<token>&symbols=VK.PA
             post->addQueryItem("access_key", apiEndPoints->key_ms());
             post->addQueryItem("symbols", name);
             post->addQueryItem("limit", "999");
