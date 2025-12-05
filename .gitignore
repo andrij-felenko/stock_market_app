@@ -60,3 +60,6 @@ build/cpp/*
 
 # cmake generated files
 sdk/Headers/*
+
+# Environment files
+.env

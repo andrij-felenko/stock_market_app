@@ -13,7 +13,6 @@
 sdk::api::TwelveData::TwelveData(QObject* parent)
     : Provider(QUrl("https://api.twelvedata.com/"), parent)
 {
-    // set_api_key("f9b33ba1139a4b5e8c0572bcd1e11258");
 }
 
 sdk::api::TwelveData* sdk::api::TwelveData::instance()

@@ -12,7 +12,6 @@
 sdk::api::FinnHub::FinnHub(QObject* parent) : Provider(QUrl("https://finnhub.io/api/v1/"), parent)
 {
     shift_ms = 1000;
-    // set_api_key("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
 }
 
 sdk::api::FinnHub* sdk::api::FinnHub::instance()

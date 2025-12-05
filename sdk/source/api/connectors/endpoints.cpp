@@ -1,24 +1,93 @@
 #include "api/connectors/endpoints.h"
-#include <QtCore/QSettings>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDir>
+#include <QtCore/QFile>
+#include <QtCore/QSettings>
+#include <QtCore/QTextStream>
 
 using namespace sdk;
 
+namespace {
+
+void loadEnvFile(const QString& filePath)
+{
+    QFile envFile(filePath);
+    if (!envFile.exists())
+        return;
+
+    if (!envFile.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+
+    QTextStream stream(&envFile);
+    while (!stream.atEnd()) {
+        const auto line = stream.readLine().trimmed();
+
+        if (line.isEmpty() || line.startsWith('#'))
+            continue;
+
+        const int separatorIndex = line.indexOf('=');
+        if (separatorIndex <= 0)
+            continue;
+
+        const auto key = line.left(separatorIndex).trimmed();
+        auto value = line.mid(separatorIndex + 1).trimmed();
+
+        if ((value.startsWith('\"') && value.endsWith('\"')) || (value.startsWith('\'') && value.endsWith('\'')))
+            value = value.mid(1, value.length() - 2);
+
+        if (!key.isEmpty())
+            qputenv(key.toUtf8(), value.toUtf8());
+    }
+}
+
+void ensureEnvLoaded()
+{
+    static bool loaded = false;
+    if (loaded)
+        return;
+
+    const QString appDir = QCoreApplication::applicationDirPath();
+    const QStringList candidates = {
+        QDir::current().filePath(".env"),
+        appDir + "/.env",
+        appDir + "/../.env"
+    };
+
+    for (const auto& candidate : candidates) {
+        loadEnvFile(candidate);
+    }
+
+    loaded = true;
+}
+
+QString envValue(const QByteArray& key)
+{
+    return QString::fromUtf8(qgetenv(key.constData()));
+}
+
+}
+
 sdk::api::EndPoints::EndPoints(QObject* parent) : QObject(parent)
 {
-    // set default
-    if (key_av ().isEmpty()) setAlphaVantageKey("539EYFYAYCXFMWIL");
-    if (key_eod().isEmpty()) setEodKey("683ebb8bc59b60.11043967");
-    if (key_fh ().isEmpty()) setFinnHubKey("d0vg7fhr01qkepd02j60d0vg7fhr01qkepd02j6g");
-    if (key_ms ().isEmpty()) setMarketStackKey("c68c8ac43610203b7b46616e0bb8124a");
-    if (key_td ().isEmpty()) setTwelveDataKey("f9b33ba1139a4b5e8c0572bcd1e11258");
-    if (key_figi().isEmpty()) setFigiKey("48b9c0fc-ae20-4c7a-a05a-bee87459348b");
-    if (url_stock().isEmpty()) setStockUrl(QUrl("127.0.0.1"));
+    ensureEnvLoaded();
 
-    if (key_oai().isEmpty())
-        setOpenaiKey("sk-proj-vccDzzJrmHvKungJmFIz_U5X_yZI3wvadiKedhBomYzXUNv"
-                     "4XVU7nP4l84VqJZ9TlMeVhQLmLXT3BlbkFJ21RmjsV5oOpor1XvYbNa"
-                     "c2aJjNBNoz-S7SF8C84Lx4fqZHxEODILJk6bo8PyzBPCfXjDuQcJQA");
+    const auto alphaVantage = envValue("ALPHAVANTAGE_API_KEY");
+    const auto eodKey       = envValue("EOD_API_KEY");
+    const auto finnhubKey   = envValue("FINNHUB_API_KEY");
+    const auto marketStack  = envValue("MARKETSTACK_API_KEY");
+    const auto twelveData   = envValue("TWELVEDATA_API_KEY");
+    const auto figiKey      = envValue("FIGI_API_KEY");
+    const auto openaiKey    = envValue("OPENAI_API_KEY");
+    const auto stockUrl     = envValue("STOCK_SERVICE_URL");
+
+    if (!alphaVantage.isEmpty()) setAlphaVantageKey(alphaVantage);
+    if (!eodKey.isEmpty())       setEodKey(eodKey);
+    if (!finnhubKey.isEmpty())   setFinnHubKey(finnhubKey);
+    if (!marketStack.isEmpty())  setMarketStackKey(marketStack);
+    if (!twelveData.isEmpty())   setTwelveDataKey(twelveData);
+    if (!figiKey.isEmpty())      setFigiKey(figiKey);
+    if (!openaiKey.isEmpty())    setOpenaiKey(openaiKey);
+    if (!stockUrl.isEmpty())     setStockUrl(QUrl(stockUrl));
 }
 
 sdk::api::EndPoints* sdk::api::EndPoints::instance()

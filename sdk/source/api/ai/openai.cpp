@@ -16,9 +16,6 @@ sdk::api::OpenAI::OpenAI(QObject* parent)
     : Provider(QUrl("https://api.openai.com/v1/chat/completions"), parent),
       _model("gpt-5-nano")
 {
-    // set_api_key("sk-proj-vccDzzJrmHvKungJmFIz_U5X_yZI3wvadiKedhBomYzXUNv"
-    //             "4XVU7nP4l84VqJZ9TlMeVhQLmLXT3BlbkFJ21RmjsV5oOpor1XvYbNa"
-    //             "c2aJjNBNoz-S7SF8C84Lx4fqZHxEODILJk6bo8PyzBPCfXjDuQcJQA");
 }
 
 // void api::OpenAI::set_api_key(const QString& key) { _api_key = key; }
