@@ -1,6 +1,8 @@
 #include <QtGui/QGuiApplication>
-#include <QQuickStyle>
 #include <QIcon>
+#include <QQuickStyle>
+
+#include <QDebug>
 
 #include <QSslSocket>
 
@@ -16,11 +18,9 @@ int main(int argc, char** argv)
     app.setApplicationName("StockManager");
     app.setWindowIcon(QIcon(":/rc/images/Stock_app_logo2.png"));
 
-    qDebug() << "Device supports OpenSSL: ";
-    qDebug() << "Supports SSL: " << QSslSocket::supportsSsl();
-    qDebug() << "Runtime uses: " << QSslSocket::sslLibraryVersionString();
-    qDebug() << "Build uses: "   << QSslSocket::sslLibraryBuildVersionString();
-    qDebug() << "";
+    qInfo() << "OpenSSL support:" << QSslSocket::supportsSsl();
+    qInfo() << "Runtime SSL library:" << QSslSocket::sslLibraryVersionString();
+    qInfo() << "Build-time SSL library:" << QSslSocket::sslLibraryBuildVersionString();
 
     // util::ResDir::list_qrc_files();
     sdk::Nexus->init();

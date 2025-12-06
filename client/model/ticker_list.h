@@ -19,11 +19,9 @@ public:
     TickerList(std::vector <sdk::Ticker*>& list, Sender* source, Signal signal)
         : QAbstractListModel(source), _tickers(list)
     {
-        qDebug() << "polipoli" << list.size();
         connect(source, signal, this, &TickerList::updateAllData);
 
         updateAllData();
-        qDebug() << "polipoli" << list.size();
     }
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;

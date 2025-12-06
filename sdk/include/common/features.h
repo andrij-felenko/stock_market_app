@@ -11,6 +11,23 @@
 
 namespace sdk {
     // ----------------------- Defer --------------------------------------------------------------
+    /*! \brief A Go-like "defer" that keeps C++ scopes honest.
+
+        Go's `defer` keyword inspired this helper: you place the cleanup right
+        next to the resource and let the compiler guarantee it runs on every
+        exit path. `Defer` stores a callable, executes it in the destructor, and
+        can be silenced with `dismiss()` when you intentionally keep the
+        resource.
+
+        Everyday example that mirrors the Go pattern but stays in C++ RAII
+        land:
+        \code{.cpp}
+        bool busy = true;
+        auto guard = sdk::Defer([&]() { busy = false; });
+        // do risky work; the flag will drop even if an exception appears
+        if (all_good) guard.dismiss(); // keep the flag when you really mean it
+        \endcode
+    */
     template <typename F> class Defer {
         F _func;
         bool _active;
@@ -38,11 +55,52 @@ namespace sdk {
         void dismiss() noexcept { _active = false; }
     };
 
+    /*! \brief Helper that infers the template arguments for \ref Defer.
+
+        `sdk::defer(...)` is simply a friendlier face for \ref Defer: the same
+        Go-inspired idea without writing the template type. Use it whenever a
+        small, scoped promise keeps the code more readable than a manual
+        try/finally.
+
+        Common pattern for short-lived resources:
+        \code{.cpp}
+        QFile file(path);
+        if (!file.open(QIODevice::ReadOnly)) return;
+        auto close = sdk::defer([&]() { file.close(); });
+        // nothing else to remember—the handle will close on every exit branch
+        \endcode
+    */
     template<typename F> Defer<F> defer(F&& f) { return Defer<F>(std::forward<F>(f)); }
     // ============================================================================================
 
 
     // ----------------------- Wire ---------------------------------------------------------------
+    /*! \brief Flags that describe what a serializer should touch.
+
+        The bits separate core data from relationship info and update metadata
+        so Syncer and Trackable can ship exactly what is needed. Кожен прапор
+        має англійське пояснення та коротку україномовну підказку:
+
+        - `WireMode::Data` — only the inner state of the object itself (цільові
+          поля моделі без службових обгорток). Використовуйте для швидких
+          оновлень між вузлами.
+        - `WireMode::Meta` — freshness markers such as timestamps or sync
+          hashes that describe *коли* файл/об'єкт змінювався останнього разу.
+          Це передається на сервер, щоб звірити актуальність.
+        - `WireMode::AllData` — combine the object's own data with the
+          subscription/children block (див. `subs()` нижче), але без метаданих
+          часу. Дає повну логічну картину в межах самого об'єкта.
+        - `WireMode::All` — повний пакет: і дата, і мета, і підписки. Потрібен
+          коли відправляємо на диск або робимо першу синхронізацію.
+        - `WireMode::Storage` — alias for `All`; підкреслює сценарій збереження
+          у файлі чи кеші.
+        - `WireMode::Update` — alias for `Data`; мінімальний дельта-пакет для
+          живих оновлень.
+        - `WireMode::UpdateAll` — alias for `AllData`; коли окрім полів треба
+          передати і вкладені Trackable-об'єкти, щоб підписки не загубилися.
+        - `WireMode::SyncTime` — alias for `Meta`; потрібен коли цікавить лише
+          інформація «коли змінено», без корисних даних.
+    */
     enum class WireMode : uint8_t {
         All       = 0b1111'1111,
         Meta      = 0b0000'0100,
@@ -54,6 +112,60 @@ namespace sdk {
         SyncTime  = Meta,
     };
 
+    /*! \brief Wrapper that says "serialize this object, but only these parts".
+
+        `Wire` decorates an existing reference and carries a \ref WireMode that
+        explains what should be written or read: metadata, data fields, or
+        both. Operators behave like a pointer so regular member access keeps
+        working, and the mode is available to any streaming operators you
+        implement.
+
+        How the bits map to Trackable/Syncer flow:
+        - `data()` — внутрішній стан конкретного об'єкта. Це власні поля моделі
+          без службових міток.
+        - `subs()` — вкладені Trackable-об'єкти або пов'язані структури, які
+          зберігаються всередині і теж треба передати (наприклад, дочірні списки
+          інструментів). Вони йдуть разом з даними, коли потрібно повноцінне
+          дерево.
+        - `meta()` — мітки часу/версії, які Syncer використовує для звірки
+          актуальності. Це те, що серверу треба знати, щоб вирішити, чи є зміни
+          у файлі.
+
+        Why use it?
+        - The same DTOs should travel over the wire *and* rest on disk without
+          two separate code paths. `Wire` lets you reuse one serializer and
+          switch the mode to match the context.
+        - Trackable objects rely on Syncer to ship live updates. Sending only
+          `WireMode::Update` keeps those packets small; `WireMode::UpdateAll`
+          додає вкладені частини через `subs()` коли треба дерево.
+        - Metadata (`WireMode::SyncTime`) moves separately so peers can compare
+          timestamps before asking for the heavier payload.
+        - Коли сумніваєтеся, підберіть режим за сценарієм: `Update`/`UpdateAll`
+          для живих оновлень, `Storage` для файлів, `SyncTime` для легких
+          службових обмінів.
+
+        Example: keep storage and live-sync in step for a Trackable-derived
+        portfolio snapshot and its nested instruments:
+        \code{.cpp}
+        Portfolio dto;
+        // Persist everything so we can restore quickly after a restart
+        QFile store(path); store.open(QIODevice::WriteOnly);
+        QDataStream toDisk(&store);
+        toDisk << sdk::io(dto, sdk::WireMode::Storage); // data + subs + meta
+
+        // Later, push only data changes through Syncer to a peer
+        QByteArray packet;
+        QDataStream live(&packet, QIODevice::WriteOnly);
+        live << sdk::io(dto, sdk::WireMode::Update); // тільки поля самого об'єкта
+        transport.send(packet);
+
+        // If the peer must refresh nested Trackable items too
+        QByteArray fullPacket;
+        QDataStream liveAll(&fullPacket, QIODevice::WriteOnly);
+        liveAll << sdk::io(dto, sdk::WireMode::UpdateAll); // додає вміст subs()
+        transport.send(fullPacket);
+        \endcode
+    */
     template <class T> class Wire {
     public:
         bool meta() const { return (static_cast <uint8_t> (_mode) & 0b100) != 0; }
@@ -85,11 +197,14 @@ namespace sdk {
     };
 
     // io section --------------------------------------------------------
+    /*! \brief Convenience wrapper for constructing \ref Wire with full mode. */
     template <class T> Wire <T> io(T& t) { return Wire <T> (t); }
 
+    /*! \brief Copy wire mode from another wrapper while changing the reference. */
     template <class T, class T2> Wire <T> io(T& t, const Wire <T2>& from)
     { return Wire <T> (t, from); }
 
+    /*! \brief Construct a wrapper with an explicit serialization mode. */
     template <class T> Wire <T> io(T& t, WireMode mode)
     { return Wire <T> (t, mode); }
     // ===================================================================
@@ -134,6 +249,13 @@ namespace sdk {
 
 
     // ----------------------- From / To Stream ---------------------------------------------------
+    /*! \brief Read an object (or pointer) from a QDataStream and respect its mode.
+
+        The helper picks the right overload for `T`: plain streaming when no
+        `Wire` support is present, or `sdk::io(..., mode)` when it is. Pointer
+        types are dereferenced automatically so callers do not need a separate
+        branch for `T*`.
+    */
     template <typename T> requires StreamReadableFor <T>
     QDataStream& from_stream(QDataStream& stream, WireMode mode, T& d){
         if constexpr (std::is_pointer_v <T>){
@@ -147,6 +269,12 @@ namespace sdk {
         return stream;
     }
 
+    /*! \brief Write an object (or pointer) to a QDataStream using the selected mode.
+
+        Mirrors \ref from_stream: if `T` understands `Wire`, we call `sdk::io`
+        with the provided mode; otherwise we stream the value directly. Pointer
+        arguments are dereferenced for you.
+    */
     template <typename T> requires StreamWritableFor <T>
     QDataStream& to_stream(QDataStream& stream, WireMode mode, const T& d){
         if constexpr (std::is_pointer_v <T>){
@@ -171,6 +299,12 @@ namespace sdk {
 
 
     // ----------------------- From / To Bytes ----------------------------------------------------
+    /*! \brief Deserialize any streamable type from a QByteArray.
+
+        Builds a temporary `QDataStream`, applies the requested `WireMode`, and
+        returns the value. Pointer reads allocate the object for you; ownership
+        stays with the caller.
+    */
     template <typename T, typename... Args> requires StreamReadableFor <T>
     T from_bytes(WireMode mode, const QByteArray& data, Args&&...args){
         QDataStream stream(data);
@@ -190,6 +324,11 @@ namespace sdk {
         }
     }
 
+    /*! \brief Serialize any streamable type into a QByteArray.
+
+        Keeps the Qt stream version consistent and avoids duplicating the
+        `QDataStream` setup in network code or tests.
+    */
     template <typename T> requires StreamWritableFor <T>
     QByteArray to_bytes(WireMode mode, const T& d){
         QByteArray data;
@@ -209,6 +348,12 @@ namespace sdk {
 
 
     // ----------------------- List stream --------------------------------------------------------
+    /*! \brief Deserialize a vector from a stream while honoring `WireMode`.
+
+        Each item uses \ref from_stream so both plain types and `Wire`-aware
+        ones work. Pointer elements join the vector only if the read succeeds
+        to prevent leaking half-built values.
+    */
     template <typename T, typename... Args> requires StreamReadableFor <T>
     QDataStream& list_from_stream(QDataStream& stream, WireMode mode,
                                   std::vector <T>& d, Args&&...args){
@@ -231,6 +376,7 @@ namespace sdk {
         return stream;
     }
 
+    /*! \brief Serialize a vector to a stream using `WireMode` for each element. */
     template <typename T> requires StreamWritableFor <T>
     QDataStream& list_to_stream(QDataStream& stream, WireMode mode, const std::vector <T>& d){
         stream << int32_t(d.size());
@@ -252,6 +398,26 @@ namespace sdk {
 
 
     // ----------------------- List ---------------------------------------------------------------
+    /*! \brief Thin std::vector wrapper with optional friend-only mutation.
+
+        With `Owner = void`, this behaves like a small vector wrapper and
+        exposes the underlying container through pointer-like operators. If you
+        pass an `Owner` type, mutation helpers become private to that owner so
+        outside code can only read the data.
+
+        Example: expose prices as read-only to consumers while still allowing
+        the owning class to append:
+        \code{.cpp}
+        class Prices {
+            using Storage = sdk::List<double, Prices>;
+        public:
+            const Storage& values() const { return _values; }
+            void add(double v) { _values->push_back(v); }
+        private:
+            Storage _values;
+        };
+        \endcode
+    */
     template <class T, typename Owner = void>
     class List {
         std::vector <T> _;
@@ -295,6 +461,7 @@ namespace sdk {
 
 
     // ----------------------- list Bytes ---------------------------------------------------------
+    /*! \brief Deserialize a vector from raw bytes with optional element ctor args. */
     template <typename T, typename... Args>
     std::vector <T> list_from_bytes(WireMode mode, const QByteArray& data, Args&&...args){
         std::vector <T> list;
@@ -304,6 +471,7 @@ namespace sdk {
         return list;
     }
 
+    /*! \brief Serialize a vector into raw bytes for transport or storage. */
     template <typename T>
     QByteArray list_to_bytes(WireMode mode, const std::vector <T>& d){
         QByteArray data;
@@ -342,6 +510,11 @@ namespace sdk {
 
 
     // ----------------------- Set if functionality -----------------------------------------------
+    /*! \brief Compare values with tolerance when dealing with floating points.
+
+        Non-floating types fall back to regular equality. Floating values use a
+        relative epsilon so we skip updates triggered only by rounding noise.
+    */
     template<typename T>
     static inline bool nearly_equal(T a, T b, T eps) {
         if constexpr (std::is_floating_point_v<T>)
@@ -351,6 +524,22 @@ namespace sdk {
             return a == b;
     }
 
+    /*! \brief Update a field and refresh the owner only when something truly changed.
+
+        Commonly used inside `Trackable` DTOs to avoid spamming refresh events
+        when the new value is effectively the same as the old one.
+        \code{.cpp}
+        std::optional<MyFlags> changed = sdk::set_if(this, price, newPrice,
+                                                     MyFlags::PriceUpdated, 0.001);
+        if (changed) notify(*changed);
+        \endcode
+        \param ptr   Pointer to the owning Trackable for timestamp refresh.
+        \param field Target field to compare and potentially overwrite.
+        \param value Incoming value.
+        \param flag  Change flag returned when the update is applied.
+        \param eps   Tolerance used for floating point comparisons.
+        \return std::nullopt when unchanged, otherwise the provided flag.
+    */
     template <typename T, typename T2, typename Flag> static inline std::optional <Flag>
     set_if(Trackable* ptr, T& field, const T2& value, Flag flag, T eps) {
         if constexpr (std::is_floating_point_v <T>) {
