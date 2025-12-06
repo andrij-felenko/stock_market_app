@@ -180,4 +180,4 @@ void sdk::Market::saveMeta() const
     file.close();
 }
 
-bool sdk::Market::empty() const { qDebug() << _instruments.size(); return _instruments.empty(); }
+bool sdk::Market::empty() const { return _instruments.empty(); }

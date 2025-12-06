@@ -79,27 +79,20 @@ void sdk::api::TwelveData::addByTag(QString tag)
 void sdk::api::TwelveData::handlerAnswer(Call* reply)
 {
     qDebug() << "handler answer";
-    qDebug() << reply->receiveData();
     QJsonDocument doc = QJsonDocument::fromJson(reply->receiveData());
     QJsonObject obj = doc.object();
-    qDebug() << 1;
 
     if (obj.contains("status") && obj["status"].toString() == "error") {
         emit errorOccurred(obj["message"].toString());
         return;
     }
-    qDebug() << 2;
 
     auto t = Nexus->market()->findTicker(reply->name);
     if (t.ensure() == false)
         return;
 
-    qDebug() << 3;
-
-    qDebug() << 4;
     if (reply->type() == api::Request::Candle && obj.contains("values")) {
         QJsonArray values = obj["values"].toArray();
-        qDebug() << 5;
         for (const QJsonValue& v : std::as_const(values)) {
             QJsonObject o = v.toObject();
             QString datetime = o["datetime"].toString();
@@ -113,12 +106,8 @@ void sdk::api::TwelveData::handlerAnswer(Call* reply)
             // або time, залежно від granularності
 
             t->quotes.setData(date, open, close, high, low, volume);
-            qDebug() << "=====================================" << date;
         }
-        qDebug() << 6;
 
         t->save();
-        qDebug() << 8;
     }
-    qDebug() << 9;
 }

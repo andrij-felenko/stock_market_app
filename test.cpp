@@ -10,13 +10,11 @@ int main(int argc, char** argv)
         Test_DataInstrument t;
         status |= QTest::qExec(&t, argc, argv);
     }
-    qDebug() << "";
 
     {
         Test_DataTicker t;
         status |= QTest::qExec(&t, argc, argv);
     }
-    qDebug() << "";
 
     return status;
 }

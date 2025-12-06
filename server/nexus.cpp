@@ -1,5 +1,8 @@
 #include "nexus.h"
 
+#include <QDateTime>
+#include <QDebug>
+
 Nexus_t& Nexus_t::reference() { return *instance(); }
 Nexus_t* const Nexus_t::instance()
 {
@@ -21,5 +24,5 @@ sdk::api::EndPoints* Nexus_t::network() const { return sdk::Nexus->network(); }
 
 Nexus_t::Nexus_t() : QObject(qApp)
 {
-    qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
+    qInfo() << "Server nexus initialized at" << QDateTime::currentDateTime();
 }

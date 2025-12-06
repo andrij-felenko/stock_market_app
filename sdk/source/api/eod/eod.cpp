@@ -186,7 +186,7 @@ void sdk::api::Eod::_handleExchange(Call* reply)
     // if (not _queue_contains(Request::Exchange))
         // Nexus.market()->detect_main_ticker();
 
-    qDebug() << "TOTAL CPUNT -----------------------------------------------------" << root.size()
+    qDebug() << "TOTAL COUNT -----------------------------------------------------" << root.size()
              << "--------" << count << reply->request()->url();
     market->saveMeta();
 }

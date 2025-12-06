@@ -1,4 +1,8 @@
 #include "api/transport/provider.h"
+
+#include <QDebug>
+
+#include <QtCore/QDateTime>
 #include <QtCore/QTimer>
 
 using namespace sdk::api;
@@ -70,7 +74,9 @@ void Provider::_next()
         if (it->available()){
             _lock = true;
             it->send();
-            qDebug() << "It need also" << _queue.size() << QDateTime::currentDateTime();
+            qInfo() << "Dispatching request" << it->_type
+                    << "pending in queue:" << _queue.size()
+                    << "at" << QDateTime::currentDateTime();
             return;
         }
     }
