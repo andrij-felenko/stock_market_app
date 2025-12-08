@@ -167,7 +167,7 @@ namespace sdk {
                         << d->_preferred_adj
                         << d->_acctg_effects;
 
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Incomes> d){
@@ -197,6 +197,6 @@ namespace sdk {
                         >> d->_preferred_adj
                         >> d->_acctg_effects;
 
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

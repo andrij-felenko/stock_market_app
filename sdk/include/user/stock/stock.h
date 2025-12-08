@@ -34,6 +34,9 @@ private:
 
     std::vector <Transaction> _list;
 
+    friend QDataStream& operator << (QDataStream& s, Wire <const Stock> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Stock> d);
+
     friend QDataStream& operator << (QDataStream& s, const Stock& d);
     friend QDataStream& operator >> (QDataStream& s,       Stock& d);
 };

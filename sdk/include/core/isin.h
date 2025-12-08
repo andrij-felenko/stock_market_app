@@ -66,6 +66,9 @@ private:
     constexpr uint16_t country_v() const { return get    <8> (); }
     constexpr  uint8_t head_v()    const { return get_ch <0> (); }
 
+    friend QDataStream& operator << (QDataStream& s, Wire <const Isin> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Isin> d);
+
     friend QDataStream& operator << (QDataStream& s, const Isin& d);
     friend QDataStream& operator >> (QDataStream& s,       Isin& d);
 

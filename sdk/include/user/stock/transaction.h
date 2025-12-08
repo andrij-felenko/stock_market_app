@@ -42,6 +42,9 @@ private:
     FieldTOpt setBroker(const QString& broker)
     { return set_if(this, _broker, broker, Transaction_broker); }
 
+    friend QDataStream& operator << (QDataStream& s, Wire <const Transaction> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Transaction> d);
+
     friend QDataStream& operator << (QDataStream& s, const Transaction& d);
     friend QDataStream& operator >> (QDataStream& s,       Transaction& d);
 

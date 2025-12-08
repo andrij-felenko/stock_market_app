@@ -227,7 +227,7 @@ namespace sdk {
         if (d.data()) sdk::list_to_stream(s, d->tickers());
         if (d.meta()) s << d->_isin << d->_name << d->_type;
         if (d.subs() && d->has_data()) s << io(*d->data(), d);
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Instrument> d){
@@ -243,7 +243,7 @@ namespace sdk {
             s >> io(*d->data(), d);
             d->release();
         }
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }
 

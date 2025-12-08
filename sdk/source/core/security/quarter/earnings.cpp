@@ -7,7 +7,7 @@ namespace sdk {
                         << d->_eps_actual
                         << d->_eps_estimate;
 
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Earnings> d){
@@ -16,6 +16,6 @@ namespace sdk {
                         >> d->_eps_actual
                         >> d->_eps_estimate;
 
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

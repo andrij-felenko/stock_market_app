@@ -131,7 +131,7 @@ namespace sdk {
                         << d->_eps_revision_down_last_7d
                         << d->_eps_revision_down_last_30d;
 
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Trend> d){
@@ -158,6 +158,6 @@ namespace sdk {
                         >> d->_eps_revision_down_last_7d
                         >> d->_eps_revision_down_last_30d;
 
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

@@ -1,6 +1,7 @@
 #include "core/symbol.h"
 #include <QStringList>
 #include <QtCore/QDebug>
+#include "common/features.h"
 
 sdk::Symbol::Symbol(const QByteArray& code, sdk::Exchange exchange)
     : _code(code), _venue(exchange)
@@ -124,8 +125,18 @@ bool dtS::exist()     const { return sdk::exchange::exist    (_venue); }
 bool dtS::check_exchange(sdk::Exchange ex) const { return _venue == ex; }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Symbol& d) { return s << d._code << d._venue; }
-    QDataStream& operator >> (QDataStream& s,       Symbol& d) { return s >> d._code >> d._venue; }
+    QDataStream& operator << (QDataStream& s, Wire <const Symbol> d){
+        if (d.data()) s << d->_code << d->_venue;
+        return s;
+    }
+
+    QDataStream& operator >> (QDataStream& s, Wire <Symbol> d){
+        if (d.data()) s >> d->_code >> d->_venue;
+        return s;
+    }
+
+    QDataStream& operator << (QDataStream& s, const Symbol& d) { return s << Wire (d); }
+    QDataStream& operator >> (QDataStream& s,       Symbol& d) { return s >> Wire (d); }
 
     QDebug operator << (QDebug dbg, const Symbol& symbol) {
         QDebugStateSaver saver(dbg);

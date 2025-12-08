@@ -15,9 +15,19 @@ void    sdk::Identity::setEmail(const QString& newEmail) { _email = newEmail; }
 
 
 namespace sdk {
+    QDataStream& operator << (QDataStream& s, Wire <const Identity> d){
+        if (d.data()) s << d->_id << d->_hash << d->_email << d->_username;
+        return s << io(d->_track, d);
+    }
+
+    QDataStream& operator >> (QDataStream& s, Wire <Identity> d){
+        if (d.data()) s >> d->_id >> d->_hash >> d->_email >> d->_username;
+        return s >> io(d->_track, d);
+    }
+
     QDataStream& operator << (QDataStream& s, const Identity& d)
-    { return s << d._id << d._hash << d._email << d._username; }
+    { return s << Wire (d); }
 
     QDataStream& operator >> (QDataStream& s, Identity& d)
-    { return s >> d._id >> d._hash >> d._email >> d._username; }
+    { return s >> Wire (d); }
 }

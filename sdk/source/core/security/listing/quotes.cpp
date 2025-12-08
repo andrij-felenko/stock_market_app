@@ -133,26 +133,38 @@ bool sdk::Quotes::empty()
 
 namespace sdk {
 // --------------------------------------------------------------------------------------
+    QDataStream& operator << (QDataStream& s, Wire <const QuotesDate> q)
+    { if (q.data()) s << q->date << q->open << q->close << q->high << q->low << q->volume; return s; }
+
+    QDataStream& operator >> (QDataStream& s, Wire <      QuotesDate> q)
+    { if (q.data()) s >> q->date >> q->open >> q->close >> q->high >> q->low >> q->volume; return s; }
+
     QDataStream& operator << (QDataStream& s, const QuotesDate& q)
-    { return s << q.date << q.open << q.close << q.high << q.low << q.volume; }
+    { return s << Wire (q); }
 
     QDataStream& operator >> (QDataStream& s,       QuotesDate& q)
-    { return s >> q.date >> q.open >> q.close >> q.high >> q.low >> q.volume; }
+    { return s >> Wire (q); }
 // --------------------------------------------------------------------------------------
+    QDataStream& operator << (QDataStream& s, Wire <const QuotesTime> q)
+    { if (q.data()) s << q->time << q->open << q->close << q->high << q->low << q->volume; return s; }
+
+    QDataStream& operator >> (QDataStream& s, Wire <      QuotesTime> q)
+    { if (q.data()) s >> q->time >> q->open >> q->close >> q->high >> q->low >> q->volume; return s; }
+
     QDataStream& operator << (QDataStream& s, const QuotesTime& q)
-    { return s << q.time << q.open << q.close << q.high << q.low << q.volume; }
+    { return s << Wire (q); }
 
     QDataStream& operator >> (QDataStream& s,       QuotesTime& q)
-    { return s >> q.time >> q.open >> q.close >> q.high >> q.low >> q.volume; }
+    { return s >> Wire (q); }
 // --------------------------------------------------------------------------------------
     QDataStream& operator << (QDataStream& s, Wire <const Quotes> d){
         if (d.data()) s << d->_points << d->_intraday << d->_last_intraday << d->_beta;
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Quotes> d){
         if (d.data()) s >> d->_points >> d->_intraday >> d->_last_intraday >> d->_beta;
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 // --------------------------------------------------------------------------------------
 }

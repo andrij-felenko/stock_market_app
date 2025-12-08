@@ -14,7 +14,7 @@ namespace sdk {
                         << d->_forward_annual_rate
                         << d->_payout_ratio;
 
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Dividend> d){
@@ -25,6 +25,6 @@ namespace sdk {
                         >> d->_forward_annual_rate
                         >> d->_payout_ratio;
 
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }
