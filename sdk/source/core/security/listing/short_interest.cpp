@@ -8,11 +8,11 @@ sdk::ShortInterest::ShortInterest()
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const ShortInterest> d){
         if (d.data()) s << d->_shares << d->_shares_prior_month;
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <ShortInterest> d){
         if (d.data()) s >> d->_shares >> d->_shares_prior_month;
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

@@ -106,11 +106,21 @@ const QByteArray sdk::Isin::code_str() const
 bool sdk::Isin::valid() const { return (head_v() &  valid_mask) != 0; }
 
 namespace sdk {
+    QDataStream& operator << (QDataStream& s, Wire <const Isin> d){
+        if (d.data()) s.writeRawData(reinterpret_cast <const char*> (d->_.data()), 10);
+        return s;
+    }
+
+    QDataStream& operator >> (QDataStream& s, Wire <Isin> d){
+        if (d.data()) s.readRawData(reinterpret_cast <char*> (d->_.data()), 10);
+        return s;
+    }
+
     QDataStream& operator << (QDataStream& s, const Isin& d)
-    { s.writeRawData(reinterpret_cast <const char*> (d._.data()), 10); return s; }
+    { return s << Wire (d); }
 
     QDataStream& operator >> (QDataStream& s, Isin& d)
-    { s.readRawData(reinterpret_cast <char*> (d._.data()), 10); return s; }
+    { return s >> Wire (d); }
 
     QDebug operator << (QDebug dbg, const Isin& isin) {
         QDebugStateSaver saver(dbg);

@@ -120,7 +120,7 @@ namespace sdk {
                         << d->_depreciation
                         << d->_stock_based_compensation;
 
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <CashFlow> d){
@@ -147,6 +147,6 @@ namespace sdk {
                         >> d->_depreciation
                         >> d->_stock_based_compensation;
 
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

@@ -85,17 +85,21 @@ void Stock::updateBroker(Transaction& t, const QString& broker)
 }
 
 namespace sdk {
-    QDataStream& operator << (QDataStream& s, const Stock& d) {
-        // sdk::list_to_stream(s, d._list);
-        return s << d._tag;
+    QDataStream& operator << (QDataStream& s, Wire <const Stock> d) {
+        if (d.data()) s << io(d->_tag, d);
+        if (d.subs()) sdk::list_to_stream(s, d.mode(), d->_list);
+        return s << io(static_cast <const Trackable&> (d.ref), d);
     }
 
-    QDataStream& operator >> (QDataStream& s, Stock& d) {
-        // sdk::list_from_stream(s, d._list);
-        s >> d._tag;
-
-        // Symbol tag; s >> tag;
-        // d._ticker = Nexus.market()->findTicker(tag);
-        return s;
+    QDataStream& operator >> (QDataStream& s, Wire <Stock> d) {
+        if (d.data()) s >> io(d->_tag, d);
+        if (d.subs()) sdk::list_from_stream(s, d.mode(), d->_list);
+        return s >> io(static_cast <Trackable&> (d.ref), d);
     }
+
+    QDataStream& operator << (QDataStream& s, const Stock& d)
+    { return s << Wire (d); }
+
+    QDataStream& operator >> (QDataStream& s, Stock& d)
+    { return s >> Wire (d); }
 }

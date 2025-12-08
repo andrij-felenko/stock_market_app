@@ -32,6 +32,11 @@ public:
     Profile profile;
 
 private:
+    Trackable _track;
+
+    friend QDataStream& operator << (QDataStream& s, Wire <const Account> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Account> d);
+
     friend QDataStream& operator << (QDataStream& s, const Account& d);
     friend QDataStream& operator >> (QDataStream& s,       Account& d);
 };

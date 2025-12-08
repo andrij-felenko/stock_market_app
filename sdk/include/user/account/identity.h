@@ -32,8 +32,12 @@ private:
     QString _username;
     QString _email;
     QByteArray _hash; // server side password, client side - token
+    Trackable _track;
 
     Identity(uint32_t id);
+
+    friend QDataStream& operator << (QDataStream& s, Wire <const Identity> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Identity> d);
 
     friend QDataStream& operator << (QDataStream& s, const Identity& d);
     friend QDataStream& operator >> (QDataStream& s,       Identity& d);

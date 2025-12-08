@@ -60,6 +60,10 @@ private:
     sdk::List <WatchList, Ledger> _watchlists;
     // Pending _pending;
     //
+    Trackable _track;
+
+    friend QDataStream& operator << (QDataStream& s, Wire <const Ledger> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Ledger> d);
 
     friend QDataStream& operator << (QDataStream& s, const Ledger& d);
     friend QDataStream& operator >> (QDataStream& s,       Ledger& d);

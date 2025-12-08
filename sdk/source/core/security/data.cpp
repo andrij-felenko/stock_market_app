@@ -48,7 +48,7 @@ namespace sdk {
                         << io(d->meta, d)
                         << io(d->finance, d)
                         << io(d->tickers, d);
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Data> d){
@@ -58,6 +58,6 @@ namespace sdk {
                         >> io(d->tickers, d);
 
         d->update_parent();
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

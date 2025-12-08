@@ -56,6 +56,9 @@ private:
     sdk::Exchange _venue;
     QByteArray _code;
 
+    friend QDataStream& operator << (QDataStream& s, Wire <const Symbol> d);
+    friend QDataStream& operator >> (QDataStream& s, Wire <      Symbol> d);
+
     friend QDataStream& operator << (QDataStream& s, const Symbol& d);
     friend QDataStream& operator >> (QDataStream& s,       Symbol& d);
 

@@ -16,16 +16,16 @@ void      sdk::Profile::setCreated(const QDateTime& newCreated) { _created = new
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const Profile> d) {
-        if (d.data()) s << d->_identity;
+        if (d.data()) s << io(d->_identity, d);
         if (d.subs()) s << d->_created;
         s << io(d->_upd, d);
-        return s;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Profile> d) {
-        if (d.data()) s >> d->_identity;
+        if (d.data()) s >> io(d->_identity, d);
         if (d.subs()) s >> d->_created;
         s >> io(d->_upd, d);
-        return s;
+        return s >> io(d->_track, d);
     }
 }

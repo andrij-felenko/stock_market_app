@@ -27,6 +27,7 @@ private:
     Identity _identity;
     DTime _created;
     DTime _upd;
+    Trackable _track;
 
     friend QDataStream& operator << (QDataStream& s, Wire <const Profile> d);
     friend QDataStream& operator >> (QDataStream& s, Wire <      Profile> d);

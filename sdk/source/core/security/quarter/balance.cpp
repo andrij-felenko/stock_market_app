@@ -388,7 +388,7 @@ namespace sdk {
                         << d->_negative_goodwill
                         << d->_capital_surplus;
 
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Balance> d){
@@ -457,6 +457,6 @@ namespace sdk {
                         >> d->_negative_goodwill
                         >> d->_capital_surplus;
 
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

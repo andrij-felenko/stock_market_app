@@ -34,7 +34,7 @@ namespace sdk {
                         << io(d->earning, d)
                         << io(d->incomes, d)
                         << io(d->trend, d);
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <QuartelData> d){
@@ -44,6 +44,6 @@ namespace sdk {
                         >> io(d->earning, d)
                         >> io(d->incomes, d)
                         >> io(d->trend, d);
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

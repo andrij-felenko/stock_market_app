@@ -33,7 +33,7 @@ namespace sdk {
                         << io(d->quotes, d)
                         << io(d->short_interst, d);
                            // << d.valuation
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <sdk::Ticker> d){
@@ -43,6 +43,6 @@ namespace sdk {
                         >> io(d->quotes, d)
                         >> io(d->short_interst, d);
                         // >> d.valuation
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }

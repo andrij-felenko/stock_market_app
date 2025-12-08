@@ -85,7 +85,7 @@ namespace sdk {
                         << d->_description << d->_officers << d->_phone_number
                         << d->_website << d->_fulltime_employees
                         << d->_logo_url << d->_logo << d->_logo_size;
-        return s << d->_track;
+        return s << io(d->_track, d);
     }
 
     QDataStream& operator >> (QDataStream& s, Wire <Meta> d){
@@ -95,6 +95,6 @@ namespace sdk {
                         >> d->_description >> d->_officers >> d->_phone_number
                         >> d->_website >> d->_fulltime_employees
                         >> d->_logo_url >> d->_logo << d->_logo_size;
-        return s >> d->_track;
+        return s >> io(d->_track, d);
     }
 }
