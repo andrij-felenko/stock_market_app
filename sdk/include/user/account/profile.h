@@ -20,6 +20,9 @@ public:
 
     Identity identity;
 
+    Identity identityData() const;
+    void setIdentity(const Identity& id);
+
     QDateTime created() const;
     void   setCreated(const QDateTime& newCreated);
 

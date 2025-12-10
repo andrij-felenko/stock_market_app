@@ -6,7 +6,9 @@
 #include "sdk_def.h"
 #include "service/market.h"
 #include "service/roster.h"
+#include "user/account/session.h"
 #include "api/connectors/endpoints.h"
+#include <functional>
 
 class SDK final : public QObject
 {
@@ -14,15 +16,18 @@ class SDK final : public QObject
     Q_PROPERTY(sdk::Roster* roster READ roster CONSTANT)
     Q_PROPERTY(sdk::Market* market READ market CONSTANT)
     Q_PROPERTY(sdk::api::EndPoints* settings_network READ network CONSTANT)
+    Q_PROPERTY(sdk::Session* session READ session CONSTANT)
 public:
     static SDK* const instance();
     static SDK&      reference();
 
     void init();
+    void configureSessionFactory(std::function<sdk::Session*(QObject* parent)> factory);
 
     sdk::Market* market() const;
     sdk::Roster* roster() const;
     sdk::api::EndPoints* network() const;
+    sdk::Session* session() const;
 
 signals:
     void prepared();
@@ -42,6 +47,8 @@ private:
 
     sdk::Market* _market;
     sdk::Roster* _roster;
+    sdk::Session* _session;
+    std::function<sdk::Session*(QObject* parent)> _sessionFactory;
 };
 
 namespace sdk {

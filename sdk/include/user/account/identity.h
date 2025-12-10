@@ -27,6 +27,10 @@ public:
     QString email() const;
     void setEmail(const QString& newEmail);
 
+    QByteArray hash() const;
+    void setHash(const QByteArray& newHash);
+    bool matchesHash(const QByteArray& candidate) const;
+
 private:
     uint32_t _id = 0;
     QString _username;
@@ -43,6 +47,7 @@ private:
     friend QDataStream& operator >> (QDataStream& s,       Identity& d);
 
     friend class sdk::Session;
+    friend class sdk::Roster;
 };
 
 #endif // SDK_USER_ACCOUNT_IDENTITY_H

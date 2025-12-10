@@ -1,6 +1,8 @@
 #include "client.h"
 #include <QtGui/QGuiApplication>
 #include <QtQuick/QQuickWindow>
+#include <QDateTime>
+#include <QtQml/qqml.h>
 
 #include <api/eod/alphavantage.h>
 #include <api/eod/eod.h>
@@ -107,7 +109,7 @@ void Client_t::registerSingletons()
     // qmlREGS <api::MarketStack> ("Cpp", 1, 0, "MarketStack",  api::MarketStack ::instance());
     // qmlREGS <api::AlphaVantage>("Cpp", 1, 0, "AlphaVantage", api::AlphaVantage::instance());
 
-    // qmlREGS <Loader>("Cpp", 1, 0, "Nexus", this);
+    qmlREGS <SDK>("Cpp", 1, 0, "Nexus", sdk::Nexus.ptr());
 }
 
 void Client_t::create_model()

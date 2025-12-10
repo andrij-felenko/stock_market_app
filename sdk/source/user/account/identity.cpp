@@ -13,6 +13,10 @@ void    sdk::Identity::setUsername(const QString& newUsername) { _username = new
 QString sdk::Identity::   email() const { return _email; }
 void    sdk::Identity::setEmail(const QString& newEmail) { _email = newEmail; }
 
+QByteArray sdk::Identity::hash() const { return _hash; }
+void       sdk::Identity::setHash(const QByteArray& newHash) { _hash = newHash; }
+bool       sdk::Identity::matchesHash(const QByteArray& candidate) const { return _hash == candidate; }
+
 
 namespace sdk {
     QDataStream& operator << (QDataStream& s, Wire <const Identity> d){
