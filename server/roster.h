@@ -2,15 +2,13 @@
 #define STOCK_MANAGER_SERVER_ROSTER_H
 
 #include <QtCore/QObject>
+#include <StockSDK/service/roster.h>
 
-class Roster : public QObject
+class Roster : public sdk::Roster
 {
     Q_OBJECT
 public:
     Roster(QObject* parent = nullptr);
-
-private:
-    //
 };
 
 #endif

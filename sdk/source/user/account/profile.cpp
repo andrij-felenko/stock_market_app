@@ -7,11 +7,18 @@ sdk::Profile::Profile()
 
 sdk::Profile::Profile(const Identity identity) : Profile()
 {
-    //
+    setIdentity(identity);
 }
 
 QDateTime sdk::Profile::   created() const{    return _created; }
 void      sdk::Profile::setCreated(const QDateTime& newCreated) { _created = newCreated; }
+
+sdk::Identity sdk::Profile::identityData() const { return _identity; }
+void          sdk::Profile::setIdentity(const Identity& id)
+{
+    _identity = id;
+    identity = id;
+}
 
 
 namespace sdk {

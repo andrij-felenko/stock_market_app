@@ -5,11 +5,194 @@ import Cpp 1.0  // SeetingsNetwork
 
 Page {
     id: root
-    title: qsTr("Network Settings")
+    title: qsTr("Account")
 
     ScrollView {
         anchors.fill: parent
         contentWidth: parent.width
+
+        Frame {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: Math.min(parent.width - 32, 700)
+            padding: 24
+
+            background: Rectangle {
+                color: Qt.darker(palette.window, 1.02)
+                radius: 12
+            }
+
+            ColumnLayout {
+                spacing: 16
+                anchors.fill: parent
+
+                Label {
+                    text: qsTr("Authentication")
+                    font.pixelSize: 22
+                    font.bold: true
+                    Layout.alignment: Qt.AlignHCenter
+                }
+
+                RowLayout {
+                    spacing: 12
+                    Layout.fillWidth: true
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        TextField {
+                            id: usernameField
+                            Layout.fillWidth: true
+                            placeholderText: qsTr("Username")
+                            text: Nexus.session.username
+                        }
+
+                        TextField {
+                            id: emailField
+                            Layout.fillWidth: true
+                            placeholderText: qsTr("Email")
+                            inputMethodHints: Qt.ImhEmailCharactersOnly
+                            text: Nexus.session.email
+                        }
+
+                        TextField {
+                            id: passwordField
+                            Layout.fillWidth: true
+                            placeholderText: qsTr("Password (min 8 symbols)")
+                            echoMode: TextInput.Password
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Button {
+                                text: qsTr("Register")
+                                onClicked: Nexus.session.registerAccount(usernameField.text, emailField.text, passwordField.text)
+                            }
+
+                            Button {
+                                text: qsTr("Login")
+                                onClicked: Nexus.session.login(emailField.text.length > 0 ? emailField.text : usernameField.text, passwordField.text)
+                            }
+
+                            Button {
+                                text: qsTr("Refresh token")
+                                enabled: Nexus.session.refreshToken.length > 0
+                                onClicked: Nexus.session.refreshAccess()
+                            }
+
+                            Button {
+                                text: qsTr("Logout")
+                                onClicked: Nexus.session.logout()
+                            }
+                        }
+
+                        GroupBox {
+                            title: qsTr("Remembered on this device")
+                            Layout.fillWidth: true
+
+                            ColumnLayout {
+                                spacing: 8
+                                Layout.fillWidth: true
+
+                                ComboBox {
+                                    id: rememberedUsers
+                                    Layout.fillWidth: true
+                                    model: Nexus.session.rememberedUsers
+                                    editable: false
+                                    placeholderText: qsTr("Select a saved account")
+                                }
+
+                                RowLayout {
+                                    Layout.fillWidth: true
+                                    spacing: 8
+
+                                    Button {
+                                        text: qsTr("Switch account")
+                                        enabled: rememberedUsers.currentText.length > 0
+                                        onClicked: Nexus.session.activateRemembered(rememberedUsers.currentText)
+                                    }
+
+                                    Button {
+                                        text: qsTr("Load details")
+                                        enabled: rememberedUsers.currentText.length > 0
+                                        onClicked: {
+                                            if (rememberedUsers.currentText.length > 0) {
+                                                usernameField.text = rememberedUsers.currentText
+                                                emailField.text = rememberedUsers.currentText
+                                            }
+                                        }
+                                    }
+                                }
+
+                                Label {
+                                    Layout.fillWidth: true
+                                    wrapMode: Text.WordWrap
+                                    color: "gray"
+                                    text: qsTr("Previously signed-in accounts keep refresh tokens for quick switching during their validity window.")
+                                }
+                            }
+                        }
+
+                        Label {
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            color: Nexus.session.authenticated ? "#2e7d32" : "#c62828"
+                            text: Nexus.session.authenticated
+                                  ? qsTr("Logged in as %1 (%2)").arg(Nexus.session.username).arg(Nexus.session.email)
+                                  : qsTr("No active session")
+                        }
+
+                        Label {
+                            Layout.fillWidth: true
+                            wrapMode: Text.WordWrap
+                            color: "#c62828"
+                            visible: Nexus.session.lastError.length > 0
+                            text: Nexus.session.lastError
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.preferredWidth: 260
+                        spacing: 8
+
+                        Label {
+                            text: qsTr("Access token (30 min)")
+                            font.bold: true
+                        }
+                        TextArea {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 70
+                            readOnly: true
+                            wrapMode: Text.WrapAnywhere
+                            text: Nexus.session.accessToken
+                        }
+                        Label {
+                            text: Nexus.session.accessExpiry.toLocaleString()
+                            color: "gray"
+                        }
+
+                        Label {
+                            text: qsTr("Refresh token (90 days)")
+                            font.bold: true
+                            topPadding: 8
+                        }
+                        TextArea {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 70
+                            readOnly: true
+                            wrapMode: Text.WrapAnywhere
+                            text: Nexus.session.refreshToken
+                        }
+                        Label {
+                            text: Nexus.session.refreshExpiry.toLocaleString()
+                            color: "gray"
+                        }
+                    }
+                }
+            }
+        }
 
         Frame {
             anchors.horizontalCenter: parent.horizontalCenter

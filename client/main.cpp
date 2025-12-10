@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     qInfo() << "Build-time SSL library:" << QSslSocket::sslLibraryBuildVersionString();
 
     // util::ResDir::list_qrc_files();
-    sdk::Nexus->init();
+    Client.init();
 
     return app.exec();
 }

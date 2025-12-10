@@ -24,15 +24,27 @@ void SDK::init()
 
     _roster = new sdk::Roster(qApp);
     _roster->loadMeta();
+
+    if (!_sessionFactory)
+        _sessionFactory = [](QObject* parent) { return new sdk::Session(parent); };
+    _session = _sessionFactory(qApp);
+    _session->attachRoster(_roster);
+}
+
+void SDK::configureSessionFactory(std::function<sdk::Session*(QObject* parent)> factory)
+{
+    _sessionFactory = std::move(factory);
 }
 
 sdk::api::EndPoints* SDK::network() const { return sdk::apiEndPoints.ptr(); }
 sdk::Market*         SDK::market()  const { return _market; }
 sdk::Roster*         SDK::roster()  const { return _roster; }
+sdk::Session*        SDK::session() const { return _session; }
 
-SDK::SDK() : QObject(qApp)
+SDK::SDK() : QObject(qApp), _market(nullptr), _roster(nullptr), _session(nullptr)
 {
     qDebug() << Q_FUNC_INFO << QDateTime::currentDateTime();
+    _sessionFactory = [](QObject* parent) { return new sdk::Session(parent); };
 }
 
 
